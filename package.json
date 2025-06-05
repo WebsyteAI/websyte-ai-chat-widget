@@ -3,7 +3,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "react-router build",
+		"build": "react-router build && pnpm run build:widget",
+		"build:widget": "vite build --config vite.widget.config.ts && cp dist/widget.js public/widget.js",
 		"cf-typegen": "wrangler types",
 		"deploy": "pnpm run build && wrangler deploy",
 		"dev": "react-router dev",
@@ -12,10 +13,14 @@
 		"typecheck": "npm run cf-typegen && react-router typegen && tsc -b"
 	},
 	"dependencies": {
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
 		"isbot": "^5.1.27",
+		"lucide-react": "^0.513.0",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
-		"react-router": "^7.5.3"
+		"react-router": "^7.5.3",
+		"tailwind-merge": "^3.3.0"
 	},
 	"devDependencies": {
 		"@cloudflare/vite-plugin": "^1.0.12",
@@ -24,6 +29,7 @@
 		"@types/node": "^20",
 		"@types/react": "^19.1.2",
 		"@types/react-dom": "^19.1.2",
+		"@vitejs/plugin-react": "^4.5.1",
 		"tailwindcss": "^4.1.4",
 		"typescript": "^5.8.3",
 		"vite": "^6.3.3",
