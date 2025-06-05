@@ -6,6 +6,9 @@
 /.react-router/
 /build/
 
+# Widget build output
+/dist/
+
 # Cloudflare
 .mf
 .wrangler
