@@ -1,6 +1,8 @@
-# Nativo AI Chat Widget
+# Websyte AI Chat Widget
 
 An embeddable AI chat widget with modern glass morphism design that provides intelligent, context-aware conversations using OpenAI integration.
+
+**🚀 Live Demo**: [https://websyte-ai-chat-widget.clementineso.workers.dev](https://websyte-ai-chat-widget.clementineso.workers.dev)
 
 ## Features
 
@@ -23,7 +25,7 @@ An embeddable AI chat widget with modern glass morphism design that provides int
 Add this single line to your website:
 
 ```html
-<script src="https://your-domain.workers.dev/widget.js" async></script>
+<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" async></script>
 ```
 
 ### Advanced Configuration
@@ -32,10 +34,10 @@ Customize the widget behavior with data attributes:
 
 ```html
 <script 
-  src="https://your-domain.workers.dev/widget.js" 
+  src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" 
   data-content-target="main, .content, article"
   data-api-endpoint="/api/chat"
-  data-base-url="https://api.example.com"
+  data-base-url=""
   data-advertiser-name="Your Brand"
   data-advertiser-logo="https://example.com/logo.png"
   data-position="bottom-center"
@@ -105,7 +107,17 @@ Build just the embeddable widget:
 pnpm run build:widget
 ```
 
-This generates `public/widget.js` - the self-contained widget file.
+This generates `public/dist/widget.js` - the self-contained widget file.
+
+### Development Widget Build
+
+For development with automatic rebuilding:
+
+```bash
+pnpm run dev:widget
+```
+
+This watches for changes and rebuilds the widget to `public/dist/widget.js` automatically.
 
 ### Build Everything
 
@@ -123,7 +135,8 @@ The widget is built from:
 - Built with Vite into a self-contained IIFE bundle
 - Shadow DOM isolation for complete style encapsulation
 - Tailwind CSS v4 compiled and inlined for Shadow DOM compatibility
-- Optimized build process with public directory protection and stable copying
+- Optimized build process outputs to `public/dist/` directory
+- Single command development workflow with `pnpm run dev:widget`
 
 ## Deployment
 
@@ -166,10 +179,10 @@ The widget supports multiple configuration methods:
 
 ```html
 <script 
-  src="/widget.js" 
+  src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" 
   data-content-target="main, .content"
   data-api-endpoint="/api/chat"
-  data-base-url="https://api.example.com"
+  data-base-url=""
   data-advertiser-name="Your Brand"
   data-advertiser-logo="https://example.com/logo.png"
   data-position="bottom-center"

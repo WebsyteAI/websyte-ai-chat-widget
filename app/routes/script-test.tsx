@@ -116,7 +116,7 @@ export default function ScriptTest() {
 
       {/* Script tag with data attributes for configuration */}
       <script 
-        src={`${typeof window !== 'undefined' ? window.location.origin : ''}/widget.js`} 
+        src={`${typeof window !== 'undefined' ? window.location.origin : ''}/dist/widget.js`} 
         data-content-target="main, .content, article"
         data-api-endpoint="/api/chat"
         data-base-url=""

@@ -6,15 +6,11 @@ import fs from 'fs';
 import path from 'path';
 
 export default defineConfig({
-  server: {
-    watch: {
-      ignored: ['**/public/**', '**/dist/**']
-    }
-  },
+  publicDir: false,
   plugins: [
     react(),
     {
-      name: 'inline-css',
+      name: 'inline-css-and-copy',
       writeBundle(options, bundle) {
         const cssFile = Object.keys(bundle).find(file => file.endsWith('.css'));
         const jsFile = Object.keys(bundle).find(file => file.endsWith('.js'));
@@ -35,13 +31,15 @@ window.WebsyteChatCSS = ${JSON.stringify(cssContent)};
 ${jsContent}`;
             
             // Write the modified JS file
-            const outputDir = options.dir || 'dist';
-            fs.writeFileSync(path.join(outputDir, jsFile), inlinedJs);
+            const outputDir = options.dir || 'public/dist';
+            const distPath = path.join(outputDir, jsFile);
+            
+            fs.writeFileSync(distPath, inlinedJs);
+            
+            console.log(`CSS inlined into widget.js and saved to ${outputDir}`);
             
             // Remove the separate CSS file
             fs.unlinkSync(path.join(outputDir, cssFile));
-            
-            console.log('CSS inlined into widget.js for Shadow DOM');
           }
         }
       }
@@ -59,8 +57,7 @@ ${jsContent}`;
       fileName: () => 'widget.js',
       formats: ['iife']
     },
-    outDir: 'dist',
-    watch: null,
+    outDir: resolve(__dirname, 'public/dist'),
     rollupOptions: {
       external: [],
       output: {

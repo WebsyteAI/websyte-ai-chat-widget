@@ -247,7 +247,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     <>
       {/* Action Bar - Always Visible */}
       <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="bg-white/20 backdrop-blur rounded-2xl shadow-lg border border-gray-300 px-6 py-4 flex items-center gap-4">
+        <div className="bg-white/20 backdrop-blur rounded-2xl shadow-lg border border-gray-300 px-4 py-2 flex items-center gap-3">
           <div className="flex items-center gap-3">
             {advertiserLogo || (advertiserName === "Nativo") ? (
               <>
@@ -267,7 +267,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
             <button
               onClick={handleSummarize}
               disabled={isSummarizing}
-              className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100 rounded-lg transition-colors group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               title="Summarize this page"
             >
               <FileText size={18} className="text-gray-600 group-hover:text-gray-800" />
@@ -278,7 +278,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
             
             <button
               onClick={() => {/* TODO: Implement listen */}}
-              className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer"
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer"
               title="Listen to me"
             >
               <Headphones size={18} className="text-gray-600 group-hover:text-gray-800" />
@@ -287,7 +287,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
             
             <button
               onClick={() => setCurrentView(currentView === "chat" ? "main" : "chat")}
-              className={`flex items-center gap-2 px-4 py-3 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer ${currentView === "chat" ? "bg-gray-100" : ""}`}
+              className={`flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer ${currentView === "chat" ? "bg-gray-100" : ""}`}
               title="Chat with me"
             >
               <MessageCircle size={18} className="text-gray-600 group-hover:text-gray-800" />
