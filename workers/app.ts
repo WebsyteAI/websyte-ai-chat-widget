@@ -10,7 +10,7 @@ declare module "react-router" {
 }
 
 interface ChatMessage {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
 }
 
@@ -71,7 +71,9 @@ async function handleChatAPI(request: Request, env: Env): Promise<Response> {
       throw new Error(`OpenAI API error: ${openaiResponse.status}`);
     }
 
-    const openaiData = await openaiResponse.json();
+    const openaiData = await openaiResponse.json() as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
     const assistantMessage = openaiData.choices?.[0]?.message?.content || "I couldn't generate a response.";
 
     return new Response(JSON.stringify({ message: assistantMessage }), {
@@ -104,7 +106,7 @@ async function handleSummarizeAPI(request: Request, env: Env): Promise<Response>
   }
 
   try {
-    const body = await request.json();
+    const body = await request.json() as { content?: string; url?: string; title?: string };
     const { content, url } = body;
 
     if (!content || typeof content !== "string") {
@@ -138,7 +140,9 @@ async function handleSummarizeAPI(request: Request, env: Env): Promise<Response>
       throw new Error(`OpenAI API error: ${openaiResponse.status}`);
     }
 
-    const openaiData = await openaiResponse.json();
+    const openaiData = await openaiResponse.json() as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
     const summary = openaiData.choices?.[0]?.message?.content || "I couldn't generate a summary.";
 
     return new Response(JSON.stringify({ summary }), {

@@ -18,6 +18,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", contentTarget = "article
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSummarizing, setIsSummarizing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -88,7 +89,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", contentTarget = "article
         throw new Error("Failed to send message");
       }
 
-      const data = await response.json();
+      const data = await response.json() as { message?: string };
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -109,6 +110,55 @@ export function ChatWidget({ apiEndpoint = "/api/chat", contentTarget = "article
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSummarize = async () => {
+    if (isSummarizing) return;
+
+    setIsSummarizing(true);
+    setCurrentView("chat");
+
+    try {
+      const pageContent = extractPageContent();
+      
+      const response = await fetch("/api/summarize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: pageContent.content,
+          url: pageContent.url,
+          title: pageContent.title,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate summary");
+      }
+
+      const data = await response.json() as { summary?: string };
+      
+      const summaryMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: `**Summary of "${pageContent.title}"**\n\n${data.summary || "No summary available."}`,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, summaryMessage]);
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: "Sorry, I couldn't generate a summary right now. Please try again.",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsSummarizing(false);
     }
   };
 
@@ -135,12 +185,15 @@ export function ChatWidget({ apiEndpoint = "/api/chat", contentTarget = "article
           
           <div className="flex items-center gap-2">
             <button
-              onClick={() => {/* TODO: Implement summarize */}}
-              className="flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group"
-              title="Summarize"
+              onClick={handleSummarize}
+              disabled={isSummarizing}
+              className="flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Summarize this page"
             >
               <FileText size={16} className="text-gray-600 group-hover:text-gray-800" />
-              <span className="text-xs text-gray-600 group-hover:text-gray-800">Summarize</span>
+              <span className="text-xs text-gray-600 group-hover:text-gray-800">
+                {isSummarizing ? "Summarizing..." : "Summarize"}
+              </span>
             </button>
             
             <button
