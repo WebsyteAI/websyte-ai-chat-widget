@@ -211,15 +211,16 @@ async function handleRecommendationsAPI(request: Request, env: Env): Promise<Res
         messages: [
           {
             role: "system",
-            content: `You are a helpful assistant that generates conversation starters based on webpage content. 
-            Generate exactly 4 short, engaging conversation prompts related to the content. 
+            content: `You are a helpful assistant that generates conversation starters and placeholder text based on webpage content. 
+            Generate exactly 4 short, engaging conversation prompts related to the content and 1 input placeholder. 
             Each prompt should be 3-6 words and encourage discussion about the topic.
-            Return only a JSON array of objects with "title" and "description" fields.
-            Example format: [{"title": "Key Topic", "description": "Brief description"}]`
+            The placeholder should follow the format "Ask me about [topic]" where [topic] is the main subject of the content (keep it under 50 characters).
+            Return only a JSON object with "recommendations" array and "placeholder" string.
+            Example format: {"recommendations": [{"title": "Key Topic", "description": "Brief description"}], "placeholder": "Ask me about this topic"}`
           },
           {
             role: "user", 
-            content: `Based on this webpage content, generate 4 conversation starters:
+            content: `Based on this webpage content, generate 4 conversation starters and an input placeholder:
             Title: ${title}
             URL: ${url}
             Content: ${content.slice(0, 2000)}`
@@ -239,22 +240,25 @@ async function handleRecommendationsAPI(request: Request, env: Env): Promise<Res
       choices?: Array<{ message?: { content?: string } }>;
     };
     
-    const responseContent = openaiData.choices?.[0]?.message?.content || "[]";
+    const responseContent = openaiData.choices?.[0]?.message?.content || '{"recommendations": [], "placeholder": "Ask me about this content"}';
     
-    // Try to parse as JSON, fallback to default recommendations if parsing fails
-    let recommendations;
+    // Try to parse as JSON, fallback to default response if parsing fails
+    let parsedResponse;
     try {
-      recommendations = JSON.parse(responseContent);
+      parsedResponse = JSON.parse(responseContent);
     } catch {
-      recommendations = [
-        { title: "Main Topic", description: "Discuss the main subject" },
-        { title: "Key Points", description: "Explore important details" },
-        { title: "Implications", description: "Consider the broader impact" },
-        { title: "Questions", description: "Ask about unclear aspects" }
-      ];
+      parsedResponse = {
+        recommendations: [
+          { title: "Main Topic", description: "Discuss the main subject" },
+          { title: "Key Points", description: "Explore important details" },
+          { title: "Implications", description: "Consider the broader impact" },
+          { title: "Questions", description: "Ask about unclear aspects" }
+        ],
+        placeholder: "Ask me about this content"
+      };
     }
 
-    return new Response(JSON.stringify({ recommendations }), {
+    return new Response(JSON.stringify(parsedResponse), {
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
@@ -267,7 +271,8 @@ async function handleRecommendationsAPI(request: Request, env: Env): Promise<Res
     if (error instanceof Error && error.name === 'AbortError') {
       return new Response(JSON.stringify({ 
         error: "Request cancelled",
-        recommendations: []
+        recommendations: [],
+        placeholder: "Ask me about this content"
       }), { 
         status: 499,
         headers: {
@@ -279,17 +284,18 @@ async function handleRecommendationsAPI(request: Request, env: Env): Promise<Res
     
     console.error("Recommendations API error:", error);
     
-    // Return fallback recommendations on error
-    const fallbackRecommendations = [
-      { title: "Main Topic", description: "Discuss the main subject" },
-      { title: "Key Points", description: "Explore important details" },
-      { title: "Implications", description: "Consider the broader impact" },
-      { title: "Questions", description: "Ask about unclear aspects" }
-    ];
+    // Return fallback response on error
+    const fallbackResponse = {
+      recommendations: [
+        { title: "Main Topic", description: "Discuss the main subject" },
+        { title: "Key Points", description: "Explore important details" },
+        { title: "Implications", description: "Consider the broader impact" },
+        { title: "Questions", description: "Ask about unclear aspects" }
+      ],
+      placeholder: "Ask me anything"
+    };
     
-    return new Response(JSON.stringify({ 
-      recommendations: fallbackRecommendations 
-    }), { 
+    return new Response(JSON.stringify(fallbackResponse), { 
       status: 200,
       headers: {
         "Content-Type": "application/json",

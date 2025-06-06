@@ -27,6 +27,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", contentTarget = "article
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const [placeholder, setPlaceholder] = useState("Ask me about this content");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -57,8 +58,9 @@ export function ChatWidget({ apiEndpoint = "/api/chat", contentTarget = "article
         });
 
         if (response.ok) {
-          const data = await response.json() as { recommendations?: Recommendation[] };
+          const data = await response.json() as { recommendations?: Recommendation[]; placeholder?: string };
           setRecommendations(data.recommendations || []);
+          setPlaceholder(data.placeholder || "Ask me about this content");
         }
       } catch (error) {
         console.error("Failed to load recommendations:", error);
@@ -474,7 +476,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", contentTarget = "article
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask me anything about Donald Trump"
+              placeholder={placeholder}
               className="flex-1 px-3 py-2 bg-transparent border-0 focus:outline-none text-sm placeholder-gray-500"
               disabled={isLoading}
             />
