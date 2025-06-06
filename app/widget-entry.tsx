@@ -74,7 +74,7 @@ declare global {
     position: 'bottom-center',
     theme: 'default',
     contentTarget: 'article, main, .content, #content',
-    advertiserName: 'Advertiser',
+    advertiserName: 'Nativo',
     advertiserLogo: ''
   };
   

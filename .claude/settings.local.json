@@ -15,7 +15,8 @@
       "Bash(npm run dev:*)",
       "WebFetch(domain:time.com)",
       "Bash(npx wrangler:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git:*)"
     ],
     "deny": []
   }

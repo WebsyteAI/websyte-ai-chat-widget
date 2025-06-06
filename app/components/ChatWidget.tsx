@@ -21,7 +21,7 @@ interface Recommendation {
   description: string;
 }
 
-export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTarget = "article, main, .content, #content", advertiserName = "Advertiser", advertiserLogo }: ChatWidgetProps) {
+export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTarget = "article, main, .content, #content", advertiserName = "Nativo", advertiserLogo }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -249,10 +249,10 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
       <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
         <div className="bg-white/20 backdrop-blur rounded-2xl shadow-lg border border-gray-300 px-6 py-4 flex items-center gap-4">
           <div className="flex items-center gap-3">
-            {advertiserLogo ? (
+            {advertiserLogo || (advertiserName === "Nativo") ? (
               <>
                 <img 
-                  src={advertiserLogo} 
+                  src={advertiserLogo || `${baseUrl}/nativo-logo.png`} 
                   alt={advertiserName} 
                   className="w-8 h-8 rounded"
                 />
@@ -314,7 +314,15 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
             <div className="flex flex-col items-center justify-center h-full">
               <div className="text-center mb-8">
                 <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
-                  Welcome to {advertiserName} AI
+                  Welcome to {advertiserName}
+                  {(advertiserLogo || advertiserName === "Nativo") && (
+                    <img 
+                      src={advertiserLogo || `${baseUrl}/nativo-logo.png`} 
+                      alt={advertiserName} 
+                      className="w-8 h-8 rounded"
+                    />
+                  )}
+                  AI
                 </h1>
                 <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
                   Powered by 
