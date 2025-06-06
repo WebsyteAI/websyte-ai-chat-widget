@@ -114,7 +114,7 @@ An embeddable AI chat widget for article websites that can ingest page content a
 - [x] Upgrade to Tailwind CSS v4 with proper Shadow DOM support
 - [x] Fix CSS inlining for widget bundle
 - [x] Resolve backdrop-blur and transform utility issues
-- [x] Streamline build process to output directly to public directory
+- [x] Streamline build process with protected public directory and stable file copying
 - [x] Remove "Speak with me" button (consolidated to "Listen to me")
 - [x] Fix action bar centering with proper CSS variable handling
 - [x] Simplify CSS injection by removing manual overrides
@@ -146,8 +146,11 @@ app/
 └── components/
     └── ChatWidget.tsx      # Main widget component
 
+dist/
+└── widget.js              # Built widget bundle (with CSS inlined)
+
 public/
-└── widget.js              # Production widget file (built directly)
+└── widget.js              # Production widget file (copied from dist)
 
 vite.widget.config.ts       # Vite config for widget build with CSS inlining
 tailwind.config.js          # Tailwind CSS v4 configuration
@@ -179,7 +182,7 @@ tailwind.config.js          # Tailwind CSS v4 configuration
 
 ### Build Process ✅ IMPLEMENTED
 ```bash
-# Build widget only
+# Build widget only (builds to dist/, copies to public/)
 pnpm run build:widget
 
 # Build entire project (includes widget)
@@ -350,7 +353,7 @@ pnpm run build
   - **Style Encapsulation**: Widget styles don't leak to parent page
   - **Tailwind CSS v4**: Full compatibility with Shadow DOM environment
   - **CSS Inlining**: Compiled Tailwind CSS injected directly into Shadow DOM
-  - **Build Optimization**: Direct output to public directory, no temp files
+  - **Build Optimization**: Protected public directory with stable file copying
   - Located in: `app/widget-entry.tsx` (createWidgetContainer function)
 
 ### 🚧 Partially Implemented
@@ -364,7 +367,7 @@ pnpm run build
 2. ~~**Content Extraction Enhancement**: Improve filtering and quality~~ ✅ **COMPLETED**
 3. ~~**Base URL Configuration**: Enable configurable API endpoints~~ ✅ **COMPLETED**
 4. ~~**Shadow DOM Implementation**: Complete style isolation system~~ ✅ **COMPLETED**
-5. ~~**Build System Optimization**: Direct output, CSS inlining, infinite loop fixes~~ ✅ **COMPLETED**
+5. ~~**Build System Optimization**: Protected public directory, CSS inlining, infinite loop fixes~~ ✅ **COMPLETED**
 6. **Audio Feature**: Implement text-to-speech with OpenAI
 7. ~~**Embedding System**: Create standalone widget bundle for external sites~~ ✅ Done
 8. ~~**Widget Configuration**: Script tag attributes and content targeting~~ ✅ Done
@@ -386,7 +389,7 @@ pnpm run build
 6. ~~**Implement special commands (summarize, audio)**~~ ✅ Summarize Done, Audio Pending
 7. ~~**Create production embedding bundle**~~ ✅ Done
 8. ~~**Implement Shadow DOM and fix CSS issues**~~ ✅ Done
-9. ~~**Optimize build system and remove infinite loops**~~ ✅ Done
+9. ~~**Optimize build system, protect public directory, and remove infinite loops**~~ ✅ Done
 10. **Audio Feature Implementation** 🚧 Next Priority
 11. **Performance testing and optimization** 📋 Future Priority
 
@@ -430,7 +433,7 @@ pnpm run build
 - **Shadow DOM Integration**: Complete style isolation to prevent conflicts with host page CSS
 - **Tailwind CSS v4 Upgrade**: Modern utility-first styling with full Shadow DOM compatibility
 - **CSS Inlining System**: Automated injection of compiled Tailwind CSS into Shadow DOM
-- **Build Process Optimization**: Direct output to public directory, eliminated temp files and copying
+- **Build Process Optimization**: Protected public directory, stable file copying, eliminated infinite loops
 - **Infinite Loop Resolution**: Fixed build system issues that caused endless rebuild cycles
 - **Manual Override Removal**: Simplified CSS injection by letting Tailwind handle all utility generation
 - **Action Bar Fixes**: Resolved centering and positioning issues with proper CSS variable handling
@@ -439,16 +442,16 @@ pnpm run build
 ### Key Technical Achievements
 - **Complete Style Isolation**: Widget styles never conflict with or leak to host page
 - **Tailwind CSS v4**: Latest version with improved CSS custom properties and Shadow DOM support
-- **Simplified Build**: No more temp directories, copying, or complex file management
+- **Stable Build System**: Protected public directory, controlled file copying, no infinite loops
 - **Clean CSS Injection**: Pure Tailwind CSS without manual overrides or !important declarations
 - **Reliable Builds**: Eliminated infinite loops and race conditions in build process
 - **Smaller Bundle**: Reduced from 206KB to 202KB by removing redundant CSS
 
 ### Technical Implementation Details
 - **Shadow DOM Setup**: `app/widget-entry.tsx:91-99` - Clean CSS injection into shadow root
-- **Vite Configuration**: `vite.widget.config.ts` - Direct public output, CSS inlining, watch ignored
+- **Vite Configuration**: `vite.widget.config.ts` - Dist output with public copy, CSS inlining, watch protection
 - **Tailwind Config**: `tailwind.config.js` - v4 configuration for Shadow DOM compatibility
-- **Build Process**: `package.json:7` - Simplified widget build without copy operations
+- **Build Process**: `package.json:7` - Widget build with protected public directory and stable copying
 - **CSS Processing**: PostCSS with @tailwindcss/postcss for proper compilation
 
 ### Problem Solving Approach
@@ -460,7 +463,7 @@ pnpm run build
 
 ### Performance & Maintenance Benefits
 - **Smaller Bundle Size**: Removed 4KB of redundant CSS overrides
-- **Faster Builds**: Eliminated file copying and temp directory management
+- **Stable Builds**: Protected public directory and controlled file operations
 - **Better Maintainability**: No manual CSS to maintain, Tailwind handles everything
 - **Reliable Deployment**: No more build system race conditions or infinite loops
 - **Future-Proof**: Modern Shadow DOM approach ready for complex host page scenarios

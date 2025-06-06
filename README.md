@@ -118,7 +118,7 @@ The widget is built from:
 - Built with Vite into a self-contained IIFE bundle
 - Shadow DOM isolation for complete style encapsulation
 - Tailwind CSS v4 compiled and inlined for Shadow DOM compatibility
-- Direct build output to `public/widget.js` (no temp directories or copying)
+- Optimized build process with public directory protection and stable copying
 
 ## Deployment
 
@@ -197,7 +197,7 @@ window.WebsyteChat = {
 - **Configuration**: Script tag data attributes with automatic parsing
 - **Content Extraction**: Configurable CSS selectors for page content targeting
 - **Storage**: localStorage for chat history and widget state
-- **Build**: Vite with custom widget configuration, direct public output, and CSS inlining
+- **Build**: Vite with custom widget configuration, protected public directory, and stable CSS inlining
 
 ## API Endpoints
 
