@@ -120,6 +120,8 @@ export default function ScriptTest() {
         data-content-target="main, .content, article"
         data-api-endpoint="/api/chat"
         data-base-url=""
+        data-advertiser-name="TIME Magazine"
+        data-advertiser-logo="https://logo.clearbit.com/time.com"
         async
       ></script>
     </div>

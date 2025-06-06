@@ -12,6 +12,8 @@ interface ChatWidgetProps {
   apiEndpoint?: string;
   baseUrl?: string;
   contentTarget?: string;
+  advertiserName?: string;
+  advertiserLogo?: string;
 }
 
 interface Recommendation {
@@ -19,7 +21,7 @@ interface Recommendation {
   description: string;
 }
 
-export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTarget = "article, main, .content, #content" }: ChatWidgetProps) {
+export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTarget = "article, main, .content, #content", advertiserName = "Advertiser", advertiserLogo }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -234,7 +236,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -244,46 +246,52 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
   return (
     <>
       {/* Action Bar - Always Visible */}
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="bg-white/20 backdrop-blur rounded-full shadow-lg border border-gray-300 px-4 py-3 flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <img 
-              src={`${baseUrl}/nativo-logo.png`} 
-              alt="Nativo" 
-              className="w-6 h-6"
-            />
-            <span className="font-semibold text-gray-800 text-sm">AI</span>
+      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="bg-white/20 backdrop-blur rounded-2xl shadow-lg border border-gray-300 px-6 py-4 flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {advertiserLogo ? (
+              <>
+                <img 
+                  src={advertiserLogo} 
+                  alt={advertiserName} 
+                  className="w-8 h-8 rounded"
+                />
+                <span className="font-bold text-gray-800 text-base">AI</span>
+              </>
+            ) : (
+              <span className="font-bold text-gray-800 text-base">{advertiserName} AI</span>
+            )}
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={handleSummarize}
               disabled={isSummarizing}
-              className="flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100 rounded-lg transition-colors group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               title="Summarize this page"
             >
-              <FileText size={16} className="text-gray-600 group-hover:text-gray-800" />
-              <span className="text-xs text-gray-600 group-hover:text-gray-800">
+              <FileText size={18} className="text-gray-600 group-hover:text-gray-800" />
+              <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">
                 {isSummarizing ? "Summarizing..." : "Summarize"}
               </span>
             </button>
             
             <button
               onClick={() => {/* TODO: Implement listen */}}
-              className="flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer"
+              className="flex items-center gap-2 px-4 py-3 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer"
               title="Listen to me"
             >
-              <Headphones size={16} className="text-gray-600 group-hover:text-gray-800" />
-              <span className="text-xs text-gray-600 group-hover:text-gray-800">Listen to me</span>
+              <Headphones size={18} className="text-gray-600 group-hover:text-gray-800" />
+              <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">Listen to me</span>
             </button>
             
             <button
               onClick={() => setCurrentView(currentView === "chat" ? "main" : "chat")}
-              className={`flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer ${currentView === "chat" ? "bg-gray-100" : ""}`}
+              className={`flex items-center gap-2 px-4 py-3 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer ${currentView === "chat" ? "bg-gray-100" : ""}`}
               title="Chat with me"
             >
-              <MessageCircle size={16} className="text-gray-600 group-hover:text-gray-800" />
-              <span className="text-xs text-gray-600 group-hover:text-gray-800">Chat with me</span>
+              <MessageCircle size={18} className="text-gray-600 group-hover:text-gray-800" />
+              <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">Chat with me</span>
             </button>
           </div>
         </div>
@@ -292,7 +300,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
       {/* Chat Panel - Fixed to Right Side of Screen */}
       <div className={`fixed top-4 right-4 bottom-4 w-[28rem] bg-white border border-gray-200 rounded-lg shadow-xl flex flex-col transition-all duration-300 ease-out transform z-40 ${currentView === "chat" ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
         <div className="flex items-center justify-between p-4 rounded-t-lg">
-          <h3 className="font-semibold text-gray-900">Chat with Nativo AI</h3>
+          <h3 className="font-semibold text-gray-900">Chat with {advertiserName} AI</h3>
           <button
             onClick={() => setCurrentView("main")}
             className="text-gray-500 hover:text-gray-700 transition-colors"
@@ -306,14 +314,17 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
             <div className="flex flex-col items-center justify-center h-full">
               <div className="text-center mb-8">
                 <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
-                  Welcome to Nativo 
+                  Welcome to {advertiserName} AI
+                </h1>
+                <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                  Powered by 
                   <img 
                     src={`${baseUrl}/nativo-logo.png`} 
                     alt="Nativo" 
-                    className="w-8 h-8"
+                    className="w-4 h-4"
                   />
-                  AI
-                </h1>
+                  Nativo
+                </p>
               </div>
               
               <div className="w-full relative group">
@@ -467,7 +478,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyDown}
               placeholder={placeholder}
               className="flex-1 px-3 py-2 bg-transparent border-0 focus:outline-none text-sm placeholder-gray-500"
               disabled={isLoading}

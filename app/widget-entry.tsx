@@ -13,6 +13,8 @@ declare global {
         position?: string;
         theme?: string;
         contentTarget?: string;
+        advertiserName?: string;
+        advertiserLogo?: string;
       };
       open?: () => void;
       close?: () => void;
@@ -54,6 +56,12 @@ declare global {
       
       const theme = scriptTag.getAttribute('data-theme');
       if (theme) scriptConfig.theme = theme;
+      
+      const advertiserName = scriptTag.getAttribute('data-advertiser-name');
+      if (advertiserName) scriptConfig.advertiserName = advertiserName;
+      
+      const advertiserLogo = scriptTag.getAttribute('data-advertiser-logo');
+      if (advertiserLogo) scriptConfig.advertiserLogo = advertiserLogo;
     }
     
     return scriptConfig;
@@ -65,7 +73,9 @@ declare global {
     baseUrl: '',
     position: 'bottom-center',
     theme: 'default',
-    contentTarget: 'article, main, .content, #content'
+    contentTarget: 'article, main, .content, #content',
+    advertiserName: 'Advertiser',
+    advertiserLogo: ''
   };
   
   // Merge configs: defaults < window config < script attributes
@@ -119,7 +129,9 @@ declare global {
       React.createElement(ChatWidget, {
         apiEndpoint: config.apiEndpoint,
         baseUrl: config.baseUrl,
-        contentTarget: config.contentTarget
+        contentTarget: config.contentTarget,
+        advertiserName: config.advertiserName,
+        advertiserLogo: config.advertiserLogo
       })
     );
   }

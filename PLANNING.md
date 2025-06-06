@@ -288,13 +288,14 @@ pnpm run build
 ## Current Implementation Status
 
 ### ✅ Completed Features
-- **Chat Widget UI**: Modern glass morphism design with advanced features
-  - **Nativo branding**: Logo integration with AI badge
-  - **Persistent action bar**: Always-visible bottom-center interface
-  - **Multi-feature buttons**: Summarize, Listen, Speak, Chat actions
+- **Chat Widget UI**: Modern glass morphism design with advanced features ✅ **UPDATED**
+  - **Customizable branding**: Configurable advertiser name and logo via script attributes
+  - **Top action bar**: Always-visible top-center interface with larger buttons
+  - **Multi-feature buttons**: Summarize, Listen, Chat actions with enhanced text size
   - **Slide-out chat panel**: Smooth animation from right side
   - **Transparent design**: Glass morphism with backdrop blur
   - **Message interface**: Full chat with history, timestamps, loading states
+  - **Nativo attribution**: "Powered by Nativo" subtitle in welcome message
   - **Responsive layout**: Works on desktop and mobile
   - Located in: `app/components/ChatWidget.tsx`
 
@@ -326,11 +327,12 @@ pnpm run build
   - **Sample content**: Structured content for testing extraction
   - Located in: `app/routes/test.tsx` and `app/routes/script-test.tsx`
 
-- **Widget Configuration**: Script tag attribute system
+- **Widget Configuration**: Script tag attribute system ✅ **UPDATED**
   - **Attribute parsing**: Automatic detection of data-* attributes
   - **Priority system**: Script attributes override window config override defaults
   - **Content targeting**: Configurable CSS selectors for page content
   - **API configuration**: Custom endpoints and positioning
+  - **Advertiser branding**: Configurable brand name and logo URL via data attributes
   - Located in: `app/widget-entry.tsx` (getScriptConfig function)
 
 - **Enhanced Content Extraction**: Improved filtering system ✅ **NEW**

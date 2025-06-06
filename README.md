@@ -4,8 +4,8 @@ An embeddable AI chat widget with modern glass morphism design that provides int
 
 ## Features
 
-- 🎨 **Modern Glass Design**: Transparent blur effects with Nativo branding
-- 🎯 **Multi-Action Interface**: Summarize, Listen, and Chat capabilities
+- 🎨 **Modern Glass Design**: Transparent blur effects with customizable advertiser branding
+- 🎯 **Multi-Action Interface**: Summarize, Listen, and Chat capabilities with larger, more prominent buttons
 - 🧠 **Enhanced Content Extraction**: Smart filtering removes scripts, ads, and navigation ✅ **NEW**
 - 🔗 **Configurable Base URLs**: Connect to any API backend via `data-base-url` ✅ **NEW**
 - 🎭 **Shadow DOM Isolation**: Complete style isolation prevents conflicts with host page ✅ **NEW**
@@ -36,6 +36,8 @@ Customize the widget behavior with data attributes:
   data-content-target="main, .content, article"
   data-api-endpoint="/api/chat"
   data-base-url="https://api.example.com"
+  data-advertiser-name="Your Brand"
+  data-advertiser-logo="https://example.com/logo.png"
   data-position="bottom-center"
   data-theme="default"
   async
@@ -47,14 +49,17 @@ Customize the widget behavior with data attributes:
 - **`data-content-target`**: CSS selector for page content extraction (default: `"article, main, .content, #content"`)
 - **`data-api-endpoint`**: Custom API endpoint URL (default: `"/api/chat"`)
 - **`data-base-url`**: Base URL for all API endpoints (default: `""`) ✅ **NEW**
+- **`data-advertiser-name`**: Custom advertiser/brand name (default: `"Advertiser"`) ✅ **NEW**
+- **`data-advertiser-logo`**: Custom advertiser/brand logo URL (optional) ✅ **NEW**
 - **`data-position`**: Widget position (default: `"bottom-center"`)
 - **`data-theme`**: UI theme selection (default: `"default"`)
 
 The widget will automatically:
-- Display a persistent action bar with Nativo branding
+- Display a persistent action bar at the top with customizable advertiser branding
 - Extract content from your specified target elements
 - Provide multiple AI interaction modes (Chat, Summarize, Listen)
 - Show a slide-out chat panel when needed
+- Display "Powered by Nativo" attribution in the chat welcome message
 
 ## Development Setup
 
@@ -165,6 +170,8 @@ The widget supports multiple configuration methods:
   data-content-target="main, .content"
   data-api-endpoint="/api/chat"
   data-base-url="https://api.example.com"
+  data-advertiser-name="Your Brand"
+  data-advertiser-logo="https://example.com/logo.png"
   data-position="bottom-center"
   data-theme="default"
   async
@@ -180,6 +187,8 @@ window.WebsyteChat = {
     apiEndpoint: '/api/chat',
     baseUrl: 'https://api.example.com',
     contentTarget: 'article, main, .content',
+    advertiserName: 'Your Brand',
+    advertiserLogo: 'https://example.com/logo.png',
     position: 'bottom-center',
     theme: 'default'
   }
