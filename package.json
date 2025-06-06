@@ -4,7 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "react-router build && pnpm run build:widget",
-		"build:widget": "vite build --config vite.widget.config.ts && cp dist/widget.js public/widget.js",
+		"build:widget": "vite build --config vite.widget.config.ts",
 		"cf-typegen": "wrangler types",
 		"deploy": "pnpm run build && wrangler deploy",
 		"dev": "react-router dev",

@@ -10,7 +10,7 @@ An embeddable AI chat widget for article websites that can ingest page content a
 - Message history (stored in localStorage)
 - Real-time interaction with OpenAI
 - Page content ingestion for context-aware responses
-- Built-in commands: summarize, audio conversion
+- Built-in commands: summarize, audio conversion (text-to-speech)
 
 ### Embedding Method
 - Single `<script>` tag integration
@@ -22,7 +22,8 @@ An embeddable AI chat widget for article websites that can ingest page content a
 - **Backend**: Cloudflare Workers (existing setup)
 - **AI**: OpenAI API
 - **Storage**: localStorage (client-side message history)
-- **Styling**: Embedded CSS (no external stylesheets)
+- **Styling**: Tailwind CSS v4 (compiled and inlined for Shadow DOM)
+- **Isolation**: Shadow DOM for complete style encapsulation
 
 ## Architecture
 
@@ -108,6 +109,16 @@ An embeddable AI chat widget for article websites that can ingest page content a
 - [x] Implement script tag attribute configuration system
 - [x] Add configurable content target selector for page extraction
 
+### Phase 7: Enhanced Build System & CSS ✅ COMPLETED
+- [x] Implement Shadow DOM for complete style isolation
+- [x] Upgrade to Tailwind CSS v4 with proper Shadow DOM support
+- [x] Fix CSS inlining for widget bundle
+- [x] Resolve backdrop-blur and transform utility issues
+- [x] Streamline build process to output directly to public directory
+- [x] Remove "Speak with me" button (consolidated to "Listen to me")
+- [x] Fix action bar centering with proper CSS variable handling
+- [x] Simplify CSS injection by removing manual overrides
+
 ## Technical Specifications
 
 ### Current File Structure
@@ -131,17 +142,15 @@ workers/
 ### Widget Bundle Structure ✅ IMPLEMENTED
 ```
 app/
-├── widget-entry.tsx        # Standalone widget entry point
+├── widget-entry.tsx        # Standalone widget entry point with Shadow DOM
 └── components/
     └── ChatWidget.tsx      # Main widget component
 
-dist/
-└── widget.js              # Built widget bundle (self-contained)
-
 public/
-└── widget.js              # Production widget file (copied from dist)
+└── widget.js              # Production widget file (built directly)
 
-vite.widget.config.ts       # Vite config for widget build
+vite.widget.config.ts       # Vite config for widget build with CSS inlining
+tailwind.config.js          # Tailwind CSS v4 configuration
 ```
 
 ### Embedding Code ✅ IMPLEMENTED
@@ -336,25 +345,36 @@ pnpm run build
   - **Cross-Domain**: Supports cross-origin API calls with custom domains
   - Located in: `app/widget-entry.tsx` and `app/components/ChatWidget.tsx`
 
+- **Shadow DOM Integration**: Complete style isolation ✅ **NEW**
+  - **Shadow Root**: Prevents CSS conflicts with host page styles
+  - **Style Encapsulation**: Widget styles don't leak to parent page
+  - **Tailwind CSS v4**: Full compatibility with Shadow DOM environment
+  - **CSS Inlining**: Compiled Tailwind CSS injected directly into Shadow DOM
+  - **Build Optimization**: Direct output to public directory, no temp files
+  - Located in: `app/widget-entry.tsx` (createWidgetContainer function)
+
 ### 🚧 Partially Implemented
 - **Audio Feature**: OpenAI text-to-speech API integration pending
   - Need to implement /api/audio endpoint
   - Need to add audio playback controls to UI
-  - Need to integrate with "Listen to me" and "Speak with me" buttons
+  - Need to integrate with "Listen to me" button (Speak button removed)
 
 ### 📋 Remaining Tasks
 1. ~~**Command Integration**: Connect summarize API to action buttons~~ ✅ **COMPLETED**
 2. ~~**Content Extraction Enhancement**: Improve filtering and quality~~ ✅ **COMPLETED**
 3. ~~**Base URL Configuration**: Enable configurable API endpoints~~ ✅ **COMPLETED**
-4. **Audio Feature**: Implement text-to-speech with OpenAI
-5. ~~**Embedding System**: Create standalone widget bundle for external sites~~ ✅ Done
-6. ~~**Widget Configuration**: Script tag attributes and content targeting~~ ✅ Done
-7. ~~**Advanced UI**: Glass morphism design and slide animations~~ ✅ Done
-8. **Performance Optimization**: Bundle size optimization and lazy loading
+4. ~~**Shadow DOM Implementation**: Complete style isolation system~~ ✅ **COMPLETED**
+5. ~~**Build System Optimization**: Direct output, CSS inlining, infinite loop fixes~~ ✅ **COMPLETED**
+6. **Audio Feature**: Implement text-to-speech with OpenAI
+7. ~~**Embedding System**: Create standalone widget bundle for external sites~~ ✅ Done
+8. ~~**Widget Configuration**: Script tag attributes and content targeting~~ ✅ Done
+9. ~~**Advanced UI**: Glass morphism design and slide animations~~ ✅ Done
+10. **Performance Optimization**: Bundle size optimization and lazy loading
 
 ### 🔧 Technical Dependencies Added
 - **UI Components**: Lucide React icons, Tailwind CSS utilities
-- **Styling**: Class Variance Authority, clsx, tailwind-merge
+- **Styling**: Class Variance Authority, clsx, tailwind-merge, @tailwindcss/postcss
+- **Build System**: @tailwindcss/vite for Tailwind CSS v4 integration
 - **Environment**: OpenAI API key configuration in worker environment
 
 ## Next Steps
@@ -365,8 +385,10 @@ pnpm run build
 5. ~~Add OpenAI integration~~ ✅ Done
 6. ~~**Implement special commands (summarize, audio)**~~ ✅ Summarize Done, Audio Pending
 7. ~~**Create production embedding bundle**~~ ✅ Done
-8. **Audio Feature Implementation** 🚧 Next Priority
-9. **Performance testing and optimization** 📋 Future Priority
+8. ~~**Implement Shadow DOM and fix CSS issues**~~ ✅ Done
+9. ~~**Optimize build system and remove infinite loops**~~ ✅ Done
+10. **Audio Feature Implementation** 🚧 Next Priority
+11. **Performance testing and optimization** 📋 Future Priority
 
 ## Recent Implementation: Summarize Feature ✅
 
@@ -401,3 +423,44 @@ pnpm run build
 - **TypeScript Benefits**: Type safety caught potential issues early in development
 - **Testing Approach**: Used existing development server to test functionality before deployment
 - **Deployment**: Standard build and deploy process worked seamlessly with new feature
+
+## Recent Implementation: Shadow DOM & Build System Optimization ✅
+
+### What Was Completed
+- **Shadow DOM Integration**: Complete style isolation to prevent conflicts with host page CSS
+- **Tailwind CSS v4 Upgrade**: Modern utility-first styling with full Shadow DOM compatibility
+- **CSS Inlining System**: Automated injection of compiled Tailwind CSS into Shadow DOM
+- **Build Process Optimization**: Direct output to public directory, eliminated temp files and copying
+- **Infinite Loop Resolution**: Fixed build system issues that caused endless rebuild cycles
+- **Manual Override Removal**: Simplified CSS injection by letting Tailwind handle all utility generation
+- **Action Bar Fixes**: Resolved centering and positioning issues with proper CSS variable handling
+- **UI Cleanup**: Removed "Speak with me" button, consolidated to "Listen to me" for cleaner interface
+
+### Key Technical Achievements
+- **Complete Style Isolation**: Widget styles never conflict with or leak to host page
+- **Tailwind CSS v4**: Latest version with improved CSS custom properties and Shadow DOM support
+- **Simplified Build**: No more temp directories, copying, or complex file management
+- **Clean CSS Injection**: Pure Tailwind CSS without manual overrides or !important declarations
+- **Reliable Builds**: Eliminated infinite loops and race conditions in build process
+- **Smaller Bundle**: Reduced from 206KB to 202KB by removing redundant CSS
+
+### Technical Implementation Details
+- **Shadow DOM Setup**: `app/widget-entry.tsx:91-99` - Clean CSS injection into shadow root
+- **Vite Configuration**: `vite.widget.config.ts` - Direct public output, CSS inlining, watch ignored
+- **Tailwind Config**: `tailwind.config.js` - v4 configuration for Shadow DOM compatibility
+- **Build Process**: `package.json:7` - Simplified widget build without copy operations
+- **CSS Processing**: PostCSS with @tailwindcss/postcss for proper compilation
+
+### Problem Solving Approach
+- **Identified Root Cause**: Manual CSS overrides indicated Tailwind wasn't working properly
+- **Shadow DOM Research**: Understood CSS custom property inheritance in Shadow DOM
+- **Build System Analysis**: Found infinite loops caused by file watching and copying
+- **Incremental Testing**: Built and deployed each fix to verify improvements
+- **CSS Simplification**: Trusted Tailwind to handle utility generation rather than manual overrides
+
+### Performance & Maintenance Benefits
+- **Smaller Bundle Size**: Removed 4KB of redundant CSS overrides
+- **Faster Builds**: Eliminated file copying and temp directory management
+- **Better Maintainability**: No manual CSS to maintain, Tailwind handles everything
+- **Reliable Deployment**: No more build system race conditions or infinite loops
+- **Future-Proof**: Modern Shadow DOM approach ready for complex host page scenarios

@@ -7,6 +7,12 @@ import fs from 'fs';
 import path from 'path';
 
 export default defineConfig({
+  publicDir: false,
+  server: {
+    watch: {
+      ignored: ['**/public/**']
+    }
+  },
   plugins: [
     react(),
     {
@@ -31,26 +37,15 @@ window.WebsyteChatCSS = ${JSON.stringify(cssContent)};
 ${jsContent}`;
             
             // Write the modified JS file
-            fs.writeFileSync(path.join(options.dir || 'dist', jsFile), inlinedJs);
+            const outputDir = options.dir || 'public';
+            fs.writeFileSync(path.join(outputDir, jsFile), inlinedJs);
             
             // Remove the separate CSS file
-            fs.unlinkSync(path.join(options.dir || 'dist', cssFile));
+            fs.unlinkSync(path.join(outputDir, cssFile));
             
             console.log('CSS inlined into widget.js for Shadow DOM');
           }
         }
-      }
-    },
-    {
-      name: 'copy-widget',
-      writeBundle() {
-        exec('cp dist/widget.js public/widget.js', (error) => {
-          if (error) {
-            console.error('Failed to copy widget.js:', error);
-          } else {
-            console.log('Widget copied to public/widget.js');
-          }
-        });
       }
     }
   ],
@@ -66,7 +61,7 @@ ${jsContent}`;
       fileName: () => 'widget.js',
       formats: ['iife']
     },
-    outDir: 'dist',
+    outDir: 'public',
     rollupOptions: {
       external: [],
       output: {

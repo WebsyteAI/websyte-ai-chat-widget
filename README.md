@@ -5,9 +5,11 @@ An embeddable AI chat widget with modern glass morphism design that provides int
 ## Features
 
 - 🎨 **Modern Glass Design**: Transparent blur effects with Nativo branding
-- 🎯 **Multi-Action Interface**: Summarize, Listen, Speak, and Chat capabilities
+- 🎯 **Multi-Action Interface**: Summarize, Listen, and Chat capabilities
 - 🧠 **Enhanced Content Extraction**: Smart filtering removes scripts, ads, and navigation ✅ **NEW**
 - 🔗 **Configurable Base URLs**: Connect to any API backend via `data-base-url` ✅ **NEW**
+- 🎭 **Shadow DOM Isolation**: Complete style isolation prevents conflicts with host page ✅ **NEW**
+- 🎨 **Tailwind CSS v4**: Modern utility-first styling with Shadow DOM compatibility ✅ **NEW**
 - 💬 **Smooth Animations**: Slide-out chat panel with persistent action bar
 - 📝 **Script Tag Configuration**: Easy customization via data attributes
 - ⚡️ **Fast & Lightweight**: Self-contained bundle with minimal impact
@@ -51,7 +53,7 @@ Customize the widget behavior with data attributes:
 The widget will automatically:
 - Display a persistent action bar with Nativo branding
 - Extract content from your specified target elements
-- Provide multiple AI interaction modes (Chat, Summarize, Listen, Speak)
+- Provide multiple AI interaction modes (Chat, Summarize, Listen)
 - Show a slide-out chat panel when needed
 
 ## Development Setup
@@ -111,10 +113,12 @@ pnpm run build
 ### Widget Architecture
 
 The widget is built from:
-- `app/widget-entry.tsx` - Standalone widget entry point
+- `app/widget-entry.tsx` - Standalone widget entry point with Shadow DOM setup
 - `app/components/ChatWidget.tsx` - Main React component
 - Built with Vite into a self-contained IIFE bundle
-- Includes all styles and dependencies inline
+- Shadow DOM isolation for complete style encapsulation
+- Tailwind CSS v4 compiled and inlined for Shadow DOM compatibility
+- Direct build output to `public/widget.js` (no temp directories or copying)
 
 ## Deployment
 
@@ -188,11 +192,12 @@ window.WebsyteChat = {
 
 - **Frontend**: React + TypeScript compiled to vanilla JS bundle with glass morphism UI
 - **Backend**: Cloudflare Workers with OpenAI integration and context-aware responses
-- **Styling**: Tailwind CSS with transparent blur effects (compiled and inlined)
+- **Styling**: Tailwind CSS v4 with transparent blur effects (compiled and inlined for Shadow DOM)
+- **Isolation**: Shadow DOM for complete style encapsulation and host page protection
 - **Configuration**: Script tag data attributes with automatic parsing
 - **Content Extraction**: Configurable CSS selectors for page content targeting
 - **Storage**: localStorage for chat history and widget state
-- **Build**: Vite with custom widget configuration and asset optimization
+- **Build**: Vite with custom widget configuration, direct public output, and CSS inlining
 
 ## API Endpoints
 
