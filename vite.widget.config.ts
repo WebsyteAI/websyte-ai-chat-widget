@@ -1,16 +1,14 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
-import { exec } from 'child_process';
 import tailwindcss from '@tailwindcss/postcss';
 import fs from 'fs';
 import path from 'path';
 
 export default defineConfig({
-  publicDir: false,
   server: {
     watch: {
-      ignored: ['**/public/**']
+      ignored: ['**/public/**', '**/dist/**']
     }
   },
   plugins: [
@@ -37,7 +35,7 @@ window.WebsyteChatCSS = ${JSON.stringify(cssContent)};
 ${jsContent}`;
             
             // Write the modified JS file
-            const outputDir = options.dir || 'public';
+            const outputDir = options.dir || 'dist';
             fs.writeFileSync(path.join(outputDir, jsFile), inlinedJs);
             
             // Remove the separate CSS file
@@ -61,7 +59,8 @@ ${jsContent}`;
       fileName: () => 'widget.js',
       formats: ['iife']
     },
-    outDir: 'public',
+    outDir: 'dist',
+    watch: null,
     rollupOptions: {
       external: [],
       output: {
