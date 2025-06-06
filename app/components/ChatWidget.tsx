@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowUp, Square, Minimize2, FileText, Headphones, Mic, MessageCircle } from "lucide-react";
+import { ArrowUp, Square, Minimize2, FileText, Headphones, MessageCircle } from "lucide-react";
 
 interface Message {
   id: string;
@@ -275,15 +275,6 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
             >
               <Headphones size={16} className="text-gray-600 group-hover:text-gray-800" />
               <span className="text-xs text-gray-600 group-hover:text-gray-800">Listen to me</span>
-            </button>
-            
-            <button
-              onClick={() => {/* TODO: Implement speak */}}
-              className="flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer"
-              title="Speak with me"
-            >
-              <Mic size={16} className="text-gray-600 group-hover:text-gray-800" />
-              <span className="text-xs text-gray-600 group-hover:text-gray-800">Speak with me</span>
             </button>
             
             <button
