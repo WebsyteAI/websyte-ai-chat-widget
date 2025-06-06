@@ -4,6 +4,7 @@
 declare namespace Cloudflare {
 	interface Env {
 		VALUE_FROM_CLOUDFLARE: "Hello from Cloudflare";
+		OPENAI_API_KEY: string;
 	}
 }
 interface Env extends Cloudflare.Env {}
