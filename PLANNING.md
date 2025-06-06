@@ -99,6 +99,14 @@ An embeddable AI chat widget for article websites that can ingest page content a
 - [x] Add build scripts to package.json
 - [x] Create production test page with script tag
 
+### Phase 6: Advanced UI & Configuration ✅ COMPLETED
+- [x] Implement Nativo branding with logo
+- [x] Add transparent glass morphism design with blur effects
+- [x] Create persistent action bar with multiple AI features
+- [x] Add slide-out chat panel from right side
+- [x] Implement script tag attribute configuration system
+- [x] Add configurable content target selector for page extraction
+
 ## Technical Specifications
 
 ### Current File Structure
@@ -137,9 +145,25 @@ vite.widget.config.ts       # Vite config for widget build
 
 ### Embedding Code ✅ IMPLEMENTED
 ```html
-<!-- Simple one-line script tag embedding -->
+<!-- Basic embedding -->
 <script src="https://your-domain.workers.dev/widget.js" async></script>
+
+<!-- Advanced embedding with configuration -->
+<script 
+  src="https://your-domain.workers.dev/widget.js" 
+  data-content-target="main, .content, article"
+  data-api-endpoint="/api/chat"
+  data-position="bottom-center"
+  data-theme="default"
+  async
+></script>
 ```
+
+### Script Tag Configuration ✅ IMPLEMENTED
+- `data-content-target`: CSS selector for page content extraction
+- `data-api-endpoint`: Custom API endpoint URL
+- `data-position`: Widget position (bottom-center, bottom-right, etc.)
+- `data-theme`: UI theme selection
 
 ### Build Process ✅ IMPLEMENTED
 ```bash
@@ -249,11 +273,14 @@ pnpm run build
 ## Current Implementation Status
 
 ### ✅ Completed Features
-- **Chat Widget UI**: Fully functional React component with modern design
-  - Collapsible interface (button → full chat window)
-  - Message history with timestamps
-  - Real-time typing indicators and loading states
-  - Responsive design with Tailwind CSS
+- **Chat Widget UI**: Modern glass morphism design with advanced features
+  - **Nativo branding**: Logo integration with AI badge
+  - **Persistent action bar**: Always-visible bottom-center interface
+  - **Multi-feature buttons**: Summarize, Listen, Speak, Chat actions
+  - **Slide-out chat panel**: Smooth animation from right side
+  - **Transparent design**: Glass morphism with backdrop blur
+  - **Message interface**: Full chat with history, timestamps, loading states
+  - **Responsive layout**: Works on desktop and mobile
   - Located in: `app/components/ChatWidget.tsx`
 
 - **Backend API**: Cloudflare Workers endpoints
@@ -263,11 +290,13 @@ pnpm run build
   - Error handling and rate limiting considerations
   - Located in: `workers/app.ts`
 
-- **Content Extraction**: Smart page content detection
-  - Multiple selector strategies for different site structures
-  - Content cleaning and size limiting
-  - Metadata extraction (title, description, URL)
-  - Located in: `app/lib/content-extractor.ts`
+- **Content Extraction**: Configurable page content detection
+  - **Script tag configuration**: `data-content-target` attribute support
+  - **Flexible selectors**: Custom CSS selectors for content targeting
+  - **Smart fallbacks**: Meta description backup if selector fails
+  - **Content processing**: Cleaning, size limiting, metadata extraction
+  - **Context integration**: Automatic page context with chat messages
+  - Located in: `app/components/ChatWidget.tsx` (extractPageContent function)
 
 - **Local Storage**: Persistent chat history
   - Message history with page URL association
@@ -275,11 +304,19 @@ pnpm run build
   - Automatic cleanup of old messages (1000 message limit)
   - Located in: `app/lib/storage.ts`
 
-- **Test Environment**: Development sandbox
-  - Test page at `/test` route for widget development
-  - Sample content for testing extraction
-  - Visual test instructions
-  - Located in: `app/routes/test.tsx`
+- **Test Environment**: Development sandbox with multiple test scenarios
+  - **Component test**: `/test` route for widget development
+  - **Production test**: `/script-test` route with realistic script tag embedding
+  - **Configuration demo**: Example with data attributes
+  - **Sample content**: Structured content for testing extraction
+  - Located in: `app/routes/test.tsx` and `app/routes/script-test.tsx`
+
+- **Widget Configuration**: Script tag attribute system
+  - **Attribute parsing**: Automatic detection of data-* attributes
+  - **Priority system**: Script attributes override window config override defaults
+  - **Content targeting**: Configurable CSS selectors for page content
+  - **API configuration**: Custom endpoints and positioning
+  - Located in: `app/widget-entry.tsx` (getScriptConfig function)
 
 ### 🚧 Partially Implemented
 - **Command System**: Backend ready, frontend integration pending
@@ -288,11 +325,12 @@ pnpm run build
   - Need special handling for command responses
 
 ### 📋 Remaining Tasks
-1. **Command Integration**: Connect summarize API to chat widget
+1. **Command Integration**: Connect summarize API to action buttons
 2. **Audio Feature**: Implement text-to-speech with OpenAI
 3. ~~**Embedding System**: Create standalone widget bundle for external sites~~ ✅ Done
-4. **Widget Positioning**: Make position configurable
-5. **Performance Optimization**: Bundle size optimization and lazy loading
+4. ~~**Widget Configuration**: Script tag attributes and content targeting~~ ✅ Done
+5. ~~**Advanced UI**: Glass morphism design and slide animations~~ ✅ Done
+6. **Performance Optimization**: Bundle size optimization and lazy loading
 
 ### 🔧 Technical Dependencies Added
 - **UI Components**: Lucide React icons, Tailwind CSS utilities

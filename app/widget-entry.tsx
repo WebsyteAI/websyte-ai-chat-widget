@@ -11,6 +11,7 @@ declare global {
         apiEndpoint?: string;
         position?: string;
         theme?: string;
+        contentTarget?: string;
       };
       open?: () => void;
       close?: () => void;
@@ -31,15 +32,40 @@ declare global {
   window.WebsyteChat = window.WebsyteChat || {};
   window.WebsyteChat.initialized = true;
   
+  // Get script tag attributes
+  function getScriptConfig() {
+    const scriptTag = document.querySelector('script[src*="widget.js"]');
+    const scriptConfig: any = {};
+    
+    if (scriptTag) {
+      // Read data attributes from script tag
+      const contentTarget = scriptTag.getAttribute('data-content-target');
+      if (contentTarget) scriptConfig.contentTarget = contentTarget;
+      
+      const apiEndpoint = scriptTag.getAttribute('data-api-endpoint');
+      if (apiEndpoint) scriptConfig.apiEndpoint = apiEndpoint;
+      
+      const position = scriptTag.getAttribute('data-position');
+      if (position) scriptConfig.position = position;
+      
+      const theme = scriptTag.getAttribute('data-theme');
+      if (theme) scriptConfig.theme = theme;
+    }
+    
+    return scriptConfig;
+  }
+  
   // Default configuration
   const defaultConfig = {
     apiEndpoint: '/api/chat',
-    position: 'bottom-right',
-    theme: 'default'
+    position: 'bottom-center',
+    theme: 'default',
+    contentTarget: 'article, main, .content, #content'
   };
   
-  // Merge with user config
-  const config = Object.assign({}, defaultConfig, window.WebsyteChat.config || {});
+  // Merge configs: defaults < window config < script attributes
+  const scriptConfig = getScriptConfig();
+  const config = Object.assign({}, defaultConfig, window.WebsyteChat.config || {}, scriptConfig);
   
   let widgetRoot: ReactDOM.Root | null = null;
   let isOpen = false;
@@ -67,7 +93,8 @@ declare global {
     // Render the ChatWidget component
     widgetRoot.render(
       React.createElement(ChatWidget, {
-        apiEndpoint: config.apiEndpoint
+        apiEndpoint: config.apiEndpoint,
+        contentTarget: config.contentTarget
       })
     );
   }

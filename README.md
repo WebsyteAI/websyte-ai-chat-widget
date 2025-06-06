@@ -1,29 +1,55 @@
-# Websyte AI Chat Widget
+# Nativo AI Chat Widget
 
-An embeddable AI chat widget for websites that provides intelligent, context-aware conversations using OpenAI integration.
+An embeddable AI chat widget with modern glass morphism design that provides intelligent, context-aware conversations using OpenAI integration.
 
 ## Features
 
-- 💬 **Smart Chat Interface**: Clean, modern chat UI with message history
-- 🧠 **Context-Aware**: Automatically reads and understands page content
-- 🎯 **Easy Embedding**: Single script tag integration
+- 🎨 **Modern Glass Design**: Transparent blur effects with Nativo branding
+- 🎯 **Multi-Action Interface**: Summarize, Listen, Speak, and Chat capabilities
+- 🧠 **Configurable Content Extraction**: Target specific page elements with CSS selectors
+- 💬 **Smooth Animations**: Slide-out chat panel with persistent action bar
+- 📝 **Script Tag Configuration**: Easy customization via data attributes
 - ⚡️ **Fast & Lightweight**: Self-contained bundle with minimal impact
-- 🎨 **Responsive Design**: Works on desktop and mobile
 - 💾 **Persistent History**: Chat history stored locally
 - 🔒 **Secure**: Built on Cloudflare Workers with proper CORS handling
 
 ## Quick Start - Embedding the Widget
 
-Add this single line to your website to embed the chat widget:
+### Basic Embedding
+
+Add this single line to your website:
 
 ```html
 <script src="https://your-domain.workers.dev/widget.js" async></script>
 ```
 
+### Advanced Configuration
+
+Customize the widget behavior with data attributes:
+
+```html
+<script 
+  src="https://your-domain.workers.dev/widget.js" 
+  data-content-target="main, .content, article"
+  data-api-endpoint="/api/chat"
+  data-position="bottom-center"
+  data-theme="default"
+  async
+></script>
+```
+
+### Configuration Options
+
+- **`data-content-target`**: CSS selector for page content extraction (default: `"article, main, .content, #content"`)
+- **`data-api-endpoint`**: Custom API endpoint URL (default: `"/api/chat"`)
+- **`data-position`**: Widget position (default: `"bottom-center"`)
+- **`data-theme`**: UI theme selection (default: `"default"`)
+
 The widget will automatically:
-- Extract your page content for context
-- Display as a floating chat button in the bottom-right corner
-- Provide AI-powered assistance about your page content
+- Display a persistent action bar with Nativo branding
+- Extract content from your specified target elements
+- Provide multiple AI interaction modes (Chat, Summarize, Listen, Speak)
+- Show a slide-out chat panel when needed
 
 ## Development Setup
 
@@ -49,7 +75,7 @@ Your application will be available at `http://localhost:5173`.
 
 Visit these test pages during development:
 - `/test` - Component-based test page
-- `/script-test` - Production-style script tag test page
+- `/script-test` - Production-style script tag test page with configuration examples
 
 ## Previewing the Production Build
 
@@ -122,26 +148,46 @@ OPENAI_API_KEY=your_openai_api_key_here
 
 ### Widget Configuration
 
-The widget automatically configures itself, but you can customize:
+The widget supports multiple configuration methods:
+
+#### Script Tag Attributes (Recommended)
+
+```html
+<script 
+  src="/widget.js" 
+  data-content-target="main, .content"
+  data-api-endpoint="/api/chat"
+  data-position="bottom-center"
+  data-theme="default"
+  async
+></script>
+```
+
+#### Window Configuration (Alternative)
 
 ```javascript
 // Optional: Set configuration before loading widget
 window.WebsyteChat = {
   config: {
-    apiEndpoint: '/api/chat',  // Custom API endpoint
-    position: 'bottom-right',  // Widget position
-    theme: 'default'           // Widget theme
+    apiEndpoint: '/api/chat',
+    contentTarget: 'article, main, .content',
+    position: 'bottom-center',
+    theme: 'default'
   }
 };
 ```
 
+**Configuration Priority**: Script attributes > Window config > Defaults
+
 ## Architecture
 
-- **Frontend**: React + TypeScript compiled to vanilla JS bundle
-- **Backend**: Cloudflare Workers with OpenAI integration
-- **Styling**: Tailwind CSS (compiled and inlined)
-- **Storage**: localStorage for chat history
-- **Build**: Vite with custom widget configuration
+- **Frontend**: React + TypeScript compiled to vanilla JS bundle with glass morphism UI
+- **Backend**: Cloudflare Workers with OpenAI integration and context-aware responses
+- **Styling**: Tailwind CSS with transparent blur effects (compiled and inlined)
+- **Configuration**: Script tag data attributes with automatic parsing
+- **Content Extraction**: Configurable CSS selectors for page content targeting
+- **Storage**: localStorage for chat history and widget state
+- **Build**: Vite with custom widget configuration and asset optimization
 
 ## API Endpoints
 

@@ -1,7 +1,7 @@
 export default function ScriptTest() {
   return (
     <div style={{ minHeight: "100vh", padding: "2rem", backgroundColor: "#f5f5f5" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+      <main style={{ maxWidth: "1200px", margin: "0 auto" }}>
         <h1 style={{ color: "#333", marginBottom: "1rem" }}>Production Script Test Page</h1>
         <p style={{ color: "#666", marginBottom: "2rem" }}>
           This page simulates how the chat widget would be embedded on a production website using a script tag.
@@ -56,10 +56,15 @@ export default function ScriptTest() {
             <strong>Address:</strong> 123 Business Ave, City, State 12345
           </p>
         </div>
-      </div>
+      </main>
 
-      {/* Simple one-line script tag - this is how customers would embed the widget */}
-      <script src={`${typeof window !== 'undefined' ? window.location.origin : ''}/widget.js`} async></script>
+      {/* Script tag with data attributes for configuration */}
+      <script 
+        src={`${typeof window !== 'undefined' ? window.location.origin : ''}/widget.js`} 
+        data-content-target="main, .content, article"
+        data-api-endpoint="/api/chat"
+        async
+      ></script>
     </div>
   );
 }
