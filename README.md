@@ -192,8 +192,25 @@ window.WebsyteChat = {
 ## API Endpoints
 
 - `POST /api/chat` - Main chat endpoint with context awareness
-- `POST /api/summarize` - Page summarization (planned)
+- `POST /api/summarize` - Page summarization ✅ **IMPLEMENTED**
 - `POST /api/audio` - Text-to-speech conversion (planned)
+
+### Summarize Feature
+
+The widget now includes a fully functional summarize feature:
+
+- **One-click summarization**: Click the "Summarize" button in the action bar
+- **Automatic content extraction**: Uses configurable CSS selectors to extract page content
+- **AI-powered summaries**: OpenAI generates concise 2-3 paragraph summaries
+- **Chat integration**: Summaries appear directly in the chat interface
+- **Loading states**: Visual feedback during summarization process
+- **Error handling**: Graceful fallbacks if summarization fails
+
+Example usage:
+1. Visit any page with content
+2. Click the "Summarize" button in the widget action bar
+3. The chat panel opens and displays an AI-generated summary
+4. Continue chatting about the content or request additional summaries
 
 ---
 
