@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ChatWidget } from './components/ChatWidget';
+import './app.css';
 
 // Widget namespace
 declare global {

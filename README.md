@@ -6,7 +6,8 @@ An embeddable AI chat widget with modern glass morphism design that provides int
 
 - 🎨 **Modern Glass Design**: Transparent blur effects with Nativo branding
 - 🎯 **Multi-Action Interface**: Summarize, Listen, Speak, and Chat capabilities
-- 🧠 **Configurable Content Extraction**: Target specific page elements with CSS selectors
+- 🧠 **Enhanced Content Extraction**: Smart filtering removes scripts, ads, and navigation ✅ **NEW**
+- 🔗 **Configurable Base URLs**: Connect to any API backend via `data-base-url` ✅ **NEW**
 - 💬 **Smooth Animations**: Slide-out chat panel with persistent action bar
 - 📝 **Script Tag Configuration**: Easy customization via data attributes
 - ⚡️ **Fast & Lightweight**: Self-contained bundle with minimal impact
@@ -32,6 +33,7 @@ Customize the widget behavior with data attributes:
   src="https://your-domain.workers.dev/widget.js" 
   data-content-target="main, .content, article"
   data-api-endpoint="/api/chat"
+  data-base-url="https://api.example.com"
   data-position="bottom-center"
   data-theme="default"
   async
@@ -42,6 +44,7 @@ Customize the widget behavior with data attributes:
 
 - **`data-content-target`**: CSS selector for page content extraction (default: `"article, main, .content, #content"`)
 - **`data-api-endpoint`**: Custom API endpoint URL (default: `"/api/chat"`)
+- **`data-base-url`**: Base URL for all API endpoints (default: `""`) ✅ **NEW**
 - **`data-position`**: Widget position (default: `"bottom-center"`)
 - **`data-theme`**: UI theme selection (default: `"default"`)
 
@@ -157,6 +160,7 @@ The widget supports multiple configuration methods:
   src="/widget.js" 
   data-content-target="main, .content"
   data-api-endpoint="/api/chat"
+  data-base-url="https://api.example.com"
   data-position="bottom-center"
   data-theme="default"
   async
@@ -170,6 +174,7 @@ The widget supports multiple configuration methods:
 window.WebsyteChat = {
   config: {
     apiEndpoint: '/api/chat',
+    baseUrl: 'https://api.example.com',
     contentTarget: 'article, main, .content',
     position: 'bottom-center',
     theme: 'default'

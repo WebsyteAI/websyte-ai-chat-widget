@@ -1,4 +1,11 @@
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { createRequestHandler } from "react-router";
+import { OpenAIService } from './services/openai';
+import { ChatService } from './services/chat';
+import { SummarizeService } from './services/summarize';
+import { RecommendationsService } from './services/recommendations';
+import type { Env } from './types';
 
 declare module "react-router" {
   export interface AppLoadContext {
@@ -9,330 +16,83 @@ declare module "react-router" {
   }
 }
 
-interface ChatMessage {
-  role: "user" | "assistant" | "system";
-  content: string;
-}
-
-interface ChatRequest {
-  message: string;
-  history?: ChatMessage[];
-  context?: {
-    url: string;
-    title: string;
-    content: string;
+type AppType = {
+  Bindings: Env;
+  Variables: {
+    services: {
+      chat: ChatService;
+      summarize: SummarizeService;
+      recommendations: RecommendationsService;
+    };
   };
-}
+};
 
+const app = new Hono<AppType>();
+
+// Apply CORS middleware
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400,
+}));
+
+// Services cache to avoid recreation
+let servicesCache: {
+  chat: ChatService;
+  summarize: SummarizeService;
+  recommendations: RecommendationsService;
+} | null = null;
+
+const getServices = (env: Env) => {
+  if (!servicesCache) {
+    const openai = new OpenAIService(env.OPENAI_API_KEY);
+    servicesCache = {
+      chat: new ChatService(openai),
+      summarize: new SummarizeService(openai),
+      recommendations: new RecommendationsService(openai),
+    };
+  }
+  return servicesCache;
+};
+
+// Services middleware
+app.use('/api/*', async (c, next) => {
+  c.set('services', getServices(c.env));
+  await next();
+});
+
+// API Routes
+app.post('/api/chat', async (c) => {
+  return c.get('services').chat.handleChat(c);
+});
+
+app.post('/api/summarize', async (c) => {
+  return c.get('services').summarize.handleSummarize(c);
+});
+
+app.post('/api/recommendations', async (c) => {
+  return c.get('services').recommendations.handleRecommendations(c);
+});
+
+// Health check endpoint
+app.get('/api/health', (c) => {
+  return c.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+// React Router handler for all other routes
 const requestHandler = createRequestHandler(
   () => import("virtual:react-router/server-build"),
   import.meta.env.MODE
 );
 
-async function handleChatAPI(request: Request, env: Env): Promise<Response> {
-  if (request.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
-  }
+app.all('*', async (c) => {
+  return requestHandler(c.req.raw, {
+    cloudflare: { 
+      env: c.env, 
+      ctx: c.executionCtx as ExecutionContext
+    },
+  });
+});
 
-  try {
-    const body: ChatRequest = await request.json();
-    const { message, history = [], context } = body;
-
-    if (!message || typeof message !== "string") {
-      return new Response("Invalid message", { status: 400 });
-    }
-
-    const messages: ChatMessage[] = [
-      {
-        role: "system",
-        content: context 
-          ? `You are a helpful AI assistant embedded on the webpage "${context.title}" (${context.url}). You have access to the page content and can help users understand, summarize, or discuss it. Page content: ${context.content.slice(0, 3000)}`
-          : "You are a helpful AI assistant. Answer questions concisely and helpfully."
-      },
-      ...history.slice(-10),
-      { role: "user", content: message }
-    ];
-
-    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        messages,
-        temperature: 0.2,
-      }),
-      signal: request.signal,
-    });
-
-    if (!openaiResponse.ok) {
-      throw new Error(`OpenAI API error: ${openaiResponse.status}`);
-    }
-
-    const openaiData = await openaiResponse.json() as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const assistantMessage = openaiData.choices?.[0]?.message?.content || "I couldn't generate a response.";
-
-    return new Response(JSON.stringify({ message: assistantMessage }), {
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-      },
-    });
-
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      return new Response(JSON.stringify({ 
-        error: "Request cancelled",
-        message: "Request was cancelled by the user."
-      }), { 
-        status: 499,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        }
-      });
-    }
-    
-    console.error("Chat API error:", error);
-    return new Response(JSON.stringify({ 
-      error: "Internal server error",
-      message: "Sorry, I'm having trouble processing your request right now."
-    }), { 
-      status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      }
-    });
-  }
-}
-
-async function handleSummarizeAPI(request: Request, env: Env): Promise<Response> {
-  if (request.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
-  }
-
-  try {
-    const body = await request.json() as { content?: string; url?: string; title?: string };
-    const { content, url } = body;
-
-    if (!content || typeof content !== "string") {
-      return new Response("Invalid content", { status: 400 });
-    }
-
-    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are a helpful assistant that creates concise, informative summaries of web page content. Provide a clear summary in 2-3 paragraphs."
-          },
-          {
-            role: "user",
-            content: `Please summarize this webpage content: ${content.slice(0, 4000)}`
-          }
-        ],
-        max_tokens: 300,
-        temperature: 0.3,
-      }),
-    });
-
-    if (!openaiResponse.ok) {
-      throw new Error(`OpenAI API error: ${openaiResponse.status}`);
-    }
-
-    const openaiData = await openaiResponse.json() as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const summary = openaiData.choices?.[0]?.message?.content || "I couldn't generate a summary.";
-
-    return new Response(JSON.stringify({ summary }), {
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-      },
-    });
-
-  } catch (error) {
-    console.error("Summarize API error:", error);
-    return new Response(JSON.stringify({ 
-      error: "Internal server error",
-      summary: "Sorry, I couldn't generate a summary right now."
-    }), { 
-      status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      }
-    });
-  }
-}
-
-async function handleRecommendationsAPI(request: Request, env: Env): Promise<Response> {
-  if (request.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
-  }
-
-  try {
-    const body = await request.json() as {
-      content?: string;
-      url?: string;
-      title?: string;
-    };
-
-    const { content = "", url = "", title = "" } = body;
-
-    if (!content && !title) {
-      return new Response("Content or title required", { status: 400 });
-    }
-
-    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are a helpful assistant that generates conversation starters and placeholder text based on webpage content. 
-            Generate exactly 4 short, engaging conversation prompts related to the content and 1 input placeholder. 
-            Each prompt should be 3-6 words and encourage discussion about the topic.
-            The placeholder should follow the format "Ask me about [topic]" where [topic] is the main subject of the content (keep it under 50 characters).
-            Return only a JSON object with "recommendations" array and "placeholder" string.
-            Example format: {"recommendations": [{"title": "Key Topic", "description": "Brief description"}], "placeholder": "Ask me about this topic"}`
-          },
-          {
-            role: "user", 
-            content: `Based on this webpage content, generate 4 conversation starters and an input placeholder:
-            Title: ${title}
-            URL: ${url}
-            Content: ${content.slice(0, 2000)}`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 300,
-      }),
-      signal: request.signal,
-    });
-
-    if (!openaiResponse.ok) {
-      throw new Error(`OpenAI API error: ${openaiResponse.status}`);
-    }
-
-    const openaiData = await openaiResponse.json() as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    
-    const responseContent = openaiData.choices?.[0]?.message?.content || '{"recommendations": [], "placeholder": "Ask me about this content"}';
-    
-    // Try to parse as JSON, fallback to default response if parsing fails
-    let parsedResponse;
-    try {
-      parsedResponse = JSON.parse(responseContent);
-    } catch {
-      parsedResponse = {
-        recommendations: [
-          { title: "Main Topic", description: "Discuss the main subject" },
-          { title: "Key Points", description: "Explore important details" },
-          { title: "Implications", description: "Consider the broader impact" },
-          { title: "Questions", description: "Ask about unclear aspects" }
-        ],
-        placeholder: "Ask me about this content"
-      };
-    }
-
-    return new Response(JSON.stringify(parsedResponse), {
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-      },
-    });
-
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      return new Response(JSON.stringify({ 
-        error: "Request cancelled",
-        recommendations: [],
-        placeholder: "Ask me about this content"
-      }), { 
-        status: 499,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        }
-      });
-    }
-    
-    console.error("Recommendations API error:", error);
-    
-    // Return fallback response on error
-    const fallbackResponse = {
-      recommendations: [
-        { title: "Main Topic", description: "Discuss the main subject" },
-        { title: "Key Points", description: "Explore important details" },
-        { title: "Implications", description: "Consider the broader impact" },
-        { title: "Questions", description: "Ask about unclear aspects" }
-      ],
-      placeholder: "Ask me anything"
-    };
-    
-    return new Response(JSON.stringify(fallbackResponse), { 
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      }
-    });
-  }
-}
-
-export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    
-    if (url.pathname === "/api/chat") {
-      return handleChatAPI(request, env);
-    }
-    
-    if (url.pathname === "/api/summarize") {
-      return handleSummarizeAPI(request, env);
-    }
-    
-    if (url.pathname === "/api/recommendations") {
-      return handleRecommendationsAPI(request, env);
-    }
-
-    if (request.method === "OPTIONS") {
-      return new Response(null, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
-      });
-    }
-
-    return requestHandler(request, {
-      cloudflare: { env, ctx },
-    });
-  },
-} satisfies ExportedHandler<Env>;
+export default app;

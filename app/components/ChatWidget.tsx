@@ -248,7 +248,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
         <div className="bg-white/20 backdrop-blur rounded-full shadow-lg border border-gray-300 px-4 py-3 flex items-center gap-3">
           <div className="flex items-center gap-2">
             <img 
-              src="/nativo-logo.png" 
+              src={`${baseUrl}/nativo-logo.png`} 
               alt="Nativo" 
               className="w-6 h-6"
             />
@@ -317,7 +317,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
                 <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
                   Welcome to Nativo 
                   <img 
-                    src="/nativo-logo.png" 
+                    src={`${baseUrl}/nativo-logo.png`} 
                     alt="Nativo" 
                     className="w-8 h-8"
                   />

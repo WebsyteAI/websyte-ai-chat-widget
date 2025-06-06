@@ -154,6 +154,7 @@ vite.widget.config.ts       # Vite config for widget build
   src="https://your-domain.workers.dev/widget.js" 
   data-content-target="main, .content, article"
   data-api-endpoint="/api/chat"
+  data-base-url="https://api.example.com"
   data-position="bottom-center"
   data-theme="default"
   async
@@ -163,6 +164,7 @@ vite.widget.config.ts       # Vite config for widget build
 ### Script Tag Configuration ✅ IMPLEMENTED
 - `data-content-target`: CSS selector for page content extraction
 - `data-api-endpoint`: Custom API endpoint URL
+- `data-base-url`: Base URL for all API endpoints ✅ NEW
 - `data-position`: Widget position (bottom-center, bottom-right, etc.)
 - `data-theme`: UI theme selection
 
@@ -319,6 +321,21 @@ pnpm run build
   - **API configuration**: Custom endpoints and positioning
   - Located in: `app/widget-entry.tsx` (getScriptConfig function)
 
+- **Enhanced Content Extraction**: Improved filtering system ✅ **NEW**
+  - **Script/Style Removal**: Automatically filters out `<script>` and `<style>` tags
+  - **Navigation Filtering**: Removes nav, header, footer, sidebar elements
+  - **Ad Filtering**: Removes advertisements and social media widgets
+  - **Comment Filtering**: Removes comment sections and forms
+  - **Clean Content**: Better quality content extraction for AI processing
+  - Located in: `app/lib/content-extractor.ts` (removeScriptAndStyleContent function)
+
+- **Configurable Base URL**: Full endpoint configuration support ✅ **NEW**
+  - **Script Attribute**: `data-base-url` attribute for custom API base URLs
+  - **All Endpoints**: Applies to `/api/chat`, `/api/recommendations`, `/api/summarize`
+  - **Flexible Deployment**: Enables widget to connect to different backend services
+  - **Cross-Domain**: Supports cross-origin API calls with custom domains
+  - Located in: `app/widget-entry.tsx` and `app/components/ChatWidget.tsx`
+
 ### 🚧 Partially Implemented
 - **Audio Feature**: OpenAI text-to-speech API integration pending
   - Need to implement /api/audio endpoint
@@ -327,11 +344,13 @@ pnpm run build
 
 ### 📋 Remaining Tasks
 1. ~~**Command Integration**: Connect summarize API to action buttons~~ ✅ **COMPLETED**
-2. **Audio Feature**: Implement text-to-speech with OpenAI
-3. ~~**Embedding System**: Create standalone widget bundle for external sites~~ ✅ Done
-4. ~~**Widget Configuration**: Script tag attributes and content targeting~~ ✅ Done
-5. ~~**Advanced UI**: Glass morphism design and slide animations~~ ✅ Done
-6. **Performance Optimization**: Bundle size optimization and lazy loading
+2. ~~**Content Extraction Enhancement**: Improve filtering and quality~~ ✅ **COMPLETED**
+3. ~~**Base URL Configuration**: Enable configurable API endpoints~~ ✅ **COMPLETED**
+4. **Audio Feature**: Implement text-to-speech with OpenAI
+5. ~~**Embedding System**: Create standalone widget bundle for external sites~~ ✅ Done
+6. ~~**Widget Configuration**: Script tag attributes and content targeting~~ ✅ Done
+7. ~~**Advanced UI**: Glass morphism design and slide animations~~ ✅ Done
+8. **Performance Optimization**: Bundle size optimization and lazy loading
 
 ### 🔧 Technical Dependencies Added
 - **UI Components**: Lucide React icons, Tailwind CSS utilities
