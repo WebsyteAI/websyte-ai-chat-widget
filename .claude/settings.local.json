@@ -12,7 +12,8 @@
       "Bash(git commit:*)",
       "Bash(cp:*)",
       "Bash(npm run typecheck:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "WebFetch(domain:time.com)"
     ],
     "deny": []
   }

@@ -60,11 +60,11 @@ async function handleChatAPI(request: Request, env: Env): Promise<Response> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4.1-mini",
         messages,
-        max_tokens: 500,
-        temperature: 0.7,
+        temperature: 0.2,
       }),
+      signal: request.signal,
     });
 
     if (!openaiResponse.ok) {
@@ -86,6 +86,19 @@ async function handleChatAPI(request: Request, env: Env): Promise<Response> {
     });
 
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      return new Response(JSON.stringify({ 
+        error: "Request cancelled",
+        message: "Request was cancelled by the user."
+      }), { 
+        status: 499,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        }
+      });
+    }
+    
     console.error("Chat API error:", error);
     return new Response(JSON.stringify({ 
       error: "Internal server error",
@@ -169,6 +182,123 @@ async function handleSummarizeAPI(request: Request, env: Env): Promise<Response>
   }
 }
 
+async function handleRecommendationsAPI(request: Request, env: Env): Promise<Response> {
+  if (request.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
+  }
+
+  try {
+    const body = await request.json() as {
+      content?: string;
+      url?: string;
+      title?: string;
+    };
+
+    const { content = "", url = "", title = "" } = body;
+
+    if (!content && !title) {
+      return new Response("Content or title required", { status: 400 });
+    }
+
+    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are a helpful assistant that generates conversation starters based on webpage content. 
+            Generate exactly 4 short, engaging conversation prompts related to the content. 
+            Each prompt should be 3-6 words and encourage discussion about the topic.
+            Return only a JSON array of objects with "title" and "description" fields.
+            Example format: [{"title": "Key Topic", "description": "Brief description"}]`
+          },
+          {
+            role: "user", 
+            content: `Based on this webpage content, generate 4 conversation starters:
+            Title: ${title}
+            URL: ${url}
+            Content: ${content.slice(0, 2000)}`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 300,
+      }),
+      signal: request.signal,
+    });
+
+    if (!openaiResponse.ok) {
+      throw new Error(`OpenAI API error: ${openaiResponse.status}`);
+    }
+
+    const openaiData = await openaiResponse.json() as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    
+    const responseContent = openaiData.choices?.[0]?.message?.content || "[]";
+    
+    // Try to parse as JSON, fallback to default recommendations if parsing fails
+    let recommendations;
+    try {
+      recommendations = JSON.parse(responseContent);
+    } catch {
+      recommendations = [
+        { title: "Main Topic", description: "Discuss the main subject" },
+        { title: "Key Points", description: "Explore important details" },
+        { title: "Implications", description: "Consider the broader impact" },
+        { title: "Questions", description: "Ask about unclear aspects" }
+      ];
+    }
+
+    return new Response(JSON.stringify({ recommendations }), {
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      return new Response(JSON.stringify({ 
+        error: "Request cancelled",
+        recommendations: []
+      }), { 
+        status: 499,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        }
+      });
+    }
+    
+    console.error("Recommendations API error:", error);
+    
+    // Return fallback recommendations on error
+    const fallbackRecommendations = [
+      { title: "Main Topic", description: "Discuss the main subject" },
+      { title: "Key Points", description: "Explore important details" },
+      { title: "Implications", description: "Consider the broader impact" },
+      { title: "Questions", description: "Ask about unclear aspects" }
+    ];
+    
+    return new Response(JSON.stringify({ 
+      recommendations: fallbackRecommendations 
+    }), { 
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      }
+    });
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -179,6 +309,10 @@ export default {
     
     if (url.pathname === "/api/summarize") {
       return handleSummarizeAPI(request, env);
+    }
+    
+    if (url.pathname === "/api/recommendations") {
+      return handleRecommendationsAPI(request, env);
     }
 
     if (request.method === "OPTIONS") {

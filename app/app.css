@@ -56,3 +56,16 @@ body {
     color-scheme: dark;
   }
 }
+
+@keyframes marquee-infinite {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee-infinite {
+  animation: marquee-infinite 15s linear infinite;
+}
