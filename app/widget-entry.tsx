@@ -45,6 +45,9 @@ declare global {
       const apiEndpoint = scriptTag.getAttribute('data-api-endpoint');
       if (apiEndpoint) scriptConfig.apiEndpoint = apiEndpoint;
       
+      const baseUrl = scriptTag.getAttribute('data-base-url');
+      if (baseUrl) scriptConfig.baseUrl = baseUrl;
+      
       const position = scriptTag.getAttribute('data-position');
       if (position) scriptConfig.position = position;
       
@@ -58,6 +61,7 @@ declare global {
   // Default configuration
   const defaultConfig = {
     apiEndpoint: '/api/chat',
+    baseUrl: '',
     position: 'bottom-center',
     theme: 'default',
     contentTarget: 'article, main, .content, #content'
@@ -94,6 +98,7 @@ declare global {
     widgetRoot.render(
       React.createElement(ChatWidget, {
         apiEndpoint: config.apiEndpoint,
+        baseUrl: config.baseUrl,
         contentTarget: config.contentTarget
       })
     );

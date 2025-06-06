@@ -10,6 +10,7 @@ interface Message {
 
 interface ChatWidgetProps {
   apiEndpoint?: string;
+  baseUrl?: string;
   contentTarget?: string;
 }
 
@@ -18,7 +19,7 @@ interface Recommendation {
   description: string;
 }
 
-export function ChatWidget({ apiEndpoint = "/api/chat", contentTarget = "article, main, .content, #content" }: ChatWidgetProps) {
+export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTarget = "article, main, .content, #content" }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -45,7 +46,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", contentTarget = "article
       try {
         const pageContent = extractPageContent();
         
-        const response = await fetch("/api/recommendations", {
+        const response = await fetch(`${baseUrl}/api/recommendations`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -126,7 +127,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", contentTarget = "article
     try {
       const pageContent = extractPageContent();
       
-      const response = await fetch(apiEndpoint, {
+      const response = await fetch(`${baseUrl}${apiEndpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -193,7 +194,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", contentTarget = "article
     try {
       const pageContent = extractPageContent();
       
-      const response = await fetch("/api/summarize", {
+      const response = await fetch(`${baseUrl}/api/summarize`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -366,7 +367,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", contentTarget = "article
                             try {
                               const pageContent = extractPageContent();
                               
-                              const response = await fetch(apiEndpoint, {
+                              const response = await fetch(`${baseUrl}${apiEndpoint}`, {
                                 method: "POST",
                                 headers: {
                                   "Content-Type": "application/json",

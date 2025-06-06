@@ -119,6 +119,7 @@ export default function ScriptTest() {
         src={`${typeof window !== 'undefined' ? window.location.origin : ''}/widget.js`} 
         data-content-target="main, .content, article"
         data-api-endpoint="/api/chat"
+        data-base-url=""
         async
       ></script>
     </div>
