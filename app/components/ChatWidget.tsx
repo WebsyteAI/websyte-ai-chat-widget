@@ -46,6 +46,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentContent, setCurrentContent] = useState<"action" | "audio">("action");
   const [contentFadeClass, setContentFadeClass] = useState("");
+  const [hasRendered, setHasRendered] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -59,6 +60,14 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    // Trigger slide-in animation after component mounts
+    const timer = setTimeout(() => {
+      setHasRendered(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     // Load recommendations when component mounts
@@ -351,8 +360,10 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
   return (
     <>
       {/* Action Bar / Audio Player - Single Container */}
-      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-        <div className={`bg-white/20 backdrop-blur rounded-2xl shadow-lg border border-gray-300 px-4 py-2 flex items-center gap-3 ${
+      <div className={`fixed top-4 left-1/2 z-50 ${
+        hasRendered ? 'animate-slide-in-from-top' : 'opacity-0 transform -translate-x-1/2'
+      }`}>
+        <div className={`bg-white/20 rounded-2xl shadow-lg border border-gray-300 px-4 py-2 flex items-center gap-3 ${
           currentContent === "audio" ? 'container-audio' : 'container-action'
         } ${
           isPlaying ? 'animate-audio-border' : ''
