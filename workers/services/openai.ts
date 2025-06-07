@@ -47,22 +47,24 @@ export class OpenAIService {
     return data.choices?.[0]?.message?.content || "I couldn't generate a response.";
   }
 
-  async generateSummary(content: string, signal?: AbortSignal): Promise<string> {
+  async generateSummary(content: string, title: string, url: string, signal?: AbortSignal): Promise<string> {
     const messages: ChatMessage[] = [
       {
         role: "system",
-        content: "You are a helpful assistant that creates concise, informative summaries of web page content. Provide a clear summary in 2-3 paragraphs."
+        content: `You are a helpful assistant that creates concise, informative summaries of web page content. 
+        You are working with the webpage "${title}" (${url}). ${content ? `Page content: ${content.slice(0, 10000)}` : 'No content available.'}
+        
+        Provide a clear summary in 2-3 paragraphs based on the provided content.`
       },
       {
         role: "user",
-        content: `Please summarize this webpage content: ${content.slice(0, 4000)}`
+        content: `Please summarize this webpage content.`
       }
     ];
 
     return this.chatCompletion(messages, {
-      model: "gpt-3.5-turbo",
-      temperature: 0.3,
-      maxTokens: 300,
+      model: "gpt-4.1-mini",
+      temperature: 0.5,
       signal
     });
   }
@@ -77,6 +79,8 @@ export class OpenAIService {
       {
         role: "system",
         content: `You are a helpful assistant that generates thoughtful questions about webpage content. 
+        You are working with the webpage "${title}" (${url}). ${content ? `Page content: ${content.slice(0, 10000)}` : 'No content available.'}
+        
         Generate exactly 6 specific, engaging questions that someone might ask about this article and 1 input placeholder. 
         Each question should be concise (4-8 words) and directly related to the article's content - like "What causes this problem?" or "How does this work?"
         The placeholder should follow the format "Ask me about [specific topic]" where [specific topic] relates to the main subject (keep it under 50 characters).
@@ -85,15 +89,12 @@ export class OpenAIService {
       },
       {
         role: "user", 
-        content: `Based on this webpage content, generate 6 specific questions someone might ask about this article and an input placeholder:
-        Title: ${title}
-        URL: ${url}
-        Content: ${content.slice(0, 2000)}`
+        content: `Generate 6 specific questions someone might ask about this article and an input placeholder.`
       }
     ];
 
     const responseContent = await this.chatCompletion(messages, {
-      model: "gpt-4o-mini",
+      model: "gpt-4.1-mini",
       temperature: 0.7,
       maxTokens: 300,
       signal

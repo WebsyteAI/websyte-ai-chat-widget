@@ -18,21 +18,21 @@ export class ChatService {
         return c.json({ error: "Invalid message" }, 400);
       }
 
-      if (!context || !context.content) {
+      if (!context) {
         return c.json({ error: "Content context is required" }, 400);
       }
 
       const messages: ChatMessage[] = [
         {
           role: "system",
-          content: `You are a helpful AI assistant embedded on the webpage "${context.title}" (${context.url}). You have access to the page content and can help users understand, summarize, or discuss it. Always base your responses on the provided page content when relevant. Page content: ${context.content.slice(0, 3000)}`
+          content: `You are a helpful AI assistant embedded on the webpage "${context.title}" (${context.url}). ${context.content ? `You have access to the page content and can help users understand, summarize, or discuss it. Always base your responses on the provided page content when relevant. Page content: ${context.content.slice(0, 10000)}` : 'You can help users with questions about this webpage.'}`
         },
         ...history.slice(-10),
         { role: "user", content: message }
       ];
 
       const assistantMessage = await this.openai.chatCompletion(messages, {
-        model: "gpt-4o-mini",
+        model: "gpt-4.1-mini",
         temperature: 0.2,
         signal: c.req.raw.signal,
       });

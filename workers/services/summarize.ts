@@ -12,13 +12,13 @@ export class SummarizeService {
 
     try {
       const body: SummarizeRequest = await c.req.json();
-      const { content, url } = body;
+      const { content, url = "", title = "" } = body;
 
       if (!content || typeof content !== "string") {
         return c.json({ error: "Invalid content" }, 400);
       }
 
-      const summary = await this.openai.generateSummary(content, c.req.raw.signal);
+      const summary = await this.openai.generateSummary(content, title, url, c.req.raw.signal);
 
       return c.json({ summary });
 
