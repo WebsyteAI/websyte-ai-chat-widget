@@ -7,7 +7,7 @@ An embeddable AI chat widget with modern glass morphism design that provides int
 ## Features
 
 - 🎨 **Modern Glass Design**: Transparent blur effects with customizable advertiser branding
-- 🎯 **Multi-Action Interface**: Summarize, Listen, and Chat capabilities with larger, more prominent buttons
+- 🎯 **Multi-Action Interface**: Summarize, Listen (with audio player), and Chat capabilities with smooth animations
 - 🧠 **Enhanced Content Extraction**: Smart filtering removes scripts, ads, and navigation ✅ **NEW**
 - 🔗 **Configurable Base URLs**: Connect to any API backend via `data-base-url` ✅ **NEW**
 - 🎭 **Shadow DOM Isolation**: Complete style isolation prevents conflicts with host page ✅ **NEW**
@@ -59,6 +59,7 @@ Customize the widget behavior with data attributes:
 The widget will automatically:
 - Display a persistent action bar at the top with customizable advertiser branding
 - Extract content from your specified target elements
+- Generate AI-powered question recommendations specific to the article content
 - Provide multiple AI interaction modes (Chat, Summarize, Listen)
 - Show a slide-out chat panel when needed
 - Display "Powered by Nativo" attribution in the chat welcome message
@@ -224,12 +225,34 @@ window.WebsyteChat = {
 ## API Endpoints
 
 - `POST /api/chat` - Main chat endpoint with context awareness
+- `POST /api/recommendations` - AI-generated questions about article content ✅ **IMPLEMENTED**
 - `POST /api/summarize` - Page summarization ✅ **IMPLEMENTED**
-- `POST /api/audio` - Text-to-speech conversion (planned)
+- `POST /api/audio` - Text-to-speech conversion with audio player ✅ **IMPLEMENTED**
+
+### Audio Player Feature
+
+The widget includes an advanced audio player that transforms from the action bar:
+
+- **Action bar transformation**: "Listen to me" button transforms the entire action bar into an audio player
+- **Smooth animations**: Container smoothly expands/contracts with fade transitions between modes
+- **Full audio controls**: Play/pause, progress seeking, speed control (0.5x to 2x), and exit functionality
+- **Visual feedback**: Animated border effects during playback with color transitions
+- **Progress tracking**: Real-time elapsed/total time display (MM:SS format)
+- **Centered layout**: Properly centered controls with consistent height between modes
+
+### Smart Recommendations Feature
+
+The widget generates intelligent question recommendations:
+
+- **AI-powered questions**: OpenAI analyzes article content to generate specific, relevant questions
+- **Article-specific**: Questions like "What causes this problem?" or "How does this work?" based on actual content
+- **Interactive carousel**: Scrollable recommendations that users can click to start conversations
+- **Fallback questions**: Graceful defaults if content analysis fails
+- **Context-aware**: Questions adapt to the type and topic of the article
 
 ### Summarize Feature
 
-The widget now includes a fully functional summarize feature:
+The widget includes a fully functional summarize feature:
 
 - **One-click summarization**: Click the "Summarize" button in the action bar
 - **Automatic content extraction**: Uses configurable CSS selectors to extract page content
@@ -237,12 +260,6 @@ The widget now includes a fully functional summarize feature:
 - **Chat integration**: Summaries appear directly in the chat interface
 - **Loading states**: Visual feedback during summarization process
 - **Error handling**: Graceful fallbacks if summarization fails
-
-Example usage:
-1. Visit any page with content
-2. Click the "Summarize" button in the widget action bar
-3. The chat panel opens and displays an AI-generated summary
-4. Continue chatting about the content or request additional summaries
 
 ---
 

@@ -41,12 +41,12 @@ export class RecommendationsService {
       // Return fallback response on error
       const fallbackResponse = {
         recommendations: [
-          { title: "Main Topic", description: "Discuss the main subject" },
-          { title: "Key Points", description: "Explore important details" },
-          { title: "Implications", description: "Consider the broader impact" },
-          { title: "Questions", description: "Ask about unclear aspects" }
+          { title: "What is this about?", description: "Understand the main topic" },
+          { title: "How does this work?", description: "Learn the process" },
+          { title: "Why is this important?", description: "Explore the significance" },
+          { title: "What are the implications?", description: "Consider the impact" }
         ],
-        placeholder: "Ask me anything"
+        placeholder: "Ask me about this article"
       };
       
       return c.json(fallbackResponse, 200);

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowUp, Square, Minimize2, FileText, Headphones, MessageCircle } from "lucide-react";
+import { ArrowUp, Square, Minimize2, FileText, Headphones, MessageCircle, Play, Pause, X, SkipBack, SkipForward } from "lucide-react";
 
 interface Message {
   id: string;
@@ -31,6 +31,14 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [placeholder, setPlaceholder] = useState("Ask me about this content");
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [totalTime, setTotalTime] = useState(180); // 3 minutes as example
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [currentContent, setCurrentContent] = useState<"action" | "audio">("action");
+  const [contentFadeClass, setContentFadeClass] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -69,10 +77,10 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
         console.error("Failed to load recommendations:", error);
         // Set fallback recommendations
         setRecommendations([
-          { title: "Main Topic", description: "Discuss the main subject" },
-          { title: "Key Points", description: "Explore important details" },
-          { title: "Implications", description: "Consider the broader impact" },
-          { title: "Questions", description: "Ask about unclear aspects" }
+          { title: "What is this about?", description: "Understand the main topic" },
+          { title: "How does this work?", description: "Learn the process" },
+          { title: "Why is this important?", description: "Explore the significance" },
+          { title: "What are the implications?", description: "Consider the impact" }
         ]);
       } finally {
         setIsLoadingRecommendations(false);
@@ -243,56 +251,207 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     }
   };
 
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  // Simulate audio progress when playing
+  useEffect(() => {
+    if (isPlaying) {
+      const interval = setInterval(() => {
+        setAudioProgress(prev => {
+          if (prev >= 100) {
+            setIsPlaying(false);
+            return 0;
+          }
+          return prev + 0.5;
+        });
+        setElapsedTime(prev => {
+          const newTime = prev + (0.5 * totalTime) / 100;
+          return newTime >= totalTime ? totalTime : newTime;
+        });
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [isPlaying, totalTime]);
+
+  const handleSpeedChange = () => {
+    const speeds = [0.5, 1, 1.25, 1.5, 2];
+    const currentIndex = speeds.indexOf(playbackSpeed);
+    const nextIndex = (currentIndex + 1) % speeds.length;
+    setPlaybackSpeed(speeds[nextIndex]);
+  };
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleExitAudio = () => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    setIsPlaying(false);
+    setContentFadeClass("animate-fade-out");
+    
+    // After fade out, switch content and container size simultaneously
+    setTimeout(() => {
+      setCurrentContent("action");
+      setAudioProgress(0);
+      setElapsedTime(0);
+      
+      // Start fade in slightly after container starts resizing for smoother feel
+      setTimeout(() => {
+        setContentFadeClass("animate-fade-in");
+        
+        setTimeout(() => {
+          setIsTransitioning(false);
+          setContentFadeClass("");
+        }, 200);
+      }, 180);
+    }, 200);
+  };
+
+  const handleStartAudio = () => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    setContentFadeClass("animate-fade-out");
+    
+    // After fade out, switch content and container size simultaneously
+    setTimeout(() => {
+      setCurrentContent("audio");
+      
+      // Start fade in slightly after container starts resizing for smoother feel
+      setTimeout(() => {
+        setContentFadeClass("animate-fade-in");
+        
+        setTimeout(() => {
+          setIsTransitioning(false);
+          setContentFadeClass("");
+        }, 200);
+      }, 100);
+    }, 200);
+  };
+
   return (
     <>
-      {/* Action Bar - Always Visible */}
+      {/* Action Bar / Audio Player - Single Container */}
       <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="bg-white/20 backdrop-blur rounded-2xl shadow-lg border border-gray-300 px-4 py-2 flex items-center gap-3">
-          <div className="flex items-center gap-3">
-            {advertiserLogo || (advertiserName === "Nativo") ? (
+        <div className={`bg-white/20 backdrop-blur rounded-2xl shadow-lg border border-gray-300 px-4 py-2 flex items-center gap-3 ${
+          currentContent === "audio" ? 'container-audio' : 'container-action'
+        } ${
+          isPlaying ? 'animate-audio-border' : ''
+        }`}>
+          
+          {/* Content Container with Fade Animation */}
+          <div className={`flex items-center justify-center gap-3 w-full ${contentFadeClass}`}>
+            
+            {currentContent === "action" ? (
               <>
-                <img 
-                  src={advertiserLogo || `${baseUrl}/nativo-logo.png`} 
-                  alt={advertiserName} 
-                  className="w-8 h-8 rounded"
-                />
-                <span className="font-bold text-gray-800 text-base">AI</span>
+                {/* Action Bar Content */}
+                <div className="flex items-center gap-3">
+                  {advertiserLogo || (advertiserName === "Nativo") ? (
+                    <>
+                      <img 
+                        src={advertiserLogo || `${baseUrl}/nativo-logo.png`} 
+                        alt={advertiserName} 
+                        className="w-8 h-8 rounded"
+                      />
+                      <span className="font-bold text-gray-800 text-base">AI</span>
+                    </>
+                  ) : (
+                    <span className="font-bold text-gray-800 text-base">{advertiserName} AI</span>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleSummarize}
+                    disabled={isSummarizing || isTransitioning}
+                    className="action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    title="Summarize this page"
+                  >
+                    <FileText size={18} className="text-gray-600 group-hover:text-gray-800" />
+                    <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">
+                      {isSummarizing ? "Summarizing..." : "Summarize"}
+                    </span>
+                  </button>
+                  
+                  <button
+                    onClick={handleStartAudio}
+                    disabled={isTransitioning}
+                    className="action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer disabled:opacity-50"
+                    title="Listen to me"
+                  >
+                    <Headphones size={18} className="text-gray-600 group-hover:text-gray-800" />
+                    <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">Listen to me</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setCurrentView(currentView === "chat" ? "main" : "chat")}
+                    disabled={isTransitioning}
+                    className={`action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer disabled:opacity-50 ${currentView === "chat" ? "bg-gray-100" : ""}`}
+                    title="Chat with me"
+                  >
+                    <MessageCircle size={18} className="text-gray-600 group-hover:text-gray-800" />
+                    <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">Chat with me</span>
+                  </button>
+                </div>
               </>
             ) : (
-              <span className="font-bold text-gray-800 text-base">{advertiserName} AI</span>
+              <>
+                {/* Audio Player Content */}
+                <button
+                  onClick={handlePlayPause}
+                  disabled={isTransitioning}
+                  className="bg-white hover:bg-gray-50 p-2 rounded-full shadow-sm transition-colors disabled:opacity-50"
+                  title={isPlaying ? "Pause" : "Play"}
+                >
+                  {isPlaying ? <Pause size={20} className="text-gray-700" /> : <Play size={20} className="text-gray-700" />}
+                </button>
+
+                <div className="flex-1 flex items-center gap-2">
+                  <span className="text-xs text-gray-600 font-mono min-w-fit">
+                    {formatTime(elapsedTime)}/{formatTime(totalTime)}
+                  </span>
+                  <div className="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="absolute left-0 top-0 h-full bg-blue-500 transition-all duration-300"
+                      style={{ width: `${audioProgress}%` }}
+                    />
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={audioProgress}
+                      onChange={(e) => setAudioProgress(Number(e.target.value))}
+                      disabled={isTransitioning}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSpeedChange}
+                  disabled={isTransitioning}
+                  className="bg-white hover:bg-gray-50 px-2 py-1 rounded text-sm font-medium text-gray-700 transition-colors shadow-sm disabled:opacity-50"
+                  title="Playback speed"
+                >
+                  {playbackSpeed}x
+                </button>
+
+                <button
+                  onClick={handleExitAudio}
+                  disabled={isTransitioning}
+                  className="bg-white hover:bg-gray-50 p-2 rounded-full shadow-sm transition-colors disabled:opacity-50"
+                  title="Exit audio player"
+                >
+                  <X size={18} className="text-gray-700" />
+                </button>
+              </>
             )}
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleSummarize}
-              disabled={isSummarizing}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-              title="Summarize this page"
-            >
-              <FileText size={18} className="text-gray-600 group-hover:text-gray-800" />
-              <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">
-                {isSummarizing ? "Summarizing..." : "Summarize"}
-              </span>
-            </button>
-            
-            <button
-              onClick={() => {/* TODO: Implement listen */}}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer"
-              title="Listen to me"
-            >
-              <Headphones size={18} className="text-gray-600 group-hover:text-gray-800" />
-              <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">Listen to me</span>
-            </button>
-            
-            <button
-              onClick={() => setCurrentView(currentView === "chat" ? "main" : "chat")}
-              className={`flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer ${currentView === "chat" ? "bg-gray-100" : ""}`}
-              title="Chat with me"
-            >
-              <MessageCircle size={18} className="text-gray-600 group-hover:text-gray-800" />
-              <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">Chat with me</span>
-            </button>
           </div>
         </div>
       </div>

@@ -133,3 +133,62 @@ body {
 .animate-marquee-infinite {
   animation: marquee-infinite 15s linear infinite;
 }
+
+@keyframes audio-border {
+  0%, 100% {
+    border-color: rgb(59 130 246);
+    box-shadow: 0 0 10px rgb(59 130 246 / 0.3);
+  }
+  50% {
+    border-color: rgb(16 185 129);
+    box-shadow: 0 0 20px rgb(16 185 129 / 0.5);
+  }
+}
+
+.animate-audio-border {
+  animation: audio-border 2s ease-in-out infinite;
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-fade-out {
+  animation: fade-out 0.2s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}
+
+.container-audio {
+  width: 20rem;
+  height: 3.5rem;
+  transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.container-action {
+  width: 42rem;
+  height: 3.5rem;
+  transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  justify-content: center;
+}
+
+.action-button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}

@@ -76,16 +76,16 @@ export class OpenAIService {
     const messages: ChatMessage[] = [
       {
         role: "system",
-        content: `You are a helpful assistant that generates conversation starters and placeholder text based on webpage content. 
-        Generate exactly 4 short, engaging conversation prompts related to the content and 1 input placeholder. 
-        Each prompt should be 3-6 words and encourage discussion about the topic.
-        The placeholder should follow the format "Ask me about [topic]" where [topic] is the main subject of the content (keep it under 50 characters).
-        Return only a JSON object with "recommendations" array and "placeholder" string.
-        Example format: {"recommendations": [{"title": "Key Topic", "description": "Brief description"}], "placeholder": "Ask me about this topic"}`
+        content: `You are a helpful assistant that generates thoughtful questions about webpage content. 
+        Generate exactly 4 specific, engaging questions that someone might ask about this article and 1 input placeholder. 
+        Each question should be concise (4-8 words) and directly related to the article's content - like "What causes this problem?" or "How does this work?"
+        The placeholder should follow the format "Ask me about [specific topic]" where [specific topic] relates to the main subject (keep it under 50 characters).
+        Return only a JSON object with "recommendations" array (title = question, description = what the question explores) and "placeholder" string.
+        Example format: {"recommendations": [{"title": "What causes climate change?", "description": "Explore the main drivers"}], "placeholder": "Ask me about climate science"}`
       },
       {
         role: "user", 
-        content: `Based on this webpage content, generate 4 conversation starters and an input placeholder:
+        content: `Based on this webpage content, generate 4 specific questions someone might ask about this article and an input placeholder:
         Title: ${title}
         URL: ${url}
         Content: ${content.slice(0, 2000)}`
@@ -105,12 +105,12 @@ export class OpenAIService {
     } catch {
       return {
         recommendations: [
-          { title: "Main Topic", description: "Discuss the main subject" },
-          { title: "Key Points", description: "Explore important details" },
-          { title: "Implications", description: "Consider the broader impact" },
-          { title: "Questions", description: "Ask about unclear aspects" }
+          { title: "What is this about?", description: "Understand the main topic" },
+          { title: "How does this work?", description: "Learn the process" },
+          { title: "Why is this important?", description: "Explore the significance" },
+          { title: "What are the implications?", description: "Consider the impact" }
         ],
-        placeholder: "Ask me about this content"
+        placeholder: "Ask me about this article"
       };
     }
   }

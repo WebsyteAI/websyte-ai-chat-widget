@@ -92,7 +92,7 @@ The widget is fully functional and deployed to production with all core features
 - [x] Connect summarize API to chat widget UI
 - [x] Implement summarize button functionality with loading states
 - [x] Add error handling and user feedback for summarization
-- [ ] Add "/audio" command for text-to-speech
+- [x] Add audio player with full UI transformation and controls
 
 ### Phase 4: Widget Enhancement ✅ COMPLETED
 - [x] Add minimize/expand functionality
@@ -310,12 +310,14 @@ pnpm run build
   - **Slide-out chat panel**: Smooth animation from right side
   - **Transparent design**: Glass morphism with backdrop blur
   - **Message interface**: Full chat with history, timestamps, loading states
+  - **Smart recommendations**: AI-generated questions specific to article content ✅ **NEW**
   - **Nativo attribution**: "Powered by Nativo" subtitle in welcome message
   - **Responsive layout**: Works on desktop and mobile
   - Located in: `app/components/ChatWidget.tsx`
 
 - **Backend API**: Cloudflare Workers endpoints
   - `/api/chat`: Main chat endpoint with OpenAI integration
+  - `/api/recommendations`: AI-generated article-specific questions ✅ **NEW**
   - `/api/summarize`: Page summarization endpoint
   - Full CORS support for cross-origin embedding
   - Error handling and rate limiting considerations
@@ -355,11 +357,11 @@ The Websyte AI Chat Widget is now **production-ready** and deployed. Key achieve
 The project successfully delivers a fully functional, production-ready AI chat widget that can be embedded on any website with minimal integration effort.
 
 ### 🚧 Future Enhancements
-- **Audio Feature**: OpenAI text-to-speech API integration
-  - "Listen to me" button currently placeholder
-  - Planned /api/audio endpoint implementation
-  - Need to add audio playback controls to UI
-  - Need to integrate with "Listen to me" button (Speak button removed)
+- **Audio API Integration**: Connect audio player to OpenAI text-to-speech
+  - Audio player UI complete with full controls and animations
+  - Need to implement /api/audio endpoint for text-to-speech conversion
+  - Need to integrate actual audio playback with OpenAI TTS API
+  - Current implementation uses mock progress simulation for testing
 
 ### 📋 Remaining Tasks
 1. ~~**Command Integration**: Connect summarize API to action buttons~~ ✅ **COMPLETED**
@@ -367,7 +369,7 @@ The project successfully delivers a fully functional, production-ready AI chat w
 3. ~~**Base URL Configuration**: Enable configurable API endpoints~~ ✅ **COMPLETED**
 4. ~~**Shadow DOM Implementation**: Complete style isolation system~~ ✅ **COMPLETED**
 5. ~~**Build System Optimization**: Protected public directory, CSS inlining, infinite loop fixes~~ ✅ **COMPLETED**
-6. **Audio Feature**: Implement text-to-speech with OpenAI
+6. **Audio API Backend**: Connect audio player UI to OpenAI text-to-speech API
 7. ~~**Embedding System**: Create standalone widget bundle for external sites~~ ✅ Done
 8. ~~**Widget Configuration**: Script tag attributes and content targeting~~ ✅ Done
 9. ~~**Advanced UI**: Glass morphism design and slide animations~~ ✅ Done
@@ -466,3 +468,51 @@ The project successfully delivers a fully functional, production-ready AI chat w
 - **Better Maintainability**: No manual CSS to maintain, Tailwind handles everything
 - **Reliable Deployment**: No more build system race conditions or infinite loops
 - **Future-Proof**: Modern Shadow DOM approach ready for complex host page scenarios
+
+## Recent Implementation: Audio Player UI ✅
+
+### What Was Completed
+- **Action Bar Transformation**: Complete UI transformation between action bar and audio player modes
+- **Smooth Animations**: Container width transitions with fade in/out effects for content switching
+- **Audio Player Controls**: Play/pause, progress bar with seeking, speed control (0.5x-2x), and exit functionality
+- **Visual Feedback**: Animated border effects during playback with blue-to-green color transitions
+- **Progress Tracking**: Real-time elapsed/total time display in MM:SS format with monospace font
+- **Centered Layout**: Properly centered action bar contents with consistent container height
+- **Mock Simulation**: Progress updates and time tracking for testing UI functionality
+
+### Key Technical Achievements
+- **Single Container Approach**: One container smoothly transitions between 42rem (action) and 20rem (audio) widths
+- **Fade Transition System**: Content fades out → container resizes → new content fades in
+- **Animation Timing**: 200ms fade out + 180ms delay + 200ms fade in for smooth transitions
+- **Prevent Text Wrapping**: CSS `white-space: nowrap` and `flex-shrink: 0` for stable button layout
+- **Custom CSS Animations**: Dedicated keyframes for audio border effects and fade transitions
+- **State Management**: Clean React state for audio mode, playing state, progress, and transition control
+
+### Technical Implementation Details
+- **Container Classes**: `.container-action` (42rem) and `.container-audio` (20rem) with smooth width transitions
+- **Animation CSS**: Custom fade-in/fade-out keyframes with cubic-bezier easing
+- **Progress Simulation**: useEffect hook simulates audio progress for UI testing
+- **Time Formatting**: Helper function converts seconds to MM:SS format
+- **Border Animation**: Color-shifting glow effect during playback using CSS keyframes
+- **Button States**: Proper disabled states during transitions to prevent UI conflicts
+
+### User Experience Features
+- **Intuitive Controls**: Standard audio player layout with familiar icons and interactions
+- **Visual Continuity**: Container maintains same height (3.5rem) between modes
+- **Responsive Feedback**: All interactions provide immediate visual feedback
+- **Clean Transitions**: No jarring movements or layout shifts during mode changes
+- **Professional Polish**: Monospace time display, proper spacing, and consistent styling
+
+### Development Process Insights
+- **Component Architecture**: Built on existing ChatWidget structure for maintainability
+- **CSS Strategy**: Used specific pixel values instead of `auto` for smooth width transitions
+- **Animation Timing**: Iteratively refined timing delays for optimal user experience
+- **State Coordination**: Carefully managed multiple state variables to prevent conflicts
+- **Testing Approach**: Mock progress simulation allows full UI testing without backend audio
+
+### Next Steps for Audio Feature
+- **Backend Integration**: Implement `/api/audio` endpoint with OpenAI text-to-speech
+- **Audio Playback**: Replace mock simulation with actual HTML5 audio element
+- **Content Integration**: Connect audio generation to page content or chat messages
+- **Error Handling**: Add audio loading and playback error states
+- **Real Progress**: Replace simulated progress with actual audio duration tracking
