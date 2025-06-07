@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { ArrowUp, Square, Minimize2, FileText, Headphones, MessageCircle, Play, Pause, X, SkipBack, SkipForward } from "lucide-react";
+import { marked } from "marked";
 
 interface Message {
   id: string;
@@ -20,6 +21,12 @@ interface Recommendation {
   title: string;
   description: string;
 }
+
+// Configure marked for safe HTML rendering
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+});
 
 export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTarget = "article, main, .content, #content", advertiserName = "Nativo", advertiserLogo }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
@@ -43,6 +50,10 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const renderMarkdown = (content: string) => {
+    return { __html: marked(content) };
   };
 
   useEffect(() => {
@@ -80,7 +91,9 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
           { title: "What is this about?", description: "Understand the main topic" },
           { title: "How does this work?", description: "Learn the process" },
           { title: "Why is this important?", description: "Explore the significance" },
-          { title: "What are the implications?", description: "Consider the impact" }
+          { title: "What are the implications?", description: "Consider the impact" },
+          { title: "Who is this for?", description: "Identify the target audience" },
+          { title: "What happens next?", description: "Explore future steps" }
         ]);
       } finally {
         setIsLoadingRecommendations(false);
@@ -611,7 +624,14 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
                     : "bg-gray-100 text-gray-800"
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                {message.role === "assistant" ? (
+                  <div 
+                    className="text-sm prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0"
+                    dangerouslySetInnerHTML={renderMarkdown(message.content)}
+                  />
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                )}
                 <p className={`text-xs mt-1 ${
                   message.role === "user" ? "text-blue-100" : "text-gray-500"
                 }`}>

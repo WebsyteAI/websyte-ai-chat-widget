@@ -18,12 +18,14 @@ export class ChatService {
         return c.json({ error: "Invalid message" }, 400);
       }
 
+      if (!context || !context.content) {
+        return c.json({ error: "Content context is required" }, 400);
+      }
+
       const messages: ChatMessage[] = [
         {
           role: "system",
-          content: context 
-            ? `You are a helpful AI assistant embedded on the webpage "${context.title}" (${context.url}). You have access to the page content and can help users understand, summarize, or discuss it. Page content: ${context.content.slice(0, 3000)}`
-            : "You are a helpful AI assistant. Answer questions concisely and helpfully."
+          content: `You are a helpful AI assistant embedded on the webpage "${context.title}" (${context.url}). You have access to the page content and can help users understand, summarize, or discuss it. Always base your responses on the provided page content when relevant. Page content: ${context.content.slice(0, 3000)}`
         },
         ...history.slice(-10),
         { role: "user", content: message }

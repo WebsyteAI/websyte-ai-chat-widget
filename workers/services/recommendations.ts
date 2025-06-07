@@ -44,7 +44,9 @@ export class RecommendationsService {
           { title: "What is this about?", description: "Understand the main topic" },
           { title: "How does this work?", description: "Learn the process" },
           { title: "Why is this important?", description: "Explore the significance" },
-          { title: "What are the implications?", description: "Consider the impact" }
+          { title: "What are the implications?", description: "Consider the impact" },
+          { title: "Who is this for?", description: "Identify the target audience" },
+          { title: "What happens next?", description: "Explore future steps" }
         ],
         placeholder: "Ask me about this article"
       };

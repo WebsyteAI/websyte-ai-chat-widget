@@ -77,7 +77,7 @@ export class OpenAIService {
       {
         role: "system",
         content: `You are a helpful assistant that generates thoughtful questions about webpage content. 
-        Generate exactly 4 specific, engaging questions that someone might ask about this article and 1 input placeholder. 
+        Generate exactly 6 specific, engaging questions that someone might ask about this article and 1 input placeholder. 
         Each question should be concise (4-8 words) and directly related to the article's content - like "What causes this problem?" or "How does this work?"
         The placeholder should follow the format "Ask me about [specific topic]" where [specific topic] relates to the main subject (keep it under 50 characters).
         Return only a JSON object with "recommendations" array (title = question, description = what the question explores) and "placeholder" string.
@@ -85,7 +85,7 @@ export class OpenAIService {
       },
       {
         role: "user", 
-        content: `Based on this webpage content, generate 4 specific questions someone might ask about this article and an input placeholder:
+        content: `Based on this webpage content, generate 6 specific questions someone might ask about this article and an input placeholder:
         Title: ${title}
         URL: ${url}
         Content: ${content.slice(0, 2000)}`
@@ -108,7 +108,9 @@ export class OpenAIService {
           { title: "What is this about?", description: "Understand the main topic" },
           { title: "How does this work?", description: "Learn the process" },
           { title: "Why is this important?", description: "Explore the significance" },
-          { title: "What are the implications?", description: "Consider the impact" }
+          { title: "What are the implications?", description: "Consider the impact" },
+          { title: "Who is this for?", description: "Identify the target audience" },
+          { title: "What happens next?", description: "Explore future steps" }
         ],
         placeholder: "Ask me about this article"
       };

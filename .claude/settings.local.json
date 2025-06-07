@@ -16,7 +16,10 @@
       "WebFetch(domain:time.com)",
       "Bash(npx wrangler:*)",
       "Bash(ls:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(pnpm deploy:*)",
+      "Bash(mv:*)",
+      "Bash(pnpm remove:*)"
     ],
     "deny": []
   }
