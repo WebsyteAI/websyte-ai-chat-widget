@@ -339,9 +339,9 @@ Inject the widget into a specific DOM element:
 
 ### Error Handling
 
-- If target element is not found, automatically falls back to fixed overlay mode
-- Console warning logged when fallback occurs
-- Ensures widget always appears even with incorrect configuration
+- If target element is not found, widget initialization is aborted
+- Console error logged when target element cannot be found
+- Widget will not appear if target element is incorrectly configured
 
 ---
 

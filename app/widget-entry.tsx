@@ -106,7 +106,8 @@ declare global {
         targetParent = targetEl as HTMLElement;
         isTargetedInjection = true;
       } else {
-        console.warn(`WebsyteChat: Target element "${config.targetElement}" not found. Falling back to body injection.`);
+        console.error(`WebsyteChat: Target element "${config.targetElement}" not found. Widget will not be initialized.`);
+        return null;
       }
     }
     
@@ -152,7 +153,13 @@ declare global {
   
   // Initialize widget
   function initWidget() {
-    const { container, isTargetedInjection } = createWidgetContainer();
+    const result = createWidgetContainer();
+    if (!result) {
+      // Target element not found, do not initialize widget
+      return;
+    }
+    
+    const { container, isTargetedInjection } = result;
     widgetRoot = ReactDOM.createRoot(container);
     
     // Render the ChatWidget component
