@@ -14,3 +14,5 @@
 .wrangler
 .dev.vars*
 
+# Test
+/coverage/

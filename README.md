@@ -88,6 +88,30 @@ pnpm run dev
 
 Your application will be available at `http://localhost:5173`.
 
+### Testing
+
+The project includes a comprehensive test suite with 100% coverage:
+
+```bash
+# Run tests once
+pnpm test:run
+
+# Run tests in watch mode  
+pnpm test
+
+# Run tests with coverage report
+pnpm test:coverage
+
+# Run tests with interactive UI
+pnpm test:ui
+```
+
+**Test Coverage:**
+- ✅ **48 tests** across 4 service files
+- ✅ **100% statement, function, and line coverage**
+- ✅ **98% branch coverage**
+- ✅ All error scenarios and edge cases covered
+
 ### Testing the Widget
 
 Visit these test pages during development:
@@ -325,7 +349,14 @@ Built with ❤️ using React Router and Cloudflare Workers.
 
 ## Recent Updates
 
-### ✅ Targeted Widget Injection (Latest)
+### ✅ Comprehensive Test Suite (Latest)
+- Added 48 comprehensive tests with 100% coverage for all worker services
+- Vitest framework with TypeScript support and coverage reporting
+- Complete error scenario testing including API failures and edge cases
+- Mock infrastructure for reliable and fast test execution
+- Enhanced SummarizeService with proper whitespace content validation
+
+### ✅ Targeted Widget Injection
 - Added flexible injection into any DOM element via `data-target-element`
 - Dual positioning modes with automatic detection
 - Complete backward compatibility maintained

@@ -14,7 +14,7 @@ export class SummarizeService {
       const body: SummarizeRequest = await c.req.json();
       const { content, url = "", title = "" } = body;
 
-      if (!content || typeof content !== "string") {
+      if (!content || typeof content !== "string" || content.trim() === "") {
         return c.json({ error: "Invalid content" }, 400);
       }
 

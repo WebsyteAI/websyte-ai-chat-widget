@@ -20,7 +20,8 @@
       "Bash(pnpm deploy:*)",
       "Bash(mv:*)",
       "Bash(pnpm remove:*)",
-      "Bash(npm run build:widget:*)"
+      "Bash(npm run build:widget:*)",
+      "Bash(pnpm test:*)"
     ],
     "deny": []
   }
