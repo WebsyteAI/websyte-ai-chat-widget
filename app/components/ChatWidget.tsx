@@ -363,7 +363,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
       <div className={`fixed top-4 left-1/2 z-50 ${
         hasRendered ? 'animate-slide-in-from-top' : 'opacity-0 transform -translate-x-1/2'
       }`}>
-        <div className={`bg-white/20 rounded-2xl shadow-lg border border-gray-300 px-4 py-2 flex items-center gap-3 ${
+        <div className={`bg-white/98 action-bar-blur shadow-lg border border-gray-300 px-4 py-2 flex items-center gap-3 ${
           currentContent === "audio" ? 'container-audio' : 'container-action'
         } ${
           isPlaying ? 'animate-audio-border' : ''

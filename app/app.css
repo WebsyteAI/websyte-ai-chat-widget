@@ -181,9 +181,9 @@ body {
 .animate-slide-in-from-top {
   animation: slide-in-from-top 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   /* Ensure backdrop-filter persists during animation */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 1rem; /* matches rounded-2xl */
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border-radius: 1rem !important; /* matches rounded-2xl */
 }
 
 .animate-fade-out {
@@ -199,15 +199,31 @@ body {
 }
 
 .backdrop-blur-custom {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 1rem; /* matches rounded-2xl */
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border-radius: 1rem !important; /* matches rounded-2xl */
   /* Fallback for browsers that don't support backdrop-filter */
   background-color: rgba(255, 255, 255, 0.3);
-  /* Ensure backdrop-filter support */
-  @supports (backdrop-filter: blur(10px)) {
+}
+
+@supports (backdrop-filter: blur(10px)) {
+  .backdrop-blur-custom {
     background-color: rgba(255, 255, 255, 0.2);
   }
+}
+
+/* Explicit backdrop blur utilities to prevent purging */
+.backdrop-blur-10 {
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+  /* Force both properties to be preserved */
+}
+
+/* Alternative implementation */
+.action-bar-blur {
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 1rem !important;
 }
 
 .container-audio {
