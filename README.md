@@ -8,10 +8,11 @@ An embeddable AI chat widget with modern glass morphism design that provides int
 
 - 🎨 **Modern Glass Design**: Transparent blur effects with customizable advertiser branding
 - 🎯 **Multi-Action Interface**: Summarize, Listen (with audio player), and Chat capabilities with smooth animations
-- 🧠 **Enhanced Content Extraction**: Smart filtering removes scripts, ads, and navigation ✅ **NEW**
-- 🔗 **Configurable Base URLs**: Connect to any API backend via `data-base-url` ✅ **NEW**
-- 🎭 **Shadow DOM Isolation**: Complete style isolation prevents conflicts with host page ✅ **NEW**
-- 🎨 **Tailwind CSS v4**: Modern utility-first styling with Shadow DOM compatibility ✅ **NEW**
+- 🧠 **Enhanced Content Extraction**: Smart filtering removes scripts, ads, and navigation
+- 🔗 **Configurable Base URLs**: Connect to any API backend via `data-base-url`
+- 🎭 **Shadow DOM Isolation**: Complete style isolation prevents conflicts with host page
+- 🎨 **Tailwind CSS v4**: Modern utility-first styling with Shadow DOM compatibility
+- 🎯 **Flexible Injection**: Inject widget into any DOM element or use as fixed overlay ✅ **NEW**
 - 💬 **Smooth Animations**: Slide-out chat panel with persistent action bar
 - 📝 **Script Tag Configuration**: Easy customization via data attributes
 - ⚡️ **Fast & Lightweight**: Self-contained bundle with minimal impact
@@ -38,6 +39,7 @@ Customize the widget behavior with data attributes:
   data-content-target="main, .content, article"
   data-api-endpoint="/api/chat"
   data-base-url=""
+  data-target-element="#my-container"
   data-advertiser-name="Your Brand"
   data-advertiser-logo="https://example.com/logo.png"
   data-position="bottom-center"
@@ -50,19 +52,21 @@ Customize the widget behavior with data attributes:
 
 - **`data-content-target`**: CSS selector for page content extraction (default: `"article, main, .content, #content"`)
 - **`data-api-endpoint`**: Custom API endpoint URL (default: `"/api/chat"`)
-- **`data-base-url`**: Base URL for all API endpoints (default: `""`) ✅ **NEW**
-- **`data-advertiser-name`**: Custom advertiser/brand name (default: `"Advertiser"`) ✅ **NEW**
-- **`data-advertiser-logo`**: Custom advertiser/brand logo URL (optional) ✅ **NEW**
+- **`data-base-url`**: Base URL for all API endpoints (default: `""`)
+- **`data-target-element`**: CSS selector for widget injection target (default: none - uses fixed overlay) ✅ **NEW**
+- **`data-advertiser-name`**: Custom advertiser/brand name (default: `"Nativo"`)
+- **`data-advertiser-logo`**: Custom advertiser/brand logo URL (optional)
 - **`data-position`**: Widget position (default: `"bottom-center"`)
 - **`data-theme`**: UI theme selection (default: `"default"`)
 
 The widget will automatically:
-- Display a persistent action bar at the top with customizable advertiser branding
+- Display a persistent action bar (top center of viewport or within target container)
 - Extract content from your specified target elements
 - Generate AI-powered question recommendations specific to the article content
 - Provide multiple AI interaction modes (Chat, Summarize, Listen)
-- Show a slide-out chat panel when needed
+- Show a slide-out chat panel when needed (or below action bar for targeted injection)
 - Display "Powered by Nativo" attribution in the chat welcome message
+- Use either fixed overlay positioning or inline injection based on configuration
 
 ## Development Setup
 
@@ -89,6 +93,7 @@ Your application will be available at `http://localhost:5173`.
 Visit these test pages during development:
 - `/test` - Component-based test page
 - `/script-test` - Production-style script tag test page with configuration examples
+- `/target-test` - Targeted injection demonstration showing both fixed and inline modes ✅ **NEW**
 
 ## Previewing the Production Build
 
@@ -184,6 +189,7 @@ The widget supports multiple configuration methods:
   data-content-target="main, .content"
   data-api-endpoint="/api/chat"
   data-base-url=""
+  data-target-element="#widget-container"
   data-advertiser-name="Your Brand"
   data-advertiser-logo="https://example.com/logo.png"
   data-position="bottom-center"
@@ -201,6 +207,7 @@ window.WebsyteChat = {
     apiEndpoint: '/api/chat',
     baseUrl: 'https://api.example.com',
     contentTarget: 'article, main, .content',
+    targetElement: '#widget-container',
     advertiserName: 'Your Brand',
     advertiserLogo: 'https://example.com/logo.png',
     position: 'bottom-center',
@@ -261,6 +268,66 @@ The widget includes a fully functional summarize feature:
 - **Loading states**: Visual feedback during summarization process
 - **Error handling**: Graceful fallbacks if summarization fails
 
+## Widget Injection Options
+
+### Fixed Overlay Mode (Default)
+
+By default, the widget appears as a fixed overlay on the page:
+
+```html
+<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" async></script>
+```
+
+- Action bar appears at top center of viewport
+- Chat panel slides out from right side
+- Uses high z-index (9999) to appear above page content
+- Smooth slide-in animation on page load
+
+### Targeted Injection Mode ✅ NEW
+
+Inject the widget into a specific DOM element:
+
+```html
+<div id="widget-container"></div>
+<script 
+  src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" 
+  data-target-element="#widget-container"
+  async>
+</script>
+```
+
+- Widget appears inline within the target container
+- Action bar centers within container width
+- Chat panel appears below action bar
+- Uses relative positioning for seamless page integration
+- Supports multiple widgets with different targets on same page
+
+### Injection Behavior Comparison
+
+| Feature | Fixed Overlay | Targeted Injection |
+|---------|---------------|-------------------|
+| **Positioning** | Fixed overlay | Inline within container |
+| **Action bar** | Top center of viewport | Top center of container |
+| **Chat panel** | Slide from right side | Below action bar |
+| **Z-index** | 9999 | 999 |
+| **Animation** | Slide-in from top | Simple opacity fade |
+| **Use case** | Blog overlays | Content integration |
+
+### Error Handling
+
+- If target element is not found, automatically falls back to fixed overlay mode
+- Console warning logged when fallback occurs
+- Ensures widget always appears even with incorrect configuration
+
 ---
 
 Built with ❤️ using React Router and Cloudflare Workers.
+
+## Recent Updates
+
+### ✅ Targeted Widget Injection (Latest)
+- Added flexible injection into any DOM element via `data-target-element`
+- Dual positioning modes with automatic detection
+- Complete backward compatibility maintained
+- Enhanced test pages and documentation
+- Fixed SSR hydration issues for React applications

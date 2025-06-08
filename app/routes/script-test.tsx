@@ -1,4 +1,24 @@
+import { useEffect } from "react";
+
 export default function ScriptTest() {
+  // Inject widget after component mounts to avoid hydration issues
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = `${window.location.origin}/dist/widget.js`;
+    script.setAttribute('data-content-target', 'main, .content, article');
+    script.setAttribute('data-api-endpoint', '/api/chat');
+    script.setAttribute('data-base-url', '');
+    script.setAttribute('data-advertiser-name', 'TIME Magazine');
+    script.setAttribute('data-advertiser-logo', 'https://logo.clearbit.com/time.com');
+    script.async = true;
+    document.head.appendChild(script);
+    
+    // Cleanup function to remove script
+    return () => {
+      script.remove();
+    };
+  }, []);
+
   return (
     <div style={{ minHeight: "100vh", padding: "2rem", backgroundColor: "#f5f5f5" }}>
       <main style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -114,16 +134,7 @@ export default function ScriptTest() {
         </div>
       </main>
 
-      {/* Script tag with data attributes for configuration */}
-      <script 
-        src={`${typeof window !== 'undefined' ? window.location.origin : ''}/dist/widget.js`} 
-        data-content-target="main, .content, article"
-        data-api-endpoint="/api/chat"
-        data-base-url=""
-        data-advertiser-name="TIME Magazine"
-        data-advertiser-logo="https://logo.clearbit.com/time.com"
-        async
-      ></script>
+      {/* Script will be injected via useEffect to avoid hydration issues */}
     </div>
   );
 }

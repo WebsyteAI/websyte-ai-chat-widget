@@ -15,6 +15,7 @@ interface ChatWidgetProps {
   contentTarget?: string;
   advertiserName?: string;
   advertiserLogo?: string;
+  isTargetedInjection?: boolean;
 }
 
 interface Recommendation {
@@ -28,7 +29,7 @@ marked.setOptions({
   gfm: true,
 });
 
-export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTarget = "article, main, .content, #content", advertiserName = "Nativo", advertiserLogo }: ChatWidgetProps) {
+export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTarget = "article, main, .content, #content", advertiserName = "Nativo", advertiserLogo, isTargetedInjection = false }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -360,8 +361,8 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
   return (
     <>
       {/* Action Bar / Audio Player - Single Container */}
-      <div className={`fixed top-4 left-1/2 z-50 ${
-        hasRendered ? 'animate-slide-in-from-top' : 'opacity-0 transform -translate-x-1/2'
+      <div className={`${isTargetedInjection ? 'relative top-0 left-0 mx-auto' : 'fixed top-4 left-1/2'} z-50 ${
+        hasRendered ? (isTargetedInjection ? 'opacity-100' : 'animate-slide-in-from-top') : 'opacity-0 transform -translate-x-1/2'
       }`}>
         <div className={`bg-white/98 action-bar-blur shadow-lg border border-gray-300 px-4 py-2 flex items-center gap-3 ${
           currentContent === "audio" ? 'container-audio' : 'container-action'
@@ -480,8 +481,10 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
         </div>
       </div>
 
-      {/* Chat Panel - Fixed to Right Side of Screen */}
-      <div className={`fixed top-4 right-4 bottom-4 w-[28rem] bg-white border border-gray-200 rounded-lg shadow-xl flex flex-col transition-all duration-300 ease-out transform z-40 ${currentView === "chat" ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
+      {/* Chat Panel - Positioned based on injection type */}
+      <div className={`${isTargetedInjection ? 'relative mt-4 mx-auto' : 'fixed top-4 right-4 bottom-4'} w-[28rem] bg-white border border-gray-200 rounded-lg shadow-xl flex flex-col transition-all duration-300 ease-out transform z-40 ${
+        currentView === "chat" ? 'translate-x-0 opacity-100' : (isTargetedInjection ? 'hidden' : 'translate-x-full opacity-0')
+      }`}>
         <div className="flex items-center justify-between p-4 rounded-t-lg">
           <h3 className="font-semibold text-gray-900">Chat with {advertiserName} AI</h3>
           <button

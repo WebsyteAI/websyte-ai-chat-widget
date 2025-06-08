@@ -135,6 +135,15 @@ The widget is fully functional and deployed to production with all core features
 - [x] Documentation updates (README.md and PLANNING.md)
 - [x] Live demo deployment: https://websyte-ai-chat-widget.clementineso.workers.dev
 
+### Phase 9: Targeted Widget Injection ✅ COMPLETED
+- [x] Add `data-target-element` attribute support for custom injection targets
+- [x] Implement dual positioning modes (fixed overlay vs. relative inline)
+- [x] Update ChatWidget component to handle targeted vs. body injection
+- [x] Create fallback mechanism when target element is not found
+- [x] Fix hydration issues with SSR by using useEffect for script injection
+- [x] Add comprehensive test pages for both injection methods
+- [x] Maintain backward compatibility with existing implementations
+
 ## Technical Specifications
 
 ### Current File Structure
@@ -182,6 +191,9 @@ tailwind.config.js          # Tailwind CSS v4 configuration
   data-content-target="main, .content, article"
   data-api-endpoint="/api/chat"
   data-base-url="https://api.example.com"
+  data-target-element="#my-container"
+  data-advertiser-name="My Brand"
+  data-advertiser-logo="https://logo.clearbit.com/mybrand.com"
   data-position="bottom-center"
   data-theme="default"
   async
@@ -191,7 +203,10 @@ tailwind.config.js          # Tailwind CSS v4 configuration
 ### Script Tag Configuration ✅ IMPLEMENTED
 - `data-content-target`: CSS selector for page content extraction
 - `data-api-endpoint`: Custom API endpoint URL
-- `data-base-url`: Base URL for all API endpoints ✅ NEW
+- `data-base-url`: Base URL for all API endpoints
+- `data-target-element`: CSS selector for widget injection target ✅ NEW
+- `data-advertiser-name`: Custom branding name
+- `data-advertiser-logo`: Custom logo URL
 - `data-position`: Widget position (bottom-center, bottom-right, etc.)
 - `data-theme`: UI theme selection
 
@@ -516,3 +531,74 @@ The project successfully delivers a fully functional, production-ready AI chat w
 - **Content Integration**: Connect audio generation to page content or chat messages
 - **Error Handling**: Add audio loading and playback error states
 - **Real Progress**: Replace simulated progress with actual audio duration tracking
+
+## Recent Implementation: Targeted Widget Injection ✅
+
+### What Was Completed
+- **Target Element Support**: Added `data-target-element` attribute to inject widget into specific DOM elements
+- **Dual Positioning Modes**: Automatic detection between fixed overlay and inline injection
+- **Backward Compatibility**: Maintains existing behavior when no target element is specified
+- **Error Handling**: Graceful fallback to body injection if target element not found
+- **Hydration Safety**: Fixed SSR hydration issues by using useEffect for script injection
+- **Comprehensive Testing**: Created test pages demonstrating both injection methods
+
+### Key Technical Achievements
+- **Flexible Injection**: Widget can be injected into any DOM element via CSS selector
+- **Smart Positioning**: Automatically switches between fixed and relative positioning based on injection target
+- **Shadow DOM Compatibility**: Targeted injection works seamlessly with Shadow DOM isolation
+- **Multiple Widget Support**: Allows multiple widgets with different targets on the same page
+- **SSR Safety**: Prevents hydration mismatches in server-side rendered environments
+
+### Technical Implementation Details
+- **Widget Entry**: Modified `app/widget-entry.tsx` to detect and use target elements
+- **Component Updates**: Updated `app/components/ChatWidget.tsx` with positioning logic
+- **Configuration**: Added `targetElement` to widget configuration system
+- **Test Routes**: Created `/target-test` and updated `/script-test` with hydration fixes
+- **Static Test**: Added `public/test-injection.html` for standalone testing
+
+### Usage Examples
+
+**Targeted Injection:**
+```html
+<script 
+  src="./dist/widget.js" 
+  data-target-element="#my-container"
+  data-content-target="article, main"
+  data-advertiser-name="My Brand"
+  async>
+</script>
+```
+
+**Standard Injection (unchanged):**
+```html
+<script 
+  src="./dist/widget.js" 
+  data-content-target="article, main"
+  data-advertiser-name="My Brand"
+  async>
+</script>
+```
+
+### Behavior Differences
+
+| Feature | Body Injection | Targeted Injection |
+|---------|---------------|-------------------|
+| Positioning | Fixed overlay | Inline within container |
+| Action bar | Top center of viewport | Top center of container |
+| Chat panel | Fixed right side | Below action bar in container |
+| Z-index | 9999 | 999 |
+| Animation | Slide-in from top | Simple opacity fade |
+
+### User Experience Benefits
+- **Content Integration**: Widget appears as part of the page content rather than overlay
+- **Design Flexibility**: Publishers can place widgets exactly where they want them
+- **Responsive Design**: Widgets adapt to container dimensions
+- **Multiple Placements**: Support for multiple widgets in different page sections
+- **Accessibility**: Better screen reader compatibility with inline positioning
+
+### Development Process Insights
+- **Backward Compatibility**: Careful preservation of existing functionality during enhancement
+- **SSR Challenges**: Learned importance of client-only script injection for React applications
+- **Testing Strategy**: Created comprehensive test cases covering both injection modes
+- **Configuration Design**: Extended existing script attribute system rather than creating new APIs
+- **Error Handling**: Robust fallback mechanisms ensure widget always works

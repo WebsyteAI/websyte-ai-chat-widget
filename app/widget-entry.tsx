@@ -15,6 +15,7 @@ declare global {
         contentTarget?: string;
         advertiserName?: string;
         advertiserLogo?: string;
+        targetElement?: string;
       };
       open?: () => void;
       close?: () => void;
@@ -62,6 +63,9 @@ declare global {
       
       const advertiserLogo = scriptTag.getAttribute('data-advertiser-logo');
       if (advertiserLogo) scriptConfig.advertiserLogo = advertiserLogo;
+      
+      const targetElement = scriptTag.getAttribute('data-target-element');
+      if (targetElement) scriptConfig.targetElement = targetElement;
     }
     
     return scriptConfig;
@@ -75,7 +79,8 @@ declare global {
     theme: 'default',
     contentTarget: 'article, main, .content, #content',
     advertiserName: 'Nativo',
-    advertiserLogo: ''
+    advertiserLogo: '',
+    targetElement: ''
   };
   
   // Merge configs: defaults < window config < script attributes
@@ -90,13 +95,39 @@ declare global {
   function createWidgetContainer() {
     const container = document.createElement('div');
     container.id = 'websyte-chat-widget-root';
-    container.style.cssText = `
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      z-index: 9999;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    `;
+    
+    // Determine where to inject the widget
+    let targetParent = document.body;
+    let isTargetedInjection = false;
+    
+    if (config.targetElement) {
+      const targetEl = document.querySelector(config.targetElement);
+      if (targetEl) {
+        targetParent = targetEl as HTMLElement;
+        isTargetedInjection = true;
+      } else {
+        console.warn(`WebsyteChat: Target element "${config.targetElement}" not found. Falling back to body injection.`);
+      }
+    }
+    
+    // Set positioning based on injection target
+    if (isTargetedInjection) {
+      // For targeted injection, use relative positioning
+      container.style.cssText = `
+        position: relative;
+        z-index: 999;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      `;
+    } else {
+      // For body injection, use fixed positioning (original behavior)
+      container.style.cssText = `
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        z-index: 9999;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      `;
+    }
     
     // Create shadow root for style isolation
     shadowRoot = container.attachShadow({ mode: 'open' });
@@ -115,13 +146,13 @@ declare global {
     `;
     shadowRoot.appendChild(widgetContainer);
     
-    document.body.appendChild(container);
-    return widgetContainer;
+    targetParent.appendChild(container);
+    return { container: widgetContainer, isTargetedInjection };
   }
   
   // Initialize widget
   function initWidget() {
-    const container = createWidgetContainer();
+    const { container, isTargetedInjection } = createWidgetContainer();
     widgetRoot = ReactDOM.createRoot(container);
     
     // Render the ChatWidget component
@@ -131,7 +162,8 @@ declare global {
         baseUrl: config.baseUrl,
         contentTarget: config.contentTarget,
         advertiserName: config.advertiserName,
-        advertiserLogo: config.advertiserLogo
+        advertiserLogo: config.advertiserLogo,
+        isTargetedInjection: isTargetedInjection
       })
     );
   }
