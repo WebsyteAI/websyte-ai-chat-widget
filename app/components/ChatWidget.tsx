@@ -481,9 +481,9 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
         </div>
       </div>
 
-      {/* Chat Panel - Positioned based on injection type */}
-      <div className={`${isTargetedInjection ? 'relative mt-4 mx-auto' : 'fixed top-4 right-4 bottom-4'} w-[28rem] bg-white border border-gray-200 rounded-lg shadow-xl flex flex-col transition-all duration-300 ease-out transform z-40 ${
-        currentView === "chat" ? 'translate-x-0 opacity-100' : (isTargetedInjection ? 'hidden' : 'translate-x-full opacity-0')
+      {/* Chat Panel */}
+      <div className={`fixed top-4 right-4 bottom-4 w-[28rem] bg-white border border-gray-200 rounded-lg shadow-xl flex flex-col transition-all duration-300 ease-out transform z-40 ${
+        currentView === "chat" ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
       }`}>
         <div className="flex items-center justify-between p-4 rounded-t-lg">
           <h3 className="font-semibold text-gray-900">Chat with {advertiserName} AI</h3>

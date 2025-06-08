@@ -147,7 +147,7 @@ describe('ChatService', () => {
     })
 
     it('should truncate long content in system prompt', async () => {
-      const longContent = 'a'.repeat(15000)
+      const longContent = 'a'.repeat(75000)
       
       const requestBody: ChatRequest = {
         message: 'Test message',
@@ -167,8 +167,8 @@ describe('ChatService', () => {
       const callArgs = (mockOpenAI.chatCompletion as any).mock.calls[0]
       const systemMessage = callArgs[0][0].content
       
-      // Should truncate to 10000 characters
-      expect(systemMessage).toContain(longContent.slice(0, 10000))
+      // Should truncate to 50000 characters
+      expect(systemMessage).toContain(longContent.slice(0, 50000))
       expect(systemMessage.length).toBeLessThan(longContent.length + 500) // Allow for system prompt text
     })
 

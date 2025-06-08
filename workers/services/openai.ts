@@ -52,7 +52,7 @@ export class OpenAIService {
       {
         role: "system",
         content: `You are a helpful assistant that creates concise, informative summaries of web page content. 
-        You are working with the webpage "${title}" (${url}). ${content ? `Page content: ${content.slice(0, 10000)}` : 'No content available.'}
+        You are working with the webpage "${title}" (${url}). ${content ? `Page content: ${content.slice(0, 50000)}` : 'No content available.'}
         
         Provide a clear summary in 2-3 paragraphs based on the provided content.`
       },
@@ -79,7 +79,7 @@ export class OpenAIService {
       {
         role: "system",
         content: `You are a helpful assistant that generates thoughtful questions about webpage content. 
-        You are working with the webpage "${title}" (${url}). ${content ? `Page content: ${content.slice(0, 10000)}` : 'No content available.'}
+        You are working with the webpage "${title}" (${url}). ${content ? `Page content: ${content.slice(0, 50000)}` : 'No content available.'}
         
         Generate exactly 6 specific, engaging questions that someone might ask about this article and 1 input placeholder. 
         Each question should be concise (4-8 words) and directly related to the article's content - like "What causes this problem?" or "How does this work?"

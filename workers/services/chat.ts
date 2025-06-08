@@ -25,7 +25,7 @@ export class ChatService {
       const messages: ChatMessage[] = [
         {
           role: "system",
-          content: `You are a helpful AI assistant embedded on the webpage "${context.title}" (${context.url}). ${context.content ? `You have access to the page content and can help users understand, summarize, or discuss it. Always base your responses on the provided page content when relevant. Page content: ${context.content.slice(0, 10000)}` : 'You can help users with questions about this webpage.'}`
+          content: `You are a helpful AI assistant embedded on the webpage "${context.title}" (${context.url}). ${context.content ? `You have access to the page content and can help users understand, summarize, or discuss it. Always base your responses on the provided page content when relevant. Page content: ${context.content.slice(0, 50000)}` : 'You can help users with questions about this webpage.'}`
         },
         ...history.slice(-10),
         { role: "user", content: message }

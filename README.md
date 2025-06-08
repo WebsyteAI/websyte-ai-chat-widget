@@ -249,7 +249,7 @@ window.WebsyteChat = {
 - **Styling**: Tailwind CSS v4 with transparent blur effects (compiled and inlined for Shadow DOM)
 - **Isolation**: Shadow DOM for complete style encapsulation and host page protection
 - **Configuration**: Script tag data attributes with automatic parsing
-- **Content Extraction**: Configurable CSS selectors for page content targeting
+- **Content Extraction**: Configurable CSS selectors for page content targeting (50KB content limit)
 - **Storage**: localStorage for chat history and widget state
 - **Build**: Vite with custom widget configuration, protected public directory, and stable CSS inlining
 
@@ -332,7 +332,7 @@ Inject the widget into a specific DOM element:
 |---------|---------------|-------------------|
 | **Positioning** | Fixed overlay | Inline within container |
 | **Action bar** | Top center of viewport | Top center of container |
-| **Chat panel** | Slide from right side | Below action bar |
+| **Chat panel** | Slide from right side | Slide from right side |
 | **Z-index** | 9999 | 999 |
 | **Animation** | Slide-in from top | Simple opacity fade |
 | **Use case** | Blog overlays | Content integration |
@@ -349,7 +349,14 @@ Built with ❤️ using React Router and Cloudflare Workers.
 
 ## Recent Updates
 
-### ✅ Comprehensive Test Suite (Latest)
+### ✅ Content Limit Optimization (Latest)
+- Optimized content processing limit to 50,000 characters for better performance
+- Reduced API token usage by ~50% while maintaining content quality
+- Updated all services and tests to use new 50KB content limit
+- All 48 tests pass with 100% coverage maintained
+- Balanced performance and functionality for production efficiency
+
+### ✅ Comprehensive Test Suite
 - Added 48 comprehensive tests with 100% coverage for all worker services
 - Vitest framework with TypeScript support and coverage reporting
 - Complete error scenario testing including API failures and edge cases

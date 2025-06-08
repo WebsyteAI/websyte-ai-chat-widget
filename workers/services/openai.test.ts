@@ -169,7 +169,7 @@ describe('OpenAIService', () => {
         {
           role: 'system',
           content: `You are a helpful assistant that creates concise, informative summaries of web page content. 
-        You are working with the webpage "${title}" (${url}). Page content: ${content.slice(0, 10000)}
+        You are working with the webpage "${title}" (${url}). Page content: ${content.slice(0, 50000)}
         
         Provide a clear summary in 2-3 paragraphs based on the provided content.`
         },
@@ -203,7 +203,7 @@ describe('OpenAIService', () => {
         json: () => Promise.resolve(mockResponse)
       })
 
-      const longContent = 'a'.repeat(15000)
+      const longContent = 'a'.repeat(75000)
       const title = 'Long Article'
       const url = 'https://example.com'
 
@@ -223,9 +223,9 @@ describe('OpenAIService', () => {
       expect(contentMatch).toBeTruthy()
       if (contentMatch) {
         const extractedContent = contentMatch[1]
-        // Should be exactly 10000 characters of 'a'
-        expect(extractedContent).toBe('a'.repeat(10000))
-        expect(extractedContent.length).toBe(10000)
+        // Should be exactly 50000 characters of 'a'
+        expect(extractedContent).toBe('a'.repeat(50000))
+        expect(extractedContent.length).toBe(50000)
       }
     })
 
@@ -341,7 +341,7 @@ describe('OpenAIService', () => {
 
       expect(systemMessage).toContain(title)
       expect(systemMessage).toContain(url)
-      expect(systemMessage).toContain(content.slice(0, 10000))
+      expect(systemMessage).toContain(content.slice(0, 50000))
       expect(systemMessage).toContain('Generate exactly 6 specific, engaging questions')
     })
 
