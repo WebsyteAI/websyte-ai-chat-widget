@@ -77,35 +77,6 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
   };
 
   // Content management functions
-  const findAndCaptureContentElement = () => {
-    // Try each selector individually to find the best match
-    const selectors = contentTarget.split(',').map(s => s.trim());
-    
-    for (const selector of selectors) {
-      const element = document.querySelector(selector);
-      if (element) {
-        console.log('Found content element with selector:', selector, element);
-        setTargetElement(element);
-        
-        // Use smart content detection to find the main content area
-        const smartMainContent = ContentExtractor.findMainContentElement(selector);
-        if (smartMainContent) {
-          console.log('Smart content detection found main content:', smartMainContent);
-          setMainContentElement(smartMainContent);
-          setOriginalContent(smartMainContent.innerHTML);
-        } else {
-          console.log('Smart detection failed, falling back to full element');
-          setMainContentElement(element);
-          setOriginalContent(element.innerHTML);
-        }
-        
-        return element;
-      }
-    }
-    
-    console.warn('No content element found with any of the selectors:', selectors);
-    return null;
-  };
 
   const replaceWithSummary = (summaryContent: string) => {
     console.log('Replacing content with summary:', summaryContent.substring(0, 100) + '...');
@@ -205,7 +176,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
   }, []);
 
   useEffect(() => {
-    // Warm cache, capture original content, and load recommendations and summaries when component mounts
+    // Warm cache, capture original content, and load all data in parallel
     const loadInitialData = async () => {
       setIsLoadingRecommendations(true);
       setIsLoadingSummaries(true);
@@ -214,13 +185,41 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
         // Warm the cache first to ensure subsequent calls are fast
         await ContentExtractor.warmCache(contentTarget);
         
-        // Find and capture the specific content element
-        findAndCaptureContentElement();
-        
         const pageContent = await extractPageContent();
         
-        // Load recommendations and summaries in parallel
-        const [recommendationsResponse, summariesResponse] = await Promise.all([
+        // Find target element for selector analysis
+        const selectors = contentTarget.split(',').map(s => s.trim());
+        let targetElement: Element | null = null;
+        
+        for (const selector of selectors) {
+          const element = document.querySelector(selector);
+          if (element) {
+            targetElement = element;
+            setTargetElement(element);
+            break;
+          }
+        }
+        
+        if (!targetElement) {
+          console.warn('No content element found with any of the selectors:', selectors);
+          return;
+        }
+        
+        const html = targetElement.outerHTML;
+        
+        // Run selector analysis, recommendations, and summaries in parallel
+        const [selectorResponse, recommendationsResponse, summariesResponse] = await Promise.all([
+          fetch(`${baseUrl}/api/analyze-selector`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              html,
+              title: pageContent.title,
+              url: pageContent.url
+            }),
+          }),
           fetch(`${baseUrl}/api/recommendations`, {
             method: "POST",
             headers: {
@@ -244,6 +243,28 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
             }),
           })
         ]);
+
+        // Handle selector analysis response
+        if (selectorResponse.ok) {
+          const analysis = await selectorResponse.json() as { contentSelector: string; reasoning: string };
+          console.log('AI analysis result:', analysis);
+          
+          // Try to find element with AI-generated selector
+          const aiSelectedElement = targetElement.querySelector(analysis.contentSelector);
+          if (aiSelectedElement) {
+            console.log('AI-generated selector found element:', aiSelectedElement);
+            setMainContentElement(aiSelectedElement);
+            setOriginalContent(aiSelectedElement.innerHTML);
+          } else {
+            console.log('AI-generated selector failed, falling back to full element');
+            setMainContentElement(targetElement);
+            setOriginalContent(targetElement.innerHTML);
+          }
+        } else {
+          console.warn('AI selector analysis failed, using fallback');
+          setMainContentElement(targetElement);
+          setOriginalContent(targetElement.innerHTML);
+        }
 
         // Handle recommendations response
         if (recommendationsResponse.ok) {

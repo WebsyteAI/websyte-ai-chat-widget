@@ -75,6 +75,98 @@ export class OpenAIService {
     });
   }
 
+  async analyzeHtmlStructure(html: string, title: string, url: string, signal?: AbortSignal): Promise<{ contentSelector: string; reasoning: string }> {
+    const prompt = `You are an expert web developer analyzing HTML structure to find the best CSS selector for replacing article content while preserving headers and navigation.
+
+Analyze this HTML snippet and identify the optimal CSS selector that targets ONLY the main article body content (paragraphs, text, content) while preserving:
+- Article titles and headers (h1, h2, etc.)
+- Author bylines and metadata
+- Navigation elements
+- Publication info
+- Any branding elements
+
+${title ? `Page Title: "${title}"` : ''}
+${url ? `URL: ${url}` : ''}
+
+HTML to analyze:
+${html.slice(0, 8000)}
+
+Return a JSON object with:
+- contentSelector: A specific CSS selector that targets only the main content area
+- reasoning: Brief explanation of why this selector was chosen
+
+The selector should be as specific as possible to avoid accidentally selecting headers, navigation, or metadata.
+
+Examples of good selectors:
+- "article .content"
+- ".article-body"  
+- ".post-content"
+- "main .prose"
+- "#main-article .content"
+
+Response format:
+{
+  "contentSelector": ".article-content",
+  "reasoning": "This selector targets the main content div while preserving the header and byline elements"
+}`;
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert web developer and CSS selector specialist. Always respond with valid JSON.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          max_tokens: 300,
+          temperature: 0.1,
+        }),
+        signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`);
+      }
+
+      const data = await response.json() as OpenAIResponse;
+      const content = data.choices?.[0]?.message?.content;
+      
+      if (!content) {
+        throw new Error('No content in OpenAI response');
+      }
+
+      // Parse JSON response
+      try {
+        const parsed = JSON.parse(content);
+        return {
+          contentSelector: parsed.contentSelector || '',
+          reasoning: parsed.reasoning || 'AI analysis completed'
+        };
+      } catch (parseError) {
+        // Fallback if JSON parsing fails
+        console.warn('Failed to parse OpenAI JSON response, using fallback');
+        return {
+          contentSelector: 'article',
+          reasoning: 'Fallback selector due to parsing error'
+        };
+      }
+    } catch (error) {
+      console.error('OpenAI HTML analysis error:', error);
+      throw error;
+    }
+  }
+
   async generateBatchSummaries(content: string, title: string, url: string, signal?: AbortSignal): Promise<{ short: string; medium: string }> {
     const webpageInfo = title || url ? 
       `You are working with${title ? ` the webpage "${title}"` : ''}${url ? ` (${url})` : ''}.` : 

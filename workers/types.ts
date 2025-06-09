@@ -47,6 +47,17 @@ export interface SummariesResponse {
   medium: string;
 }
 
+export interface SelectorAnalysisRequest {
+  html: string;
+  url?: string;
+  title?: string;
+}
+
+export interface SelectorAnalysisResponse {
+  contentSelector: string;
+  reasoning: string;
+}
+
 export interface OpenAIResponse {
   choices?: Array<{ message?: { content?: string } }>;
 }

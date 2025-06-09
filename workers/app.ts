@@ -6,6 +6,7 @@ import { ChatService } from './services/chat';
 import { SummarizeService } from './services/summarize';
 import { SummariesService } from './services/summaries';
 import { RecommendationsService } from './services/recommendations';
+import { SelectorAnalysisService } from './services/selector-analysis';
 import type { Env } from './types';
 
 declare module "react-router" {
@@ -25,6 +26,7 @@ type AppType = {
       summarize: SummarizeService;
       summaries: SummariesService;
       recommendations: RecommendationsService;
+      selectorAnalysis: SelectorAnalysisService;
     };
   };
 };
@@ -45,6 +47,7 @@ let servicesCache: {
   summarize: SummarizeService;
   summaries: SummariesService;
   recommendations: RecommendationsService;
+  selectorAnalysis: SelectorAnalysisService;
 } | null = null;
 
 const getServices = (env: Env) => {
@@ -55,6 +58,7 @@ const getServices = (env: Env) => {
       summarize: new SummarizeService(openai),
       summaries: new SummariesService(openai),
       recommendations: new RecommendationsService(openai),
+      selectorAnalysis: new SelectorAnalysisService(openai),
     };
   }
   return servicesCache;
@@ -81,6 +85,10 @@ app.post('/api/recommendations', async (c) => {
 
 app.post('/api/summaries', async (c) => {
   return c.get('services').summaries.handleSummaries(c);
+});
+
+app.post('/api/analyze-selector', async (c) => {
+  return c.get('services').selectorAnalysis.handle(c);
 });
 
 // Health check endpoint
