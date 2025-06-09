@@ -467,7 +467,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
         currentView === "chat" ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
       }`}>
         <div className="flex items-center justify-between p-4 rounded-t-lg">
-          <h3 className="font-medium text-sm text-gray-900">Chat with {advertiserName} AI</h3>
+          <span className="font-medium text-sm text-gray-900">Chat with {advertiserName} AI</span>
           <button
             onClick={() => setCurrentView("main")}
             className="text-gray-500 hover:text-gray-700 transition-colors"
