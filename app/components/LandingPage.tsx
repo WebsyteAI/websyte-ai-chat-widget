@@ -114,15 +114,18 @@ export function LandingPage() {
             Turn every article into an interactive conversation. Your readers get instant answers, you get better engagement, all with one line of code that won't break your design.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button size="lg" asChild>
-              <a href="https://websyte-ai-chat-widget.clementineso.workers.dev" target="_blank" rel="noopener noreferrer">
-                See It Work in 30 Seconds
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </a>
-            </Button>
-            <Button size="lg" variant="outline">
+            <a 
+              href="https://websyte-ai-chat-widget.clementineso.workers.dev" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-md border border-black bg-white text-black text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200"
+            >
+              See It Work in 30 Seconds
+              <ExternalLink className="ml-2 h-4 w-4" />
+            </a>
+            <button className="px-6 py-3 rounded-md border border-black bg-black text-white text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200">
               Fix My Website's Engagement
-            </Button>
+            </button>
           </div>
           
           {/* Video Demo in Hero */}
@@ -141,12 +144,9 @@ export function LandingPage() {
                         Watch confused visitors become engaged users in real-time
                       </p>
                     </div>
-                    <Button 
-                      size="lg" 
-                      className="bg-white text-gray-900 hover:bg-white/90"
-                    >
+                    <button className="px-6 py-3 rounded-md border border-white bg-white text-black text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(255,255,255)] transition duration-200">
                       Watch Demo (2:30)
-                    </Button>
+                    </button>
                   </div>
                   
                   {/* Video overlay elements */}
@@ -264,16 +264,14 @@ export function LandingPage() {
                     {`<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" async></script>`}
                   </code>
                 </div>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="absolute top-2 right-2"
+                <button 
+                  className="absolute top-2 right-2 px-3 py-2 rounded-md border border-black bg-white text-black text-sm hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] transition duration-200"
                   onClick={async () => {
                     await navigator.clipboard.writeText(`<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" async></script>`);
                   }}
                 >
                   <Copy className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
               
               <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">

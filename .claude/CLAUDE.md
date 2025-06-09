@@ -69,6 +69,7 @@ This project uses **pnpm** as the package manager. **ALWAYS use pnpm commands, n
 - Adding new dependencies or changing build process
 - Fixing bugs that affect user-facing functionality
 - Performance optimizations or architectural improvements
+- Removing features or functionality (document what was removed and why)
 
 ### Example Documentation Entry Format
 ```markdown

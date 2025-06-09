@@ -49,18 +49,6 @@ export class ContentExtractor {
     const styles = clonedElement.querySelectorAll('style');
     styles.forEach(style => style.remove());
     
-    const unwantedSelectors = [
-      'nav', 'header', 'footer', 'aside',
-      '.navigation', '.nav', '.menu',
-      '.sidebar', '.widget', '.advertisement',
-      '.ads', '.social-media', '.share-buttons',
-      '.comments', '.comment-form'
-    ];
-    
-    unwantedSelectors.forEach(selector => {
-      const elements = clonedElement.querySelectorAll(selector);
-      elements.forEach(el => el.remove());
-    });
     
     return clonedElement.textContent || "";
   }
