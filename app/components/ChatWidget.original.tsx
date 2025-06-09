@@ -2,9 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { ArrowUp, Square, Minimize2, FileText, Headphones, MessageCircle, Play, Pause, X, SkipBack, SkipForward, ChevronDown } from "lucide-react";
 import { marked } from "marked";
 import { ContentExtractor } from "../lib/content-extractor";
-import { useChatMessages } from "./ChatWidget/hooks/useChatMessages";
-import { useAudioPlayer } from "./ChatWidget/hooks/useAudioPlayer";
-import { useContentSummarization } from "./ChatWidget/hooks/useContentSummarization";
 
 interface Message {
   id: string;
@@ -42,47 +39,31 @@ marked.setOptions({
 
 export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTarget, advertiserName = "Nativo", advertiserLogo, isTargetedInjection = false }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [placeholder, setPlaceholder] = useState("Ask me about this content");
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [totalTime, setTotalTime] = useState(180); // 3 minutes as example
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [currentContent, setCurrentContent] = useState<"action" | "audio">("action");
   const [contentFadeClass, setContentFadeClass] = useState("");
   const [hasRendered, setHasRendered] = useState(false);
-  const [showSummaryDropdown, setShowSummaryDropdown] = useState(false);
   
-  // Extracted hooks for business logic
-  const { messages, addMessage, clearMessages } = useChatMessages();
-  const {
-    isPlaying,
-    audioProgress,
-    playbackSpeed,
-    elapsedTime,
-    totalTime,
-    handlePlayPause,
-    handleSpeedChange,
-    formatTime,
-    setAudioProgress
-  } = useAudioPlayer(180);
-  const {
-    summaries,
-    isLoadingSummaries,
-    currentContentMode,
-    originalContent,
-    targetElement,
-    mainContentElement,
-    setOriginalContent,
-    setTargetElement,
-    setMainContentElement,
-    handleContentModeChange: handleContentModeChangeHook,
-    loadSummaries
-  } = useContentSummarization({ 
-    baseUrl, 
-    extractPageContent: () => ContentExtractor.extractPageContent(contentTarget) 
-  });
+  // New state for summaries and content management
+  const [summaries, setSummaries] = useState<Summaries | null>(null);
+  const [isLoadingSummaries, setIsLoadingSummaries] = useState(false);
+  const [currentContentMode, setCurrentContentMode] = useState<ContentMode>('original');
+  const [originalContent, setOriginalContent] = useState<string>("");
+  const [targetElement, setTargetElement] = useState<Element | null>(null);
+  const [mainContentElement, setMainContentElement] = useState<Element | null>(null);
+  const [showSummaryDropdown, setShowSummaryDropdown] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -95,9 +76,72 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     return { __html: marked(content) };
   };
 
+  // Content management functions
+
+  const replaceWithSummary = (summaryContent: string) => {
+    console.log('Replacing content with summary:', summaryContent.substring(0, 100) + '...');
+    
+    if (!mainContentElement) {
+      console.error('No main content element available for content replacement');
+      return;
+    }
+    
+    // Store current classes and attributes to preserve them
+    const currentClasses = mainContentElement.className;
+    const currentId = mainContentElement.id;
+    const currentStyles = (mainContentElement as HTMLElement).style.cssText;
+    
+    // Replace innerHTML directly with the summary content
+    // The summary should contain the HTML structure we want
+    mainContentElement.innerHTML = summaryContent;
+    
+    // Restore classes and attributes in case they were lost
+    mainContentElement.className = currentClasses;
+    mainContentElement.id = currentId;
+    (mainContentElement as HTMLElement).style.cssText = currentStyles;
+    
+    console.log('Main content replaced successfully with summary HTML');
+  };
+
+  const restoreOriginalContent = () => {
+    if (mainContentElement && originalContent) {
+      mainContentElement.innerHTML = originalContent;
+      console.log('Original main content restored');
+    }
+  };
+
   const handleContentModeChange = (mode: ContentMode) => {
-    handleContentModeChangeHook(mode);
+    console.log('Content mode change requested:', mode);
+    console.log('Current mode:', currentContentMode);
+    console.log('Available summaries:', summaries);
+    
+    if (mode === currentContentMode) return;
+
+    setCurrentContentMode(mode);
     setShowSummaryDropdown(false);
+
+    switch (mode) {
+      case 'original':
+        console.log('Restoring original content');
+        restoreOriginalContent();
+        break;
+      case 'short':
+        if (summaries?.short) {
+          console.log('Replacing with short summary:', summaries.short.substring(0, 100) + '...');
+          replaceWithSummary(summaries.short);
+        } else {
+          console.warn('Short summary not available');
+        }
+        break;
+      case 'medium':
+        if (summaries?.medium) {
+          console.log('Replacing with medium summary:', summaries.medium.substring(0, 100) + '...');
+          replaceWithSummary(summaries.medium);
+        } else {
+          console.warn('Medium summary not available');
+        }
+        break;
+    }
   };
 
   useEffect(() => {
@@ -135,6 +179,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     // Warm cache, capture original content, and load all data in parallel
     const loadInitialData = async () => {
       setIsLoadingRecommendations(true);
+      setIsLoadingSummaries(true);
       
       try {
         // Warm the cache first to ensure subsequent calls are fast
@@ -162,8 +207,8 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
         
         const html = targetElement.outerHTML;
         
-        // Run selector analysis and recommendations in parallel
-        const [selectorResponse, recommendationsResponse] = await Promise.all([
+        // Run selector analysis, recommendations, and summaries in parallel
+        const [selectorResponse, recommendationsResponse, summariesResponse] = await Promise.all([
           fetch(`${baseUrl}/api/analyze-selector`, {
             method: "POST",
             headers: {
@@ -176,6 +221,17 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
             }),
           }),
           fetch(`${baseUrl}/api/recommendations`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              content: pageContent.content,
+              url: pageContent.url,
+              title: pageContent.title,
+            }),
+          }),
+          fetch(`${baseUrl}/api/summaries`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -219,8 +275,25 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
           throw new Error(`Recommendations API error: ${recommendationsResponse.status}`);
         }
 
-        // Load summaries using the hook
-        loadSummaries();
+        // Handle summaries response
+        if (summariesResponse.ok) {
+          const summariesData = await summariesResponse.json() as { short?: string; medium?: string };
+          console.log('Summaries API response:', summariesData);
+          if (summariesData.short && summariesData.medium) {
+            console.log('Setting summaries:', {
+              short: summariesData.short.substring(0, 100) + '...',
+              medium: summariesData.medium.substring(0, 100) + '...'
+            });
+            setSummaries({
+              short: summariesData.short,
+              medium: summariesData.medium
+            });
+          } else {
+            console.warn('Incomplete summaries data:', summariesData);
+          }
+        } else {
+          console.warn(`Summaries API error: ${summariesResponse.status}`);
+        }
 
       } catch (error) {
         console.error("Failed to load initial data:", error);
@@ -228,6 +301,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
         setRecommendations([]);
       } finally {
         setIsLoadingRecommendations(false);
+        setIsLoadingSummaries(false);
       }
     };
 
@@ -242,10 +316,14 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
-    const userMessage = addMessage({
+    const userMessage: Message = {
+      id: Date.now().toString(),
       role: "user",
       content: inputValue.trim(),
-    });
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
 
@@ -274,22 +352,32 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
 
       const data = await response.json() as { message?: string };
       
-      addMessage({
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
         role: "assistant",
         content: data.message || "Sorry, I couldn't process your request.",
-      });
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        addMessage({
+        const cancelMessage: Message = {
+          id: (Date.now() + 1).toString(),
           role: "assistant",
           content: "Message cancelled.",
-        });
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, cancelMessage]);
       } else {
         console.error("Error sending message:", error);
-        addMessage({
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
           role: "assistant",
           content: "Sorry, I'm having trouble connecting right now. Please try again.",
-        });
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, errorMessage]);
       }
     } finally {
       setIsLoading(false);
@@ -311,6 +399,42 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     }
   };
 
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  // Simulate audio progress when playing
+  useEffect(() => {
+    if (isPlaying) {
+      const interval = setInterval(() => {
+        setAudioProgress(prev => {
+          if (prev >= 100) {
+            setIsPlaying(false);
+            return 0;
+          }
+          return prev + 0.5;
+        });
+        setElapsedTime(prev => {
+          const newTime = prev + (0.5 * totalTime) / 100;
+          return newTime >= totalTime ? totalTime : newTime;
+        });
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [isPlaying, totalTime]);
+
+  const handleSpeedChange = () => {
+    const speeds = [0.5, 1, 1.25, 1.5, 2];
+    const currentIndex = speeds.indexOf(playbackSpeed);
+    const nextIndex = (currentIndex + 1) % speeds.length;
+    setPlaybackSpeed(speeds[nextIndex]);
+  };
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
 
   const handleExitAudio = () => {
     if (isTransitioning) return;
@@ -599,10 +723,14 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
                             // Send the message directly with the recommendation text
                             if (isLoading) return;
 
-                            addMessage({
+                            const userMessage: Message = {
+                              id: Date.now().toString(),
                               role: "user",
                               content: rec.title,
-                            });
+                              timestamp: new Date(),
+                            };
+
+                            setMessages(prev => [...prev, userMessage]);
                             setInputValue("");
                             setIsLoading(true);
 
@@ -631,22 +759,32 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
 
                               const data = await response.json() as { message?: string };
                               
-                              addMessage({
+                              const assistantMessage: Message = {
+                                id: (Date.now() + 1).toString(),
                                 role: "assistant",
                                 content: data.message || "Sorry, I couldn't process your request.",
-                              });
+                                timestamp: new Date(),
+                              };
+
+                              setMessages(prev => [...prev, assistantMessage]);
                             } catch (error) {
                               if (error instanceof Error && error.name === 'AbortError') {
-                                addMessage({
+                                const cancelMessage: Message = {
+                                  id: (Date.now() + 1).toString(),
                                   role: "assistant",
                                   content: "Message cancelled.",
-                                });
+                                  timestamp: new Date(),
+                                };
+                                setMessages(prev => [...prev, cancelMessage]);
                               } else {
                                 console.error("Error sending message:", error);
-                                addMessage({
+                                const errorMessage: Message = {
+                                  id: (Date.now() + 1).toString(),
                                   role: "assistant",
                                   content: "Sorry, I'm having trouble connecting right now. Please try again.",
-                                });
+                                  timestamp: new Date(),
+                                };
+                                setMessages(prev => [...prev, errorMessage]);
                               }
                             } finally {
                               setIsLoading(false);

@@ -1,146 +1,218 @@
-# Test Suite for Websyte AI Chat Widget Services
+# Testing Guide
 
-This directory contains comprehensive tests for the worker services in the `workers/services/` directory.
+## Overview
 
-## Test Framework
+This project includes comprehensive testing for both the backend worker services and the frontend ChatWidget component architecture.
 
-- **Vitest** - Fast unit test framework with TypeScript support
-- **jsdom** - DOM environment for testing
-- **vi** - Built-in mocking utilities
+## Test Structure
 
-## Test Coverage
+### Backend Worker Services
+- **Location**: `workers/services/*.test.ts`
+- **Coverage**: 93 tests with 100% statement, function, and line coverage
+- **Framework**: Vitest with TypeScript support
 
-Current test coverage is **100% statements, 100% functions, 100% lines, 98% branches**.
-
-**Total Test Count**: 235 tests across 9 test files (93 worker services + 121 app library tests + 21 integration tests)
-
-## Test Files
-
-### `openai.test.ts`
-Tests for the OpenAI service that handles API communication:
-- ✅ Chat completion with various options
-- ✅ Summary generation with content truncation
-- ✅ Recommendations generation with JSON parsing
-- ✅ Error handling (API errors, network errors, abort signals)
-- ✅ Content truncation for large inputs
-
-### `chat.test.ts`
-Tests for the chat service that handles chat requests:
-- ✅ HTTP method validation
-- ✅ Request validation (message, context requirements)
-- ✅ Message history management (truncation to last 10)
-- ✅ System prompt generation with page context
-- ✅ Error handling (abort errors, general errors)
-- ✅ Content processing and context handling
-
-### `recommendations.test.ts`
-Tests for the recommendations service:
-- ✅ HTTP method validation
-- ✅ Content/title requirement validation
-- ✅ OpenAI integration for generating recommendations
-- ✅ Fallback responses on errors
-- ✅ Abort signal handling
-
-### `summarize.test.ts`
-Tests for the summarize service:
-- ✅ HTTP method validation
-- ✅ Content validation (including whitespace-only content)
-- ✅ OpenAI integration for summary generation
-- ✅ Error handling and user-friendly error messages
-- ✅ Special character and edge case handling
-
-## App Library Tests
-
-### `content-extractor.test.ts`
-Tests for the content extraction system with caching:
-- ✅ Cache-first content extraction and fallback behavior
-- ✅ Retry mechanism with exponential backoff (3 attempts)
-- ✅ DOM processing (script/style removal, text cleaning)
-- ✅ Content validation (length and word count requirements)
-- ✅ Cache utility methods (warming, clearing, statistics)
-- ✅ Error handling (missing selectors, insufficient content)
-
-### `content-cache.test.ts`
-Tests for the content caching system:
-- ✅ Basic cache operations (set, get, has, clear)
-- ✅ TTL functionality and expiration handling
-- ✅ LRU eviction when size limits exceeded
-- ✅ Cache statistics tracking (hits, misses, hit rate)
-- ✅ Configuration updates and logging functionality
-- ✅ Edge cases (special characters, large content, concurrent access)
-
-### `storage.test.ts`
-Tests for the localStorage management system:
-- ✅ Message operations (save, retrieve, filter by URL)
-- ✅ Widget state management (save/load, partial updates)
-- ✅ Storage limits (message history truncation)
-- ✅ Error handling (JSON parsing, storage quota, corrupted data)
-- ✅ Edge cases (concurrent access, missing data, large content)
-
-### `utils.test.ts`
-Tests for utility functions:
-- ✅ Class name merging with clsx and tailwind-merge
-- ✅ Conditional class handling and array inputs
-- ✅ Tailwind class conflict resolution
-- ✅ Real-world component class scenarios
-- ✅ Edge cases (empty inputs, special characters, nested objects)
+### Frontend Component Architecture
+- **Location**: `app/components/ChatWidget/hooks/*.ts`
+- **Architecture**: Modular hooks-based architecture for enhanced testability
+- **Testing Strategy**: Individual hook testing for isolated business logic
 
 ## Running Tests
 
+### Run All Tests
 ```bash
-# Run tests once
 pnpm test:run
+```
 
-# Run tests in watch mode
+### Watch Mode
+```bash
 pnpm test
+```
 
-# Run tests with coverage
+### Coverage Report
+```bash
 pnpm test:coverage
+```
 
-# Run tests with UI
+### Interactive UI
+```bash
 pnpm test:ui
 ```
 
-## Test Setup
+## Frontend Testing Strategy
 
-- **Global fetch mock** - All HTTP requests are mocked
-- **Automatic mock reset** - Mocks are reset between tests
-- **TypeScript support** - Full type checking in tests
-- **Error logging verification** - Console error calls are verified
+### ChatWidget Modular Architecture
 
-## Key Testing Patterns
+The ChatWidget has been refactored into testable hooks:
 
-### Mocking Hono Context
+#### `useChatMessages` Hook
+**Purpose**: Message state management
 ```typescript
-const createMockContext = (method: string = 'POST', body: any = {}) => {
-  // Mock request and context objects
-}
+// Example test
+import { renderHook, act } from '@testing-library/react';
+import { useChatMessages } from '../app/components/ChatWidget/hooks/useChatMessages';
+
+test('should add message with correct structure', () => {
+  const { result } = renderHook(() => useChatMessages());
+  
+  act(() => {
+    result.current.addMessage({
+      role: 'user',
+      content: 'Test message'
+    });
+  });
+  
+  expect(result.current.messages).toHaveLength(1);
+  expect(result.current.messages[0]).toMatchObject({
+    role: 'user',
+    content: 'Test message',
+    id: expect.any(String),
+    timestamp: expect.any(Date)
+  });
+});
 ```
 
-### OpenAI Service Mocking
+#### `useAudioPlayer` Hook
+**Purpose**: Audio playback controls and state
 ```typescript
-const mockOpenAI = {
-  chatCompletion: vi.fn(),
-  generateSummary: vi.fn(),
-  generateRecommendations: vi.fn()
-} as any
+// Example test
+test('should handle play/pause correctly', () => {
+  const { result } = renderHook(() => useAudioPlayer(180));
+  
+  expect(result.current.isPlaying).toBe(false);
+  
+  act(() => {
+    result.current.handlePlayPause();
+  });
+  
+  expect(result.current.isPlaying).toBe(true);
+});
 ```
 
-### Abort Signal Testing
+#### `useContentSummarization` Hook
+**Purpose**: Content mode switching and DOM manipulation
 ```typescript
-const abortController = new AbortController()
-// Test with abortController.signal
+// Example test
+test('should change content mode correctly', () => {
+  const mockExtractPageContent = jest.fn();
+  const { result } = renderHook(() => 
+    useContentSummarization({
+      baseUrl: 'http://test.com',
+      extractPageContent: mockExtractPageContent
+    })
+  );
+  
+  act(() => {
+    result.current.handleContentModeChange('short');
+  });
+  
+  expect(result.current.currentContentMode).toBe('short');
+});
 ```
 
-## Error Scenarios Covered
+## Backend Test Coverage
 
-- Invalid HTTP methods (non-POST)
-- Missing or invalid request data
-- OpenAI API errors and rate limiting
-- Network failures
-- Request cancellation (abort signals)
-- Malformed JSON responses
-- Long content handling
-- Special characters and edge cases
+### Service Files Tested
+1. **ChatService** (`chat.test.ts`)
+   - 23 tests covering chat endpoint functionality
+   - Message processing, context handling, error scenarios
 
-All services have robust error handling with appropriate HTTP status codes and user-friendly error messages.
+2. **RecommendationsService** (`recommendations.test.ts`)
+   - 17 tests covering recommendation generation
+   - Content analysis, fallback responses, API integration
+
+3. **SummarizeService** (`summarize.test.ts`)
+   - 17 tests covering content summarization
+   - Content validation, token limits, error handling
+
+4. **OpenAIService** (`openai.test.ts`)
+   - 17 tests covering OpenAI API integration
+   - Request formatting, response handling, abort scenarios
+
+5. **CommonUtilities** (`common.test.ts`)
+   - 19 tests covering shared utility functions
+   - ServiceValidation, ErrorHandler, FallbackResponses
+
+### Test Categories
+
+#### Happy Path Tests
+- Valid requests with proper responses
+- Successful API integrations
+- Correct data transformations
+
+#### Error Handling Tests
+- Invalid request formats
+- API failures and timeouts
+- Edge cases and boundary conditions
+
+#### Integration Tests
+- Service interaction patterns
+- End-to-end request/response flows
+- Mock external dependencies
+
+## Testing Best Practices
+
+### Hook Testing
+1. **Isolation**: Test each hook independently
+2. **State Changes**: Use `act()` for state updates
+3. **Async Operations**: Properly handle async hook operations
+4. **Cleanup**: Ensure proper cleanup after tests
+
+### Service Testing
+1. **Mocking**: Mock external dependencies (OpenAI, fetch)
+2. **Error Scenarios**: Test all error conditions
+3. **Data Validation**: Verify input/output data structures
+4. **Performance**: Test timeout and abort scenarios
+
+### Future Testing Plans
+
+#### Frontend Component Tests
+- Add comprehensive hook tests for new modular architecture
+- Integration tests for hook combinations
+- UI interaction tests with React Testing Library
+
+#### End-to-End Tests
+- Widget embedding and initialization
+- Cross-browser compatibility
+- Performance testing
+
+#### Accessibility Tests
+- Screen reader compatibility
+- Keyboard navigation
+- WCAG compliance
+
+## Test Configuration
+
+### Vitest Setup
+- **Configuration**: `vitest.config.ts`
+- **Setup File**: `test/setup.ts`
+- **Coverage**: Statement, branch, function, and line coverage
+- **Reporters**: JSON, HTML, and text coverage reports
+
+### Mock Infrastructure
+- Comprehensive mocking for external APIs
+- Consistent test data fixtures
+- Isolated test environments
+
+## Contributing Tests
+
+When adding new features:
+
+1. **Write Hook Tests First**: For new custom hooks, write tests before implementation
+2. **Maintain Coverage**: Ensure new code maintains 100% coverage standards
+3. **Test Edge Cases**: Include error scenarios and boundary conditions
+4. **Document Test Intent**: Use descriptive test names and comments
+5. **Update This Guide**: Keep testing documentation current with new patterns
+
+## Debugging Tests
+
+### Common Issues
+- **Async Operations**: Use proper async/await or waitFor patterns
+- **State Updates**: Wrap state changes in `act()`
+- **Cleanup**: Ensure timers and subscriptions are cleaned up
+- **Mocking**: Verify mocks are properly reset between tests
+
+### Debugging Tools
+- `pnpm test:ui` for interactive debugging
+- Coverage reports to identify untested code paths
+- Console logging in test mode for debugging
+- VS Code debugger integration for step-through debugging

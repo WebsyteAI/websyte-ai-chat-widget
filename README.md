@@ -169,12 +169,29 @@ pnpm run build
 
 The widget is built from:
 - `app/widget-entry.tsx` - Standalone widget entry point with Shadow DOM setup
-- `app/components/ChatWidget.tsx` - Main React component
+- `app/components/ChatWidget.tsx` - Main React component with modular hooks architecture ✅ **REFACTORED**
+- `app/components/ChatWidget/hooks/` - Extracted business logic hooks for better testability ✅ **NEW**
 - Built with Vite into a self-contained IIFE bundle
 - Shadow DOM isolation for complete style encapsulation
 - Tailwind CSS v4 compiled and inlined for Shadow DOM compatibility
 - Optimized build process outputs to `public/dist/` directory
 - Single command development workflow with `pnpm run dev:widget`
+
+#### Modular Component Architecture ✅ **NEW**
+
+The ChatWidget has been refactored into a modular architecture for improved maintainability and testability:
+
+**Custom Hooks (Business Logic)**:
+- `useChatMessages` - Message state management with add/clear operations
+- `useAudioPlayer` - Audio playback simulation with controls and timing
+- `useContentSummarization` - Content mode switching and DOM manipulation
+
+**Benefits**:
+- **Enhanced Testability**: Each hook can be unit tested independently
+- **Separation of Concerns**: Business logic separated from UI rendering
+- **Reusability**: Hooks can be reused across different components
+- **Maintainability**: Cleaner component structure with focused responsibilities
+- **Same UI**: Zero visual changes while improving code quality
 
 ## Deployment
 
@@ -358,7 +375,16 @@ Built with ❤️ using React Router and Cloudflare Workers.
 
 ## Recent Updates
 
-### ✅ Content Extraction Retry Logic and UI Refinements (Latest)
+### ✅ ChatWidget Modular Architecture Refactoring (Latest)
+- **Improved Testability**: Extracted business logic into 3 focused custom hooks for independent unit testing
+- **Separation of Concerns**: Separated message management, audio controls, and content summarization logic
+- **Zero UI Changes**: Maintained identical user experience while improving code architecture
+- **Enhanced Maintainability**: Reduced main component complexity from 875+ lines with cleaner structure
+- **Hook-Based Design**: `useChatMessages`, `useAudioPlayer`, and `useContentSummarization` hooks
+- **Better Developer Experience**: Each hook can be tested, debugged, and modified independently
+- **Future-Ready**: Modular architecture supports easier feature additions and modifications
+
+### ✅ Content Extraction Retry Logic and UI Refinements
 - **Robust Content Extraction**: Implemented 3-retry mechanism with exponential backoff (1s → 1.5s → 2.25s) for dynamic content
 - **Required Content Targeting**: Made contentTarget a required parameter, removed default selector fallbacks
 - **Async Content Processing**: Converted content extraction to async with proper error propagation throughout widget
