@@ -13,7 +13,7 @@ interface Message {
 interface ChatWidgetProps {
   apiEndpoint?: string;
   baseUrl?: string;
-  contentTarget?: string;
+  contentTarget: string;
   advertiserName?: string;
   advertiserLogo?: string;
   isTargetedInjection?: boolean;
@@ -30,7 +30,7 @@ marked.setOptions({
   gfm: true,
 });
 
-export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTarget = "article, main, .content, #content", advertiserName = "Nativo", advertiserLogo, isTargetedInjection = false }: ChatWidgetProps) {
+export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTarget, advertiserName = "Nativo", advertiserLogo, isTargetedInjection = false }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -76,7 +76,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     const loadRecommendations = async () => {
       setIsLoadingRecommendations(true);
       try {
-        const pageContent = extractPageContent();
+        const pageContent = await extractPageContent();
         
         const response = await fetch(`${baseUrl}/api/recommendations`, {
           method: "POST",
@@ -94,18 +94,13 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
           const data = await response.json() as { recommendations?: Recommendation[]; placeholder?: string };
           setRecommendations(data.recommendations || []);
           setPlaceholder(data.placeholder || "Ask me about this content");
+        } else {
+          throw new Error(`API error: ${response.status}`);
         }
       } catch (error) {
         console.error("Failed to load recommendations:", error);
-        // Set fallback recommendations
-        setRecommendations([
-          { title: "What is this about?", description: "Understand the main topic" },
-          { title: "How does this work?", description: "Learn the process" },
-          { title: "Why is this important?", description: "Explore the significance" },
-          { title: "What are the implications?", description: "Consider the impact" },
-          { title: "Who is this for?", description: "Identify the target audience" },
-          { title: "What happens next?", description: "Explore future steps" }
-        ]);
+        // No fallback recommendations - leave empty if content extraction fails
+        setRecommendations([]);
       } finally {
         setIsLoadingRecommendations(false);
       }
@@ -114,45 +109,8 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     loadRecommendations();
   }, []);
 
-  const extractPageContent = () => {
-    try {
-      const pageContent = ContentExtractor.extractPageContent(contentTarget);
-      
-      // Validate content quality
-      if (!ContentExtractor.isValidContent(pageContent.content)) {
-        console.warn('Extracted content failed validation, using meta description fallback');
-        
-        // Try meta description as fallback
-        const fallbackContent = pageContent.description || '';
-        if (ContentExtractor.isValidContent(fallbackContent)) {
-          return {
-            title: pageContent.title,
-            url: pageContent.url,
-            content: fallbackContent
-          };
-        }
-        
-        // If meta description is also insufficient, throw error
-        throw new Error('No valid content available for extraction');
-      }
-      
-      return pageContent;
-    } catch (error) {
-      console.warn('Failed to extract page content:', error);
-      
-      // Try meta description as final fallback
-      const metaContent = document.querySelector('meta[name="description"]')?.getAttribute('content') || '';
-      if (ContentExtractor.isValidContent(metaContent)) {
-        return {
-          title: document.title,
-          url: window.location.href,
-          content: metaContent
-        };
-      }
-      
-      // If all fallbacks fail, throw error to prevent empty content
-      throw new Error('No sufficient content found on page for processing');
-    }
+  const extractPageContent = async () => {
+    return await ContentExtractor.extractPageContent(contentTarget);
   };
 
   const sendMessage = async () => {
@@ -173,7 +131,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     setAbortController(controller);
 
     try {
-      const pageContent = extractPageContent();
+      const pageContent = await extractPageContent();
       
       const response = await fetch(`${baseUrl}${apiEndpoint}`, {
         method: "POST",
@@ -240,12 +198,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     setCurrentView("chat");
 
     try {
-      const pageContent = extractPageContent();
-      
-      // Additional validation to ensure we have content
-      if (!pageContent.content || pageContent.content.trim().length === 0) {
-        throw new Error("No content available for summarization");
-      }
+      const pageContent = await extractPageContent();
       
       const response = await fetch(`${baseUrl}/api/summarize`, {
         method: "POST",
@@ -589,7 +542,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
                             setAbortController(controller);
 
                             try {
-                              const pageContent = extractPageContent();
+                              const pageContent = await extractPageContent();
                               
                               const response = await fetch(`${baseUrl}${apiEndpoint}`, {
                                 method: "POST",
