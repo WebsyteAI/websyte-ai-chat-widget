@@ -12,6 +12,8 @@ This directory contains comprehensive tests for the worker services in the `work
 
 Current test coverage is **100% statements, 100% functions, 100% lines, 98% branches**.
 
+**Total Test Count**: 235 tests across 9 test files (93 worker services + 121 app library tests + 21 integration tests)
+
 ## Test Files
 
 ### `openai.test.ts`
@@ -46,6 +48,42 @@ Tests for the summarize service:
 - ✅ OpenAI integration for summary generation
 - ✅ Error handling and user-friendly error messages
 - ✅ Special character and edge case handling
+
+## App Library Tests
+
+### `content-extractor.test.ts`
+Tests for the content extraction system with caching:
+- ✅ Cache-first content extraction and fallback behavior
+- ✅ Retry mechanism with exponential backoff (3 attempts)
+- ✅ DOM processing (script/style removal, text cleaning)
+- ✅ Content validation (length and word count requirements)
+- ✅ Cache utility methods (warming, clearing, statistics)
+- ✅ Error handling (missing selectors, insufficient content)
+
+### `content-cache.test.ts`
+Tests for the content caching system:
+- ✅ Basic cache operations (set, get, has, clear)
+- ✅ TTL functionality and expiration handling
+- ✅ LRU eviction when size limits exceeded
+- ✅ Cache statistics tracking (hits, misses, hit rate)
+- ✅ Configuration updates and logging functionality
+- ✅ Edge cases (special characters, large content, concurrent access)
+
+### `storage.test.ts`
+Tests for the localStorage management system:
+- ✅ Message operations (save, retrieve, filter by URL)
+- ✅ Widget state management (save/load, partial updates)
+- ✅ Storage limits (message history truncation)
+- ✅ Error handling (JSON parsing, storage quota, corrupted data)
+- ✅ Edge cases (concurrent access, missing data, large content)
+
+### `utils.test.ts`
+Tests for utility functions:
+- ✅ Class name merging with clsx and tailwind-merge
+- ✅ Conditional class handling and array inputs
+- ✅ Tailwind class conflict resolution
+- ✅ Real-world component class scenarios
+- ✅ Edge cases (empty inputs, special characters, nested objects)
 
 ## Running Tests
 

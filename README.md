@@ -9,9 +9,10 @@ An embeddable AI chat widget with modern design that provides intelligent, conte
 - 🎯 **Professional Landing Page**: Modern SaaS-style homepage with interactive demo and configuration tools ✅ **NEW**
 - 🛠️ **Interactive Configuration**: Real-time embed code generator with customizable options ✅ **NEW**
 - 🎨 **shadcn/ui Components**: Beautiful, accessible UI components with TypeScript support ✅ **NEW**
+- 🧠 **Smart Content Detection**: AI-powered content analysis that preserves headers while replacing body text ✅ **NEW**
 - 🔄 **Robust Content Extraction**: 3-retry mechanism with exponential backoff for dynamic content ✅ **ENHANCED**
 - 🧠 **Context-Aware AI**: Understands page content for intelligent, relevant responses
-- ⚡ **One-Click Summarization**: Instant AI-powered page summaries with loading states
+- ⚡ **Selective Summarization**: Smart summaries that preserve article structure and branding ✅ **ENHANCED**
 - 🎯 **Flexible Injection**: Inject widget into any DOM element or use as fixed overlay
 - 🎭 **Shadow DOM Isolation**: Complete style isolation prevents conflicts with host page
 - 🎨 **Modern Design**: Clean, professional UI with customizable branding and refined typography ✅ **UPDATED**

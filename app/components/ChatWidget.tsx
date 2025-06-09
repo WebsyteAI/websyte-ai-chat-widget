@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowUp, Square, Minimize2, FileText, Headphones, MessageCircle, Play, Pause, X, SkipBack, SkipForward } from "lucide-react";
+import { ArrowUp, Square, Minimize2, FileText, Headphones, MessageCircle, Play, Pause, X, SkipBack, SkipForward, ChevronDown } from "lucide-react";
 import { marked } from "marked";
 import { ContentExtractor } from "../lib/content-extractor";
 
@@ -24,6 +24,13 @@ interface Recommendation {
   description: string;
 }
 
+interface Summaries {
+  short: string;
+  medium: string;
+}
+
+type ContentMode = 'original' | 'short' | 'medium';
+
 // Configure marked for safe HTML rendering
 marked.setOptions({
   breaks: true,
@@ -35,7 +42,6 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isSummarizing, setIsSummarizing] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
@@ -49,7 +55,18 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
   const [currentContent, setCurrentContent] = useState<"action" | "audio">("action");
   const [contentFadeClass, setContentFadeClass] = useState("");
   const [hasRendered, setHasRendered] = useState(false);
+  
+  // New state for summaries and content management
+  const [summaries, setSummaries] = useState<Summaries | null>(null);
+  const [isLoadingSummaries, setIsLoadingSummaries] = useState(false);
+  const [currentContentMode, setCurrentContentMode] = useState<ContentMode>('original');
+  const [originalContent, setOriginalContent] = useState<string>("");
+  const [targetElement, setTargetElement] = useState<Element | null>(null);
+  const [mainContentElement, setMainContentElement] = useState<Element | null>(null);
+  const [showSummaryDropdown, setShowSummaryDropdown] = useState(false);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,9 +76,125 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     return { __html: marked(content) };
   };
 
+  // Content management functions
+  const findAndCaptureContentElement = () => {
+    // Try each selector individually to find the best match
+    const selectors = contentTarget.split(',').map(s => s.trim());
+    
+    for (const selector of selectors) {
+      const element = document.querySelector(selector);
+      if (element) {
+        console.log('Found content element with selector:', selector, element);
+        setTargetElement(element);
+        
+        // Use smart content detection to find the main content area
+        const smartMainContent = ContentExtractor.findMainContentElement(selector);
+        if (smartMainContent) {
+          console.log('Smart content detection found main content:', smartMainContent);
+          setMainContentElement(smartMainContent);
+          setOriginalContent(smartMainContent.innerHTML);
+        } else {
+          console.log('Smart detection failed, falling back to full element');
+          setMainContentElement(element);
+          setOriginalContent(element.innerHTML);
+        }
+        
+        return element;
+      }
+    }
+    
+    console.warn('No content element found with any of the selectors:', selectors);
+    return null;
+  };
+
+  const replaceWithSummary = (summaryContent: string) => {
+    console.log('Replacing content with summary:', summaryContent.substring(0, 100) + '...');
+    
+    if (!mainContentElement) {
+      console.error('No main content element available for content replacement');
+      return;
+    }
+    
+    // Store current classes and attributes to preserve them
+    const currentClasses = mainContentElement.className;
+    const currentId = mainContentElement.id;
+    const currentStyles = (mainContentElement as HTMLElement).style.cssText;
+    
+    // Replace innerHTML directly with the summary content
+    // The summary should contain the HTML structure we want
+    mainContentElement.innerHTML = summaryContent;
+    
+    // Restore classes and attributes in case they were lost
+    mainContentElement.className = currentClasses;
+    mainContentElement.id = currentId;
+    (mainContentElement as HTMLElement).style.cssText = currentStyles;
+    
+    console.log('Main content replaced successfully with summary HTML');
+  };
+
+  const restoreOriginalContent = () => {
+    if (mainContentElement && originalContent) {
+      mainContentElement.innerHTML = originalContent;
+      console.log('Original main content restored');
+    }
+  };
+
+  const handleContentModeChange = (mode: ContentMode) => {
+    console.log('Content mode change requested:', mode);
+    console.log('Current mode:', currentContentMode);
+    console.log('Available summaries:', summaries);
+    
+    if (mode === currentContentMode) return;
+
+    setCurrentContentMode(mode);
+    setShowSummaryDropdown(false);
+
+    switch (mode) {
+      case 'original':
+        console.log('Restoring original content');
+        restoreOriginalContent();
+        break;
+      case 'short':
+        if (summaries?.short) {
+          console.log('Replacing with short summary:', summaries.short.substring(0, 100) + '...');
+          replaceWithSummary(summaries.short);
+        } else {
+          console.warn('Short summary not available');
+        }
+        break;
+      case 'medium':
+        if (summaries?.medium) {
+          console.log('Replacing with medium summary:', summaries.medium.substring(0, 100) + '...');
+          replaceWithSummary(summaries.medium);
+        } else {
+          console.warn('Medium summary not available');
+        }
+        break;
+    }
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showSummaryDropdown && dropdownRef.current) {
+        const target = event.target as Element;
+        if (!dropdownRef.current.contains(target)) {
+          console.log('Clicking outside dropdown, closing');
+          setShowSummaryDropdown(false);
+        }
+      }
+    };
+
+    // Use click instead of mousedown to allow onClick handlers to fire first
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showSummaryDropdown]);
 
   useEffect(() => {
     // Trigger slide-in animation after component mounts
@@ -72,44 +205,90 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
   }, []);
 
   useEffect(() => {
-    // Load recommendations when component mounts
-    const loadRecommendations = async () => {
+    // Warm cache, capture original content, and load recommendations and summaries when component mounts
+    const loadInitialData = async () => {
       setIsLoadingRecommendations(true);
+      setIsLoadingSummaries(true);
+      
       try {
+        // Warm the cache first to ensure subsequent calls are fast
+        await ContentExtractor.warmCache(contentTarget);
+        
+        // Find and capture the specific content element
+        findAndCaptureContentElement();
+        
         const pageContent = await extractPageContent();
         
-        const response = await fetch(`${baseUrl}/api/recommendations`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            content: pageContent.content,
-            url: pageContent.url,
-            title: pageContent.title,
+        // Load recommendations and summaries in parallel
+        const [recommendationsResponse, summariesResponse] = await Promise.all([
+          fetch(`${baseUrl}/api/recommendations`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              content: pageContent.content,
+              url: pageContent.url,
+              title: pageContent.title,
+            }),
           }),
-        });
+          fetch(`${baseUrl}/api/summaries`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              content: pageContent.content,
+              url: pageContent.url,
+              title: pageContent.title,
+            }),
+          })
+        ]);
 
-        if (response.ok) {
-          const data = await response.json() as { recommendations?: Recommendation[]; placeholder?: string };
+        // Handle recommendations response
+        if (recommendationsResponse.ok) {
+          const data = await recommendationsResponse.json() as { recommendations?: Recommendation[]; placeholder?: string };
           setRecommendations(data.recommendations || []);
           setPlaceholder(data.placeholder || "Ask me about this content");
         } else {
-          throw new Error(`API error: ${response.status}`);
+          throw new Error(`Recommendations API error: ${recommendationsResponse.status}`);
         }
+
+        // Handle summaries response
+        if (summariesResponse.ok) {
+          const summariesData = await summariesResponse.json() as { short?: string; medium?: string };
+          console.log('Summaries API response:', summariesData);
+          if (summariesData.short && summariesData.medium) {
+            console.log('Setting summaries:', {
+              short: summariesData.short.substring(0, 100) + '...',
+              medium: summariesData.medium.substring(0, 100) + '...'
+            });
+            setSummaries({
+              short: summariesData.short,
+              medium: summariesData.medium
+            });
+          } else {
+            console.warn('Incomplete summaries data:', summariesData);
+          }
+        } else {
+          console.warn(`Summaries API error: ${summariesResponse.status}`);
+        }
+
       } catch (error) {
-        console.error("Failed to load recommendations:", error);
+        console.error("Failed to load initial data:", error);
         // No fallback recommendations - leave empty if content extraction fails
         setRecommendations([]);
       } finally {
         setIsLoadingRecommendations(false);
+        setIsLoadingSummaries(false);
       }
     };
 
-    loadRecommendations();
-  }, []);
+    loadInitialData();
+  }, [contentTarget]);
 
   const extractPageContent = async () => {
+    // This will use cached content if available, otherwise extract fresh content
     return await ContentExtractor.extractPageContent(contentTarget);
   };
 
@@ -191,62 +370,6 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     }
   };
 
-  const handleSummarize = async () => {
-    if (isSummarizing) return;
-
-    setIsSummarizing(true);
-    setCurrentView("chat");
-
-    try {
-      const pageContent = await extractPageContent();
-      
-      const response = await fetch(`${baseUrl}/api/summarize`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: pageContent.content,
-          url: pageContent.url,
-          title: pageContent.title,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to generate summary");
-      }
-
-      const data = await response.json() as { summary?: string };
-      
-      const summaryMessage: Message = {
-        id: Date.now().toString(),
-        role: "assistant",
-        content: `${data.summary || "No summary available."}`,
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, summaryMessage]);
-    } catch (error) {
-      console.error("Error generating summary:", error);
-      
-      let errorContent = "Sorry, I couldn't generate a summary right now. Please try again.";
-      
-      // Provide specific error message for content extraction issues
-      if (error instanceof Error && error.message.includes('content')) {
-        errorContent = "I couldn't find enough content on this page to summarize. Please make sure you're on a page with substantial text content.";
-      }
-      
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        role: "assistant",
-        content: errorContent,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsSummarizing(false);
-    }
-  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -373,17 +496,69 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <button
-                    onClick={handleSummarize}
-                    disabled={isSummarizing || isTransitioning}
-                    className="action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                    title="Summarize this page"
-                  >
-                    <FileText size={18} className="text-gray-600 group-hover:text-gray-800" />
-                    <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">
-                      {isSummarizing ? "Summarizing..." : "Summarize"}
-                    </span>
-                  </button>
+                  {/* Summarization Dropdown */}
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('Dropdown toggled, current state:', showSummaryDropdown, 'summaries:', summaries);
+                        setShowSummaryDropdown(!showSummaryDropdown);
+                      }}
+                      disabled={isLoadingSummaries || isTransitioning}
+                      className="action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      title="Content display options"
+                    >
+                      <FileText size={18} className="text-gray-600 group-hover:text-gray-800" />
+                      <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">
+                        {isLoadingSummaries 
+                          ? "Loading..." 
+                          : currentContentMode === 'original' 
+                            ? "Original" 
+                            : currentContentMode === 'short' 
+                              ? "Short" 
+                              : "Medium"
+                        }
+                        {!isLoadingSummaries && !summaries && " (No summaries)"}
+                      </span>
+                      <ChevronDown size={16} className={`text-gray-600 group-hover:text-gray-800 transition-transform ${showSummaryDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    {showSummaryDropdown && (
+                      <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[120px]">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('Original button clicked');
+                            handleContentModeChange('original');
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors ${currentContentMode === 'original' ? 'bg-gray-50 font-medium' : ''}`}
+                        >
+                          Original
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('Short button clicked, summaries:', summaries);
+                            handleContentModeChange('short');
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors ${!summaries?.short ? 'opacity-50' : ''} ${currentContentMode === 'short' ? 'bg-gray-50 font-medium' : ''}`}
+                        >
+                          Short {!summaries?.short && '(no summary)'}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('Medium button clicked, summaries:', summaries);
+                            handleContentModeChange('medium');
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors ${!summaries?.medium ? 'opacity-50' : ''} ${currentContentMode === 'medium' ? 'bg-gray-50 font-medium' : ''}`}
+                        >
+                          Medium {!summaries?.medium && '(no summary)'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   
                   <button
                     onClick={handleStartAudio}

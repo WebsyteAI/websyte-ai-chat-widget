@@ -75,6 +75,70 @@ export class OpenAIService {
     });
   }
 
+  async generateBatchSummaries(content: string, title: string, url: string, signal?: AbortSignal): Promise<{ short: string; medium: string }> {
+    const webpageInfo = title || url ? 
+      `You are working with${title ? ` the webpage "${title}"` : ''}${url ? ` (${url})` : ''}.` : 
+      'You are working with webpage content.';
+
+    const baseContent = `${webpageInfo} ${content ? `Page content: ${content.slice(0, 50000)}` : 'No content available.'}`;
+
+    // Generate short and medium summaries in parallel
+    const [shortSummary, mediumSummary] = await Promise.all([
+      // Short summary (3-4 sentences, ~100 tokens)
+      this.chatCompletion([
+        {
+          role: "system",
+          content: `You are a helpful assistant that creates very concise HTML summaries of web page content. 
+          ${baseContent}
+          
+          Generate a very brief summary in exactly 3-4 sentences wrapped in proper HTML structure. Use <h1>, <h2>, <p>, <div>, and other HTML tags as appropriate to match typical article structure. Focus only on the most essential information. Return ONLY the raw HTML content without any markdown formatting, code blocks, or backticks - just pure HTML.`
+        },
+        {
+          role: "user",
+          content: `Generate a direct 3-4 sentence HTML summary with proper tags like <h1>, <p>, etc.`
+        }
+      ], {
+        model: "gpt-4.1-mini",
+        temperature: 0.3,
+        maxTokens: 150,
+        signal
+      }),
+
+      // Medium summary (1-2 paragraphs, ~200 tokens)
+      this.chatCompletion([
+        {
+          role: "system",
+          content: `You are a helpful assistant that creates concise, informative HTML summaries of web page content. 
+          ${baseContent}
+          
+          Generate a balanced summary in 1-2 short paragraphs wrapped in proper HTML structure. Use <h1>, <h2>, <p>, <div>, and other HTML tags as appropriate to match typical article structure. Include key points and important details. Return ONLY the raw HTML content without any markdown formatting, code blocks, or backticks - just pure HTML.`
+        },
+        {
+          role: "user",
+          content: `Generate a direct HTML summary with proper tags like <h1>, <p>, etc.`
+        }
+      ], {
+        model: "gpt-4.1-mini",
+        temperature: 0.5,
+        maxTokens: 250,
+        signal
+      })
+    ]);
+
+    // Clean up any markdown code block wrappers that might still appear
+    const cleanHtml = (html: string): string => {
+      return html
+        .replace(/```html\n?/g, '')
+        .replace(/```\n?/g, '')
+        .trim();
+    };
+
+    return {
+      short: cleanHtml(shortSummary),
+      medium: cleanHtml(mediumSummary)
+    };
+  }
+
   async generateRecommendations(
     content: string,
     title: string,

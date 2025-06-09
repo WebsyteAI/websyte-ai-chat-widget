@@ -4,6 +4,7 @@ import { createRequestHandler } from "react-router";
 import { OpenAIService } from './services/openai';
 import { ChatService } from './services/chat';
 import { SummarizeService } from './services/summarize';
+import { SummariesService } from './services/summaries';
 import { RecommendationsService } from './services/recommendations';
 import type { Env } from './types';
 
@@ -22,6 +23,7 @@ type AppType = {
     services: {
       chat: ChatService;
       summarize: SummarizeService;
+      summaries: SummariesService;
       recommendations: RecommendationsService;
     };
   };
@@ -41,6 +43,7 @@ app.use('*', cors({
 let servicesCache: {
   chat: ChatService;
   summarize: SummarizeService;
+  summaries: SummariesService;
   recommendations: RecommendationsService;
 } | null = null;
 
@@ -50,6 +53,7 @@ const getServices = (env: Env) => {
     servicesCache = {
       chat: new ChatService(openai),
       summarize: new SummarizeService(openai),
+      summaries: new SummariesService(openai),
       recommendations: new RecommendationsService(openai),
     };
   }
@@ -73,6 +77,10 @@ app.post('/api/summarize', async (c) => {
 
 app.post('/api/recommendations', async (c) => {
   return c.get('services').recommendations.handleRecommendations(c);
+});
+
+app.post('/api/summaries', async (c) => {
+  return c.get('services').summaries.handleSummaries(c);
 });
 
 // Health check endpoint

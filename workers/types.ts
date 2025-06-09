@@ -36,6 +36,17 @@ export interface RecommendationsResponse {
   placeholder: string;
 }
 
+export interface SummariesRequest {
+  content: string;
+  url?: string;
+  title?: string;
+}
+
+export interface SummariesResponse {
+  short: string;
+  medium: string;
+}
+
 export interface OpenAIResponse {
   choices?: Array<{ message?: { content?: string } }>;
 }

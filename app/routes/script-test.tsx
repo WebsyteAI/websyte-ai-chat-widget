@@ -5,7 +5,7 @@ export default function ScriptTest() {
   useEffect(() => {
     const script = document.createElement('script');
     script.src = `${window.location.origin}/dist/widget.js`;
-    script.setAttribute('data-content-target', 'main, .content, article');
+    script.setAttribute('data-content-target', '#main-article');
     script.setAttribute('data-api-endpoint', '/api/chat');
     script.setAttribute('data-base-url', '');
     script.setAttribute('data-advertiser-name', 'TIME Magazine');
@@ -28,7 +28,7 @@ export default function ScriptTest() {
           borderRadius: "8px", 
           boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
         }}>
-          <article>
+          <article id="main-article">
             <header style={{ marginBottom: "2rem", borderBottom: "1px solid #eee", paddingBottom: "1rem" }}>
               <h1 style={{ color: "#333", fontSize: "2.5rem", fontWeight: "bold", marginBottom: "0.5rem", lineHeight: "1.2" }}>
                 The Orb Will See You Now
