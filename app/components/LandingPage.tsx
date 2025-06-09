@@ -118,12 +118,12 @@ export function LandingPage() {
               href="https://websyte-ai-chat-widget.clementineso.workers.dev" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-md border border-black bg-white text-black text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-md border border-black bg-white text-black text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
             >
               See It Work in 30 Seconds
               <ExternalLink className="ml-2 h-4 w-4" />
             </a>
-            <button className="px-6 py-3 rounded-md border border-black bg-black text-white text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200">
+            <button className="px-6 py-3 rounded-md border border-black bg-black text-white text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer">
               Fix My Website's Engagement
             </button>
           </div>
@@ -144,7 +144,7 @@ export function LandingPage() {
                         Watch confused visitors become engaged users in real-time
                       </p>
                     </div>
-                    <button className="px-6 py-3 rounded-md border border-white bg-white text-black text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(255,255,255)] transition duration-200">
+                    <button className="px-6 py-3 rounded-md border border-white bg-white text-black text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(255,255,255)] transition duration-200 cursor-pointer">
                       Watch Demo (2:30)
                     </button>
                   </div>
@@ -265,7 +265,7 @@ export function LandingPage() {
                   </code>
                 </div>
                 <button 
-                  className="absolute top-2 right-2 px-3 py-2 rounded-md border border-black bg-white text-black text-sm hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] transition duration-200"
+                  className="absolute top-2 right-2 px-3 py-2 rounded-md border border-black bg-white text-black text-sm hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
                   onClick={async () => {
                     await navigator.clipboard.writeText(`<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" async></script>`);
                   }}
@@ -368,15 +368,18 @@ export function LandingPage() {
             Every day you wait is another day of missed opportunities. Your competitors are already keeping visitors engaged longer.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" asChild>
-              <a href="https://websyte-ai-chat-widget.clementineso.workers.dev" target="_blank" rel="noopener noreferrer">
-                See the Results Now
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </a>
-            </Button>
-            <Button size="lg" variant="outline">
+            <a 
+              href="https://websyte-ai-chat-widget.clementineso.workers.dev" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-md border border-black bg-white text-black text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
+            >
+              See the Results Now
+              <ExternalLink className="ml-2 h-4 w-4" />
+            </a>
+            <button className="px-6 py-3 rounded-md border border-black bg-black text-white text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer">
               Get Started in 5 Minutes
-            </Button>
+            </button>
           </div>
         </div>
       </section>
