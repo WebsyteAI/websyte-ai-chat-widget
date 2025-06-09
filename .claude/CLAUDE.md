@@ -27,6 +27,11 @@ This project uses **pnpm** as the package manager. **ALWAYS use pnpm commands, n
 - Uses Vite for bundling
 - Widget is deployed as a standalone JavaScript file at `/dist/widget.js`
 - Service layer uses shared utilities in `workers/services/common.ts` for consistency
+- **Component-Based UI**: ChatWidget refactored into 6 focused components with custom hooks
+  - Main component: `app/components/ChatWidget/ChatWidget.tsx` (~400 lines)
+  - UI components: ActionBar, AudioPlayer, ChatMessage, ChatPanel, MessageInput, RecommendationsList
+  - Business logic hooks: useChatMessages, useAudioPlayer, useContentSummarization
+  - Organized in `app/components/ChatWidget/` with separate `components/` and `hooks/` directories
 
 ## File Access Guidelines
 **IMPORTANT**: Never read files in the following directories as they contain built/generated content:

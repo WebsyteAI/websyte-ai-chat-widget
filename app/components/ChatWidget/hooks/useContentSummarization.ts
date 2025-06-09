@@ -1,35 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState } from "react";
+import type { Summaries, ContentMode } from "../types";
 
-interface Summaries {
-  short: string;
-  medium: string;
-}
-
-type ContentMode = 'original' | 'short' | 'medium';
-
-export interface UseContentSummarizationProps {
+interface UseContentSummarizationProps {
   baseUrl: string;
-  extractPageContent: () => Promise<{ content: string; url: string; title: string }>;
+  extractPageContent: () => Promise<any>;
 }
 
-export interface UseContentSummarizationReturn {
-  summaries: Summaries | null;
-  isLoadingSummaries: boolean;
-  currentContentMode: ContentMode;
-  originalContent: string;
-  targetElement: Element | null;
-  mainContentElement: Element | null;
-  setOriginalContent: (content: string) => void;
-  setTargetElement: (element: Element | null) => void;
-  setMainContentElement: (element: Element | null) => void;
-  handleContentModeChange: (mode: ContentMode) => void;
-  loadSummaries: (preloadedSummaries?: Summaries) => Promise<void>;
-}
-
-export function useContentSummarization({ 
-  baseUrl, 
-  extractPageContent 
-}: UseContentSummarizationProps): UseContentSummarizationReturn {
+export function useContentSummarization({ baseUrl, extractPageContent }: UseContentSummarizationProps) {
   const [summaries, setSummaries] = useState<Summaries | null>(null);
   const [isLoadingSummaries, setIsLoadingSummaries] = useState(false);
   const [currentContentMode, setCurrentContentMode] = useState<ContentMode>('original');
@@ -37,7 +14,7 @@ export function useContentSummarization({
   const [targetElement, setTargetElement] = useState<Element | null>(null);
   const [mainContentElement, setMainContentElement] = useState<Element | null>(null);
 
-  const replaceWithSummary = useCallback((summaryContent: string) => {
+  const replaceWithSummary = (summaryContent: string) => {
     console.log('Replacing content with summary:', summaryContent.substring(0, 100) + '...');
     
     if (!mainContentElement) {
@@ -59,16 +36,16 @@ export function useContentSummarization({
     (mainContentElement as HTMLElement).style.cssText = currentStyles;
     
     console.log('Main content replaced successfully with summary HTML');
-  }, [mainContentElement]);
+  };
 
-  const restoreOriginalContent = useCallback(() => {
+  const restoreOriginalContent = () => {
     if (mainContentElement && originalContent) {
       mainContentElement.innerHTML = originalContent;
       console.log('Original main content restored');
     }
-  }, [mainContentElement, originalContent]);
+  };
 
-  const handleContentModeChange = useCallback((mode: ContentMode) => {
+  const handleContentModeChange = (mode: ContentMode) => {
     console.log('Content mode change requested:', mode);
     console.log('Current mode:', currentContentMode);
     console.log('Available summaries:', summaries);
@@ -99,62 +76,11 @@ export function useContentSummarization({
         }
         break;
     }
-  }, [currentContentMode, summaries, restoreOriginalContent, replaceWithSummary]);
+  };
 
-  const loadSummaries = useCallback(async (preloadedSummaries?: Summaries) => {
-    // If preloaded summaries are provided, use them directly
-    if (preloadedSummaries) {
-      console.log('Using preloaded summaries:', {
-        short: preloadedSummaries.short.substring(0, 100) + '...',
-        medium: preloadedSummaries.medium.substring(0, 100) + '...'
-      });
-      setSummaries(preloadedSummaries);
-      setIsLoadingSummaries(false);
-      return;
-    }
-    
-    setIsLoadingSummaries(true);
-    
-    try {
-      const pageContent = await extractPageContent();
-      
-      const response = await fetch(`${baseUrl}/api/summaries`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: pageContent.content,
-          url: pageContent.url,
-          title: pageContent.title,
-        }),
-      });
-
-      if (response.ok) {
-        const summariesData = await response.json() as { short?: string; medium?: string };
-        console.log('Summaries API response:', summariesData);
-        
-        if (summariesData.short && summariesData.medium) {
-          console.log('Setting summaries:', {
-            short: summariesData.short.substring(0, 100) + '...',
-            medium: summariesData.medium.substring(0, 100) + '...'
-          });
-          setSummaries({
-            short: summariesData.short,
-            medium: summariesData.medium
-          });
-        } else {
-          console.warn('Incomplete summaries data:', summariesData);
-        }
-      } else {
-        console.warn(`Summaries API error: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Failed to load summaries:", error);
-    } finally {
-      setIsLoadingSummaries(false);
-    }
-  }, [baseUrl, extractPageContent]);
+  const loadSummaries = (summariesData: Summaries) => {
+    setSummaries(summariesData);
+  };
 
   return {
     summaries,
@@ -168,5 +94,6 @@ export function useContentSummarization({
     setMainContentElement,
     handleContentModeChange,
     loadSummaries,
+    setIsLoadingSummaries,
   };
 }

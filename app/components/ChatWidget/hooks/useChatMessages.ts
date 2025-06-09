@@ -1,38 +1,22 @@
-import { useState, useCallback } from 'react';
+import { useState } from "react";
+import type { Message } from "../types";
 
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
-
-export interface UseChatMessagesReturn {
-  messages: Message[];
-  addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => Message;
-  clearMessages: () => void;
-}
-
-export function useChatMessages(): UseChatMessagesReturn {
+export function useChatMessages() {
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const addMessage = useCallback((messageData: Omit<Message, 'id' | 'timestamp'>) => {
-    const message: Message = {
-      ...messageData,
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+  const addMessage = (message: Omit<Message, "id" | "timestamp">) => {
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      ...message,
       timestamp: new Date(),
     };
-    setMessages(prev => [...prev, message]);
-    return message;
-  }, []);
-
-  const clearMessages = useCallback(() => {
-    setMessages([]);
-  }, []);
-
-  return {
-    messages,
-    addMessage,
-    clearMessages,
+    setMessages(prev => [...prev, newMessage]);
+    return newMessage;
   };
+
+  const clearMessages = () => {
+    setMessages([]);
+  };
+
+  return { messages, addMessage, clearMessages };
 }

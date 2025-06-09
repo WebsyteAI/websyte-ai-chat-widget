@@ -1,66 +1,134 @@
-import { Recommendation, ContentMode } from '../types';
-import { RecommendationsList } from './RecommendationsList';
-import { ContentModeSelector } from './ContentModeSelector';
+import { FileText, Headphones, MessageCircle, ChevronDown } from "lucide-react";
+import type { ContentMode, Summaries } from "../types";
 
 interface ActionBarProps {
-  recommendations: Recommendation[];
-  isLoadingRecommendations: boolean;
-  currentContentMode: ContentMode;
-  summaries: { short?: string; medium?: string } | null;
+  advertiserLogo?: string;
+  advertiserName: string;
+  baseUrl: string;
+  currentView: "main" | "chat";
+  showSummaryDropdown: boolean;
+  summaries: Summaries | null;
   isLoadingSummaries: boolean;
-  onRecommendationClick: (recommendation: string) => void;
+  currentContentMode: ContentMode;
+  isTransitioning: boolean;
+  onToggleSummaryDropdown: () => void;
   onContentModeChange: (mode: ContentMode) => void;
   onStartAudio: () => void;
-  onStartChat: () => void;
-  onLoadSummaries: () => void;
+  onToggleChat: () => void;
+  dropdownRef: React.RefObject<HTMLDivElement>;
 }
 
 export function ActionBar({
-  recommendations,
-  isLoadingRecommendations,
-  currentContentMode,
+  advertiserLogo,
+  advertiserName,
+  baseUrl,
+  currentView,
+  showSummaryDropdown,
   summaries,
   isLoadingSummaries,
-  onRecommendationClick,
+  currentContentMode,
+  isTransitioning,
+  onToggleSummaryDropdown,
   onContentModeChange,
   onStartAudio,
-  onStartChat,
-  onLoadSummaries,
+  onToggleChat,
+  dropdownRef,
 }: ActionBarProps) {
   return (
-    <div className="p-4 space-y-4">
-      {/* Action Buttons */}
-      <div className="flex flex-col space-y-3">
-        <button
-          onClick={onStartChat}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          💬 Start Chat
-        </button>
+    <>
+      {/* Action Bar Content */}
+      <div className="flex items-center gap-3">
+        {advertiserLogo || (advertiserName === "Nativo") ? (
+          <>
+            <img 
+              src={advertiserLogo || `${baseUrl}/nativo-logo.png`} 
+              alt={advertiserName} 
+              className="w-8 h-8 rounded"
+            />
+            <span className="font-bold text-gray-800 text-base">AI</span>
+          </>
+        ) : (
+          <span className="font-bold text-gray-800 text-base">{advertiserName} AI</span>
+        )}
+      </div>
+      
+      <div className="flex items-center gap-3">
+        {/* Summarization Dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('Dropdown toggled, current state:', showSummaryDropdown, 'summaries:', summaries);
+              onToggleSummaryDropdown();
+            }}
+            disabled={isLoadingSummaries || isTransitioning}
+            className="action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            title="Content display options"
+          >
+            <FileText size={18} className="text-gray-600 group-hover:text-gray-800" />
+            <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">
+              Summarize Content
+            </span>
+            <ChevronDown size={16} className={`text-gray-600 group-hover:text-gray-800 transition-transform ${showSummaryDropdown ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {/* Dropdown Menu */}
+          {showSummaryDropdown && (
+            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[120px]">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('Original button clicked');
+                  onContentModeChange('original');
+                }}
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors ${currentContentMode === 'original' ? 'bg-gray-50 font-medium' : ''}`}
+              >
+                Original
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('Short button clicked, summaries:', summaries);
+                  onContentModeChange('short');
+                }}
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors ${!summaries?.short ? 'opacity-50' : ''} ${currentContentMode === 'short' ? 'bg-gray-50 font-medium' : ''}`}
+              >
+                Short {!summaries?.short && '(no summary)'}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('Medium button clicked, summaries:', summaries);
+                  onContentModeChange('medium');
+                }}
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors ${!summaries?.medium ? 'opacity-50' : ''} ${currentContentMode === 'medium' ? 'bg-gray-50 font-medium' : ''}`}
+              >
+                Medium {!summaries?.medium && '(no summary)'}
+              </button>
+            </div>
+          )}
+        </div>
         
         <button
           onClick={onStartAudio}
-          className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+          disabled={isTransitioning}
+          className="action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer disabled:opacity-50"
+          title="Audio Version"
         >
-          🎧 Listen to Audio Summary
+          <Headphones size={18} className="text-gray-600 group-hover:text-gray-800" />
+          <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">Audio Version</span>
+        </button>
+        
+        <button
+          onClick={onToggleChat}
+          disabled={isTransitioning}
+          className={`action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer disabled:opacity-50 ${currentView === "chat" ? "bg-gray-100" : ""}`}
+          title="Ask Questions"
+        >
+          <MessageCircle size={18} className="text-gray-600 group-hover:text-gray-800" />
+          <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">Ask Questions</span>
         </button>
       </div>
-
-      {/* Content Mode Selector */}
-      <ContentModeSelector
-        currentMode={currentContentMode}
-        summaries={summaries}
-        isLoadingSummaries={isLoadingSummaries}
-        onModeChange={onContentModeChange}
-        onLoadSummaries={onLoadSummaries}
-      />
-
-      {/* Recommendations */}
-      <RecommendationsList
-        recommendations={recommendations}
-        isLoading={isLoadingRecommendations}
-        onRecommendationClick={onRecommendationClick}
-      />
-    </div>
+    </>
   );
 }

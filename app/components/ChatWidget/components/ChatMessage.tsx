@@ -1,15 +1,9 @@
-import { marked } from 'marked';
-import { Message } from '../types';
+import { marked } from "marked";
+import type { Message } from "../types";
 
 interface ChatMessageProps {
   message: Message;
 }
-
-// Configure marked for safe HTML rendering
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-});
 
 export function ChatMessage({ message }: ChatMessageProps) {
   const renderMarkdown = (content: string) => {

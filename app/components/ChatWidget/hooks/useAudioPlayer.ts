@@ -1,23 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from "react";
 
-export interface UseAudioPlayerReturn {
-  isPlaying: boolean;
-  audioProgress: number;
-  playbackSpeed: number;
-  elapsedTime: number;
-  totalTime: number;
-  handlePlayPause: () => void;
-  handleSpeedChange: () => void;
-  formatTime: (seconds: number) => string;
-  setAudioProgress: (progress: number) => void;
-}
-
-export function useAudioPlayer(totalDuration: number = 180): UseAudioPlayerReturn {
+export function useAudioPlayer(totalTimeSeconds: number = 180) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [totalTime] = useState(totalDuration);
+  const [totalTime] = useState(totalTimeSeconds);
 
   // Simulate audio progress when playing
   useEffect(() => {
@@ -39,22 +27,22 @@ export function useAudioPlayer(totalDuration: number = 180): UseAudioPlayerRetur
     }
   }, [isPlaying, totalTime]);
 
-  const handlePlayPause = useCallback(() => {
+  const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
-  }, [isPlaying]);
+  };
 
-  const handleSpeedChange = useCallback(() => {
+  const handleSpeedChange = () => {
     const speeds = [0.5, 1, 1.25, 1.5, 2];
     const currentIndex = speeds.indexOf(playbackSpeed);
     const nextIndex = (currentIndex + 1) % speeds.length;
     setPlaybackSpeed(speeds[nextIndex]);
-  }, [playbackSpeed]);
+  };
 
-  const formatTime = useCallback((seconds: number) => {
+  const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  }, []);
+  };
 
   return {
     isPlaying,
@@ -66,5 +54,7 @@ export function useAudioPlayer(totalDuration: number = 180): UseAudioPlayerRetur
     handleSpeedChange,
     formatTime,
     setAudioProgress,
+    setIsPlaying,
+    setElapsedTime,
   };
 }
