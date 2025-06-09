@@ -49,7 +49,6 @@ export class ContentExtractor {
     const styles = clonedElement.querySelectorAll('style');
     styles.forEach(style => style.remove());
     
-    // Remove elements commonly used for non-content purposes
     const unwantedSelectors = [
       'nav', 'header', 'footer', 'aside',
       '.navigation', '.nav', '.menu',
