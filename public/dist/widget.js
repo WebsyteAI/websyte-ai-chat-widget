@@ -174,6 +174,8 @@ Please report this to https://github.com/markedjs/marked.`,r){const f="<p>An err
         position: relative;
         z-index: 999;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        display: flex;
+        justify-content: center;
       `:h.style.cssText=`
         position: fixed;
         bottom: 16px;

@@ -118,6 +118,8 @@ declare global {
         position: relative;
         z-index: 999;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        display: flex;
+        justify-content: center;
       `;
     } else {
       // For body injection, use fixed positioning (original behavior)

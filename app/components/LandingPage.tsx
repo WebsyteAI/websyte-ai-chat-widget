@@ -108,10 +108,10 @@ export function LandingPage() {
             Zero Setup Conflicts Guaranteed
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
-            Stop Losing Visitors Who Can't Find What They Need
+            Turn Every Page Into an Interactive Conversation
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Turn every article into an interactive conversation. Your readers get instant answers, you get better engagement, all with one line of code that won't break your design.
+            Your readers get instant answers, you get better engagement, all with one line of code that won't break your design.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <a 
@@ -123,7 +123,13 @@ export function LandingPage() {
               See It Work in 30 Seconds
               <ExternalLink className="ml-2 h-4 w-4" />
             </a>
-            <button className="px-6 py-3 rounded-md border border-black bg-black text-white text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer">
+            <button 
+              onClick={() => {
+                const getStartedSection = document.getElementById('get-started');
+                getStartedSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-6 py-3 rounded-md border border-black bg-black text-white text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
+            >
               Fix My Website's Engagement
             </button>
           </div>
@@ -236,7 +242,7 @@ export function LandingPage() {
 
 
       {/* Quick Setup Section */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section id="get-started" className="py-20 px-4 bg-muted/30">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
