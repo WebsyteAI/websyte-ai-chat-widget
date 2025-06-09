@@ -171,11 +171,11 @@ describe('OpenAIService', () => {
           content: `You are a helpful assistant that creates concise, informative summaries of web page content. 
         You are working with the webpage "${title}" (${url}). Page content: ${content.slice(0, 50000)}
         
-        Provide a clear, direct summary in 2-3 paragraphs based on the provided content. Do not include any prefacing text like "Summary of" or similar headers.`
+        Provide a brief, direct summary in 1-2 short paragraphs based on the provided content. Keep it concise and focused on key points. Start directly with the summary content - do not include any prefacing text, headers, or phrases like "Summary of", "This article discusses", "The content covers", etc. Begin immediately with the substantive information.`
         },
         {
           role: 'user',
-          content: 'Please summarize this webpage content.'
+          content: 'Provide a direct summary without any introductory phrases.'
         }
       ]
 
@@ -185,7 +185,8 @@ describe('OpenAIService', () => {
           body: JSON.stringify({
             model: 'gpt-4.1-mini',
             messages: expectedMessages,
-            temperature: 0.5
+            temperature: 0.5,
+            max_tokens: 200
           })
         })
       )
@@ -219,7 +220,7 @@ describe('OpenAIService', () => {
       expect(systemMessage).toContain(url)
       
       // The content in the message should be truncated - verify by checking the pattern
-      const contentMatch = systemMessage.match(/Page content: (.+?)\s+Provide a clear, direct summary/)
+      const contentMatch = systemMessage.match(/Page content: (.+?)\s+Provide a brief, direct summary/)
       expect(contentMatch).toBeTruthy()
       if (contentMatch) {
         const extractedContent = contentMatch[1]

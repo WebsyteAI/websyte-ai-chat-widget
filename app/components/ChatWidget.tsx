@@ -489,7 +489,10 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
         <div className="flex items-center justify-between p-4 rounded-t-lg">
           <h3 className="font-semibold text-gray-900">Chat with {advertiserName} AI</h3>
           <button
-            onClick={() => setCurrentView("main")}
+            onClick={() => {
+              setCurrentView("main");
+              tracker?.trackChatClosed();
+            }}
             className="text-gray-500 hover:text-gray-700 transition-colors"
           >
             <Minimize2 size={18} />
@@ -542,6 +545,12 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
                           key={index} 
                           className="bg-gray-50 border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors flex-shrink-0 w-64"
                           onClick={async () => {
+                            // Track recommendation click
+                            tracker?.trackRecommendationClicked({
+                              recommendationText: rec.title,
+                              position: index
+                            });
+                            
                             setCurrentView("chat");
                             
                             // Send the message directly with the recommendation text
@@ -554,9 +563,17 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
                               timestamp: new Date(),
                             };
 
+                            // Track message sending from recommendation
+                            tracker?.trackMessageSent({
+                              messageType: 'recommendation',
+                              messageLength: rec.title.length,
+                              isFirstMessage: messages.length === 0
+                            });
+
                             setMessages(prev => [...prev, userMessage]);
                             setInputValue("");
                             setIsLoading(true);
+                            messageStartTime.current = Date.now();
 
                             const controller = new AbortController();
                             setAbortController(controller);
