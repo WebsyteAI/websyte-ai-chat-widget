@@ -1,17 +1,17 @@
 import type { Context } from 'hono';
 import { OpenAIService } from './openai';
 import type { SummarizeRequest, Env } from '../types';
+import { ServiceValidation, ErrorHandler } from './common';
 
 export class SummarizeService {
   constructor(private openai: OpenAIService) {}
 
   async handleSummarize(c: Context<{ Bindings: Env }>): Promise<Response> {
-    if (c.req.method !== "POST") {
-      return c.json({ error: "Method not allowed" }, 405);
-    }
+    const methodError = ServiceValidation.validatePostMethod(c);
+    if (methodError) return methodError;
 
     try {
-      const body: SummarizeRequest = await c.req.json();
+      const body: SummarizeRequest = await ServiceValidation.parseRequestBody<SummarizeRequest>(c);
       const { content, url = "", title = "" } = body;
 
       if (!content || typeof content !== "string" || content.trim() === "") {
@@ -23,11 +23,15 @@ export class SummarizeService {
       return c.json({ summary });
 
     } catch (error) {
-      console.error("Summarize API error:", error);
-      return c.json({ 
-        error: "Internal server error",
-        summary: "Sorry, I couldn't generate a summary right now."
-      }, 500);
+      return ErrorHandler.handleGeneralError(
+        c,
+        error,
+        "Summarize API error:",
+        { 
+          error: "Internal server error",
+          summary: "Sorry, I couldn't generate a summary right now."
+        }
+      );
     }
   }
 }

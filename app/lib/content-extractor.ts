@@ -6,14 +6,14 @@ interface PageContent {
 }
 
 export class ContentExtractor {
-  static extractPageContent(): PageContent {
+  static extractPageContent(contentTarget: string): PageContent {
     const url = window.location.href;
     const title = document.title || "";
     
     const metaDescription = document.querySelector('meta[name="description"]');
     const description = metaDescription?.getAttribute("content") || "";
 
-    const content = this.extractMainContent();
+    const content = this.extractMainContent(contentTarget);
 
     return {
       url,
@@ -23,28 +23,18 @@ export class ContentExtractor {
     };
   }
 
-  private static extractMainContent(): string {
-    const selectors = [
-      'article',
-      '[role="main"]',
-      'main',
-      '.content',
-      '.post-content',
-      '.entry-content',
-      '.article-content',
-      '#content',
-      '.main-content',
-    ];
-
-    for (const selector of selectors) {
-      const element = document.querySelector(selector);
-      if (element) {
-        return this.cleanText(this.removeScriptAndStyleContent(element));
-      }
+  private static extractMainContent(contentTarget: string): string {
+    const targetElement = document.querySelector(contentTarget);
+    if (!targetElement) {
+      throw new Error(`Content target selector "${contentTarget}" not found on page`);
     }
-
-    const bodyText = this.removeScriptAndStyleContent(document.body);
-    return this.cleanText(bodyText);
+    
+    const targetContent = this.cleanText(this.removeScriptAndStyleContent(targetElement));
+    if (!this.isValidContent(targetContent)) {
+      throw new Error(`Content target "${contentTarget}" found but contains insufficient content`);
+    }
+    
+    return targetContent;
   }
 
   private static removeScriptAndStyleContent(element: Element): string {

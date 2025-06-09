@@ -23,3 +23,56 @@ This project uses **pnpm** as the package manager. Always use pnpm commands:
 - Chat widget built with React and deployed as Cloudflare Workers
 - Uses Vite for bundling
 - Widget is deployed as a standalone JavaScript file at `/dist/widget.js`
+- Service layer uses shared utilities in `workers/services/common.ts` for consistency
+
+## Documentation Maintenance
+**IMPORTANT**: When adding new features or making significant changes, always update documentation:
+
+### Required Documentation Updates
+1. **README.md** - Update the following sections when applicable:
+   - Features list (add new features with ✅ **NEW** flag)
+   - Architecture section (note significant architectural changes)
+   - API Endpoints (document new endpoints)
+   - Recent Updates section (add new entry at top with latest changes)
+   - Configuration options (if new script attributes added)
+
+2. **PLANNING.md** - Update the following sections when applicable:
+   - Project Status (if completion status changes)
+   - Implementation Phases (mark completed phases as ✅ COMPLETED)
+   - Recent Implementation sections (add detailed technical implementation notes)
+   - File Structure (if new files or directories added)
+   - API Endpoints (document new endpoint specifications)
+
+3. **CLAUDE.md** (this file) - Update when applicable:
+   - Architecture notes (for significant architectural changes)
+   - New development patterns or requirements
+   - Testing requirements (if test strategy changes)
+   - Build process changes
+
+### Documentation Standards
+- Use ✅ **NEW** for brand new features
+- Use ✅ **UPDATED** for significant enhancements to existing features  
+- Use ✅ **ENHANCED** for improvements to existing functionality
+- Include specific file locations when documenting technical implementations
+- Always maintain the "Recent Updates" sections in chronological order (newest first)
+- Document both the "what" and "why" of significant changes
+- Include testing impact and coverage maintenance notes
+
+### When to Update Documentation
+- Adding new API endpoints or services
+- Creating new UI components or major UI changes
+- Implementing new configuration options
+- Refactoring significant portions of code
+- Adding new dependencies or changing build process
+- Fixing bugs that affect user-facing functionality
+- Performance optimizations or architectural improvements
+
+### Example Documentation Entry Format
+```markdown
+### ✅ Feature Name (Latest)
+- **What Changed**: Brief description of the change
+- **Technical Details**: Key implementation details and file locations
+- **User Impact**: How this affects end users or developers
+- **Testing**: Test coverage impact and validation approach
+- **Benefits**: Why this change was made and its advantages
+```

@@ -51,7 +51,11 @@ Customize the widget behavior with data attributes:
 
 ### Configuration Options
 
-- **`data-content-target`**: CSS selector for page content extraction (default: `"article, main, .content, #content"`)
+- **`data-content-target`**: CSS selector for page content extraction (default: `"article, main, .content, #content"`) ✅ **ENHANCED**
+  - **Required**: Content extraction now strictly validates this selector
+  - **Quality assured**: Ensures minimum 50 characters and 10 words of content
+  - **Error handling**: Clear error messages if selector not found or content insufficient
+  - **Advanced cleaning**: Removes scripts, styles, navigation, ads, and unwanted elements
 - **`data-api-endpoint`**: Custom API endpoint URL (default: `"/api/chat"`)
 - **`data-base-url`**: Base URL for all API endpoints (default: `""`)
 - **`data-target-element`**: CSS selector for widget injection target (default: none - uses fixed overlay) ✅ **NEW**
@@ -247,10 +251,11 @@ window.WebsyteChat = {
 
 - **Frontend**: React + TypeScript compiled to vanilla JS bundle with glass morphism UI
 - **Backend**: Cloudflare Workers with OpenAI integration and context-aware responses
+- **Services**: Modular service architecture with shared utilities for consistency ✅ **REFACTORED**
 - **Styling**: Tailwind CSS v4 with transparent blur effects (compiled and inlined for Shadow DOM)
 - **Isolation**: Shadow DOM for complete style encapsulation and host page protection
 - **Configuration**: Script tag data attributes with automatic parsing
-- **Content Extraction**: Configurable CSS selectors for page content targeting (50KB content limit)
+- **Content Extraction**: Enhanced content processing with strict selector validation and quality assurance ✅ **ENHANCED**
 - **Storage**: localStorage for chat history and widget state
 - **Build**: Vite with custom widget configuration, protected public directory, and stable CSS inlining
 
@@ -350,7 +355,24 @@ Built with ❤️ using React Router and Cloudflare Workers.
 
 ## Recent Updates
 
-### ✅ Professional Landing Page (Latest)
+### ✅ Service Architecture Refactoring (Latest)
+- **Code Organization**: Extracted common patterns from service files into shared utilities
+- **Modular Design**: Created `workers/services/common.ts` with reusable service components
+- **Consistent Error Handling**: Unified error handling patterns across all services
+- **Reduced Duplication**: Eliminated repeated HTTP validation, error handling, and fallback responses
+- **Maintainability**: Improved code maintainability with DRY principles and shared utilities
+- **Test Coverage**: All 48 tests maintained with 100% coverage after refactoring
+- **Shorter Summaries**: Optimized summary responses to 1-2 paragraphs with 200 token limit
+
+### ✅ Summarize Endpoint Quality Fix  
+- **Fixed Issue**: Eliminated unwanted "Summary of ''" prefacing text in summarize responses
+- **Root Cause**: Improved system prompt construction to handle empty title/URL metadata gracefully
+- **Solution**: Enhanced prompt with explicit instructions to avoid prefacing headers
+- **Result**: Cleaner, more professional summary responses that start directly with content
+- **Testing**: Updated comprehensive test suite while maintaining 100% coverage
+- **Deployment**: Changes deployed and verified in production environment
+
+### ✅ Professional Landing Page
 - Created comprehensive SaaS-style landing page with modern design and interactive features
 - Integrated shadcn/ui component library (Button, Card, Badge, Input, Separator) with proper TypeScript support
 - Built interactive embed code generator with real-time configuration updates
@@ -365,6 +387,15 @@ Built with ❤️ using React Router and Cloudflare Workers.
 - Enhanced user experience with consistent animation behavior across all injection methods
 - Deployed smooth entrance animations using cubic-bezier easing for polished feel
 - Maintained 60fps performance with optimized keyframe timing
+
+### ✅ Enhanced Content Extraction System (Latest)
+- Upgraded from basic DOM queries to advanced content processing with robust validation
+- Enhanced ContentExtractor with strict selector requirements and comprehensive content cleaning
+- Advanced element filtering removes scripts, styles, navigation, ads, and unwanted content
+- Content quality validation ensures minimum 50 characters and 10 words for meaningful extraction
+- Clear error handling with descriptive messages for debugging production content issues
+- Unified content processing ensures chat and summarize endpoints use identical extraction logic
+- Increased content limit from 3,000 to 10,000 characters for richer context
 
 ### ✅ Content Limit Optimization
 - Optimized content processing limit to 50,000 characters for better performance

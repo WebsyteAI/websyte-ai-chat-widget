@@ -1,17 +1,17 @@
 import type { Context } from 'hono';
 import { OpenAIService } from './openai';
 import type { ChatRequest, ChatMessage, Env } from '../types';
+import { ServiceValidation, ErrorHandler } from './common';
 
 export class ChatService {
   constructor(private openai: OpenAIService) {}
 
   async handleChat(c: Context<{ Bindings: Env }>): Promise<Response> {
-    if (c.req.method !== "POST") {
-      return c.json({ error: "Method not allowed" }, 405);
-    }
+    const methodError = ServiceValidation.validatePostMethod(c);
+    if (methodError) return methodError;
 
     try {
-      const body: ChatRequest = await c.req.json();
+      const body: ChatRequest = await ServiceValidation.parseRequestBody<ChatRequest>(c);
       const { message, history = [], context } = body;
 
       if (!message || typeof message !== "string") {
@@ -40,18 +40,21 @@ export class ChatService {
       return c.json({ message: assistantMessage });
 
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        return c.json({ 
-          error: "Request cancelled",
+      if (ErrorHandler.isAbortError(error)) {
+        return ErrorHandler.handleAbortError(c, {
           message: "Request was cancelled by the user."
-        }, 499);
+        });
       }
       
-      console.error("Chat API error:", error);
-      return c.json({ 
-        error: "Internal server error",
-        message: "Sorry, I'm having trouble processing your request right now."
-      }, 500);
+      return ErrorHandler.handleGeneralError(
+        c,
+        error,
+        "Chat API error:",
+        { 
+          error: "Internal server error",
+          message: "Sorry, I'm having trouble processing your request right now."
+        }
+      );
     }
   }
 }

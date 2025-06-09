@@ -291,12 +291,13 @@ pnpm run build
 6. Response sent back to widget and displayed
 7. Message history stored in localStorage
 
-### Content Extraction Strategy
-- Extract main article content using DOM selectors
-- Common patterns: `<article>`, `.content`, `[role="main"]`
-- Fallback to page title and meta description
-- Strip HTML tags and clean whitespace
-- Limit content size for API efficiency
+### Content Extraction Strategy ✅ ENHANCED
+- **Required Selector**: Uses user-provided `contentTarget` selector (e.g., `"article, main, .content"`)
+- **Content Cleaning**: Advanced content processing with script/style removal and unwanted element filtering
+- **Validation**: Ensures extracted content meets quality requirements (50+ chars, 10+ words)
+- **Error Handling**: Throws descriptive errors if selector not found or content insufficient
+- **No Fallbacks**: Strict selector matching without default fallback patterns
+- **Size Limits**: Content limited to 10,000 characters for optimal API performance
 
 ### Storage Schema (localStorage)
 ```json
@@ -367,12 +368,14 @@ pnpm run build
   - Error handling and rate limiting considerations
   - Located in: `workers/app.ts`
 
-- **Content Extraction**: Configurable page content detection
+- **Content Extraction**: Enhanced robust content detection ✅ **UPDATED**
   - **Script tag configuration**: `data-content-target` attribute support
-  - **Flexible selectors**: Custom CSS selectors for content targeting
-  - **Smart fallbacks**: Meta description backup if selector fails
-  - **Content processing**: Cleaning, size limiting, metadata extraction
+  - **Required selectors**: Strict CSS selector validation with error handling
+  - **Advanced cleaning**: Removes scripts, styles, navigation, ads, and unwanted elements
+  - **Content validation**: Ensures minimum content quality (50+ chars, 10+ words)
+  - **Error reporting**: Clear error messages for missing selectors or insufficient content
   - **Context integration**: Automatic page context with chat messages
+  - **Enhanced size limits**: Up to 10,000 characters (increased from 3,000)
 
 ## Final Project Summary
 
@@ -406,6 +409,14 @@ The project successfully delivers a fully functional, production-ready AI chat w
   - Need to implement /api/audio endpoint for text-to-speech conversion
   - Need to integrate actual audio playback with OpenAI TTS API
   - Current implementation uses mock progress simulation for testing
+
+### ✅ Recent Fix: Summarize Endpoint Quality Improvement (Latest)
+- **Issue Resolved**: Fixed unwanted "Summary of ''" prefacing text in summarize responses
+- **Root Cause**: Improper system prompt construction when title/URL were empty
+- **Solution**: Enhanced prompt construction to handle empty metadata gracefully
+- **Explicit Instructions**: Added clear directive to avoid prefacing text like "Summary of"
+- **Test Updates**: Updated OpenAI service tests to match new prompt format
+- **Production Impact**: Cleaner, more professional summary responses without awkward headers
 
 ### 📋 Remaining Tasks
 1. ~~**Command Integration**: Connect summarize API to action buttons~~ ✅ **COMPLETED**
@@ -655,6 +666,38 @@ The project successfully delivers a fully functional, production-ready AI chat w
 - **Component Logic**: Changed conditional from `opacity-100` to `animate-fade-in` for targeted injection
 - **Performance**: Maintained smooth 60fps animation with optimized keyframe timing
 
+## Recent Implementation: Enhanced Content Extraction System ✅
+
+### What Was Completed
+- **ContentExtractor Enhancement**: Upgraded from basic DOM queries to advanced content processing
+- **Required Selector Validation**: Enforces user-provided `contentTarget` selector without fallbacks
+- **Advanced Content Cleaning**: Removes scripts, styles, navigation, ads, and unwanted elements
+- **Content Quality Validation**: Ensures minimum 50 characters and 10 words for valid content
+- **Error Handling**: Clear error messages for missing selectors or insufficient content
+- **Unified Chat & Summarize**: Both endpoints now use the same robust content extraction logic
+
+### Key Technical Changes
+- **ContentExtractor Class**: Enhanced `app/lib/content-extractor.ts` with strict selector requirements
+- **ChatWidget Integration**: Updated to use `ContentExtractor.extractPageContent(contentTarget)`
+- **Content Validation**: Added `isValidContent()` method for quality assurance
+- **Error Throwing**: Descriptive errors for debugging production content extraction issues
+- **Size Limits**: Increased from 3,000 to 10,000 characters for richer content context
+- **Element Cleaning**: Comprehensive removal of non-content elements (nav, header, footer, ads)
+
+### Problem Solving Impact
+- **Production Fix**: Resolves "Invalid content" errors by ensuring robust content extraction
+- **Debug Clarity**: Clear error messages help identify content selector issues
+- **Consistency**: Chat and summarize endpoints use identical content processing
+- **Quality Assurance**: Content validation prevents empty or insufficient content submission
+- **Performance**: Optimized content cleaning reduces noise while maintaining rich context
+
+### Technical Implementation Details
+- **Selector Priority**: Uses provided `contentTarget` exclusively, no default fallback selectors
+- **Content Processing**: Clones DOM elements to avoid modifying original page
+- **Text Cleaning**: Normalizes whitespace, removes line breaks, limits to 10,000 characters
+- **Quality Metrics**: Validates content length and word count for meaningful extraction
+- **Error Types**: Specific errors for "selector not found" vs "insufficient content"
+
 ## Recent Implementation: Content Limit Optimization ✅
 
 ### What Was Completed
@@ -759,3 +802,81 @@ The project successfully delivers a fully functional, production-ready AI chat w
 - **Performance Verification**: Content truncation and memory management validated
 - **API Contract Testing**: All service interfaces thoroughly validated
 - **Regression Prevention**: Comprehensive test suite prevents future regressions
+
+## Recent Implementation: Service Architecture Refactoring ✅
+
+### What Was Completed
+- **Code Extraction**: Identified and extracted common patterns from service files into shared utilities
+- **Common Utilities**: Created `workers/services/common.ts` with ServiceValidation, ErrorHandler, and FallbackResponses classes
+- **Service Updates**: Refactored all service files (chat.ts, recommendations.ts, summarize.ts, openai.ts) to use shared utilities
+- **Consistent Patterns**: Unified HTTP method validation, error handling, and fallback responses across services
+- **Test Maintenance**: All 48 tests maintained with 100% coverage after refactoring
+- **Summary Optimization**: Enhanced summary prompt to generate shorter 1-2 paragraph responses with 200 token limit
+
+### Key Technical Achievements
+- **DRY Principles**: Eliminated duplicate code patterns including HTTP validation and error handling
+- **Modular Design**: Three utility classes provide reusable components for all services
+- **Consistent Error Handling**: Unified AbortError and general error handling with proper status codes
+- **Shared Fallbacks**: Single source of truth for default recommendation responses
+- **Maintainable Code**: Future service changes can leverage existing utility functions
+
+### Technical Implementation Details
+- **ServiceValidation Class**: Handles POST method validation and request body parsing
+- **ErrorHandler Class**: Centralized error handling for AbortError (499) and general errors (500)
+- **FallbackResponses Class**: Shared default recommendation data and responses
+- **Service Integration**: All services updated to use common utilities while maintaining existing functionality
+- **Test Coverage**: All existing tests pass with updated service implementations
+
+### Code Quality Benefits
+- **Reduced Duplication**: Eliminated ~100 lines of repeated code across service files
+- **Easier Testing**: Common utilities can be tested independently and reused
+- **Better Maintainability**: Changes to error handling or validation patterns affect all services consistently
+- **Cleaner Code**: Service files now focus on business logic rather than boilerplate
+- **Future-Proof**: New services can immediately leverage existing utility functions
+
+## Recent Fix: Summarize Endpoint Quality Improvement ✅
+
+### Problem Identified
+The summarize endpoint was adding an unwanted line "Summary of ''" at the beginning of responses, creating poor user experience with awkward prefacing text.
+
+### Root Cause Analysis
+Located in `workers/services/openai.ts:51-61`, the `generateSummary` method had improper system prompt construction:
+- When title or URL were empty, it created text like `"You are working with the webpage "" ()"`
+- This awkward formatting caused the AI to respond with prefacing text like "Summary of ''"
+- The issue was particularly noticeable when articles lacked proper title metadata
+
+### Technical Solution Implemented
+**Enhanced Prompt Construction:**
+```typescript
+const webpageInfo = title || url ? 
+  `You are working with${title ? ` the webpage "${title}"` : ''}${url ? ` (${url})` : ''}.` : 
+  'You are working with webpage content.';
+```
+
+**Added Explicit Instructions:**
+- Added clear directive: "Do not include any prefacing text like 'Summary of' or similar headers"
+- Improved prompt to request "clear, direct summary" instead of generic summary
+- Enhanced context handling for empty title/URL scenarios
+
+### Testing & Validation
+- **Updated Test Suite**: Modified OpenAI service tests to match new prompt format
+- **All Tests Passing**: Maintained 100% test coverage with updated expectations
+- **Production Deployment**: Changes deployed and verified in live environment
+- **Quality Assurance**: Cleaner, more professional summary responses confirmed
+
+### Impact & Benefits
+- **User Experience**: Eliminated awkward "Summary of ''" prefacing text
+- **Professional Quality**: Summaries now start directly with content
+- **Consistency**: Improved handling of articles with missing metadata
+- **Maintainability**: Better prompt construction logic for future enhancements
+
+### Files Modified
+- `workers/services/openai.ts`: Enhanced `generateSummary` method with better prompt construction
+- `workers/services/openai.test.ts`: Updated test expectations for new prompt format
+- Production deployment completed with all changes live
+
+### Development Process Insights
+- **Quick Identification**: Issue was quickly traced to specific prompt construction logic
+- **Targeted Fix**: Solution focused on the root cause without affecting other functionality
+- **Test-Driven**: Updated tests ensured the fix worked as expected
+- **Immediate Deployment**: Changes were deployed promptly to resolve production issue

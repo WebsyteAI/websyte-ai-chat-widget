@@ -1,4 +1,5 @@
 import type { ChatMessage, OpenAIResponse } from '../types';
+import { FallbackResponses } from './common';
 
 export class OpenAIService {
   constructor(private apiKey: string) {}
@@ -13,7 +14,7 @@ export class OpenAIService {
     } = {}
   ): Promise<string> {
     const {
-      model = "gpt-4o-mini",
+      model = "gpt-4.1-mini",
       temperature = 0.2,
       maxTokens,
       signal
@@ -48,23 +49,28 @@ export class OpenAIService {
   }
 
   async generateSummary(content: string, title: string, url: string, signal?: AbortSignal): Promise<string> {
+    const webpageInfo = title || url ? 
+      `You are working with${title ? ` the webpage "${title}"` : ''}${url ? ` (${url})` : ''}.` : 
+      'You are working with webpage content.';
+
     const messages: ChatMessage[] = [
       {
         role: "system",
         content: `You are a helpful assistant that creates concise, informative summaries of web page content. 
-        You are working with the webpage "${title}" (${url}). ${content ? `Page content: ${content.slice(0, 50000)}` : 'No content available.'}
+        ${webpageInfo} ${content ? `Page content: ${content.slice(0, 50000)}` : 'No content available.'}
         
-        Provide a clear summary in 2-3 paragraphs based on the provided content.`
+        Provide a brief, direct summary in 1-2 short paragraphs based on the provided content. Keep it concise and focused on key points. Start directly with the summary content - do not include any prefacing text, headers, or phrases like "Summary of", "This article discusses", "The content covers", etc. Begin immediately with the substantive information.`
       },
       {
         role: "user",
-        content: `Please summarize this webpage content.`
+        content: `Provide a direct summary without any introductory phrases.`
       }
     ];
 
     return this.chatCompletion(messages, {
       model: "gpt-4.1-mini",
       temperature: 0.5,
+      maxTokens: 200,
       signal
     });
   }
@@ -104,17 +110,7 @@ export class OpenAIService {
     try {
       return JSON.parse(responseContent);
     } catch {
-      return {
-        recommendations: [
-          { title: "What is this about?", description: "Understand the main topic" },
-          { title: "How does this work?", description: "Learn the process" },
-          { title: "Why is this important?", description: "Explore the significance" },
-          { title: "What are the implications?", description: "Consider the impact" },
-          { title: "Who is this for?", description: "Identify the target audience" },
-          { title: "What happens next?", description: "Explore future steps" }
-        ],
-        placeholder: "Ask me about this article"
-      };
+      return FallbackResponses.getRecommendationsResponse();
     }
   }
 }

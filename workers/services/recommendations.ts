@@ -1,17 +1,17 @@
 import type { Context } from 'hono';
 import { OpenAIService } from './openai';
 import type { RecommendationsRequest, Env } from '../types';
+import { ServiceValidation, ErrorHandler, FallbackResponses } from './common';
 
 export class RecommendationsService {
   constructor(private openai: OpenAIService) {}
 
   async handleRecommendations(c: Context<{ Bindings: Env }>): Promise<Response> {
-    if (c.req.method !== "POST") {
-      return c.json({ error: "Method not allowed" }, 405);
-    }
+    const methodError = ServiceValidation.validatePostMethod(c);
+    if (methodError) return methodError;
 
     try {
-      const body: RecommendationsRequest = await c.req.json();
+      const body: RecommendationsRequest = await ServiceValidation.parseRequestBody<RecommendationsRequest>(c);
       const { content = "", url = "", title = "" } = body;
 
       if (!content && !title) {
@@ -28,30 +28,20 @@ export class RecommendationsService {
       return c.json(result);
 
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        return c.json({ 
-          error: "Request cancelled",
+      if (ErrorHandler.isAbortError(error)) {
+        return ErrorHandler.handleAbortError(c, {
           recommendations: [],
           placeholder: "Ask me about this content"
-        }, 499);
+        });
       }
       
-      console.error("Recommendations API error:", error);
-      
-      // Return fallback response on error
-      const fallbackResponse = {
-        recommendations: [
-          { title: "What is this about?", description: "Understand the main topic" },
-          { title: "How does this work?", description: "Learn the process" },
-          { title: "Why is this important?", description: "Explore the significance" },
-          { title: "What are the implications?", description: "Consider the impact" },
-          { title: "Who is this for?", description: "Identify the target audience" },
-          { title: "What happens next?", description: "Explore future steps" }
-        ],
-        placeholder: "Ask me about this article"
-      };
-      
-      return c.json(fallbackResponse, 200);
+      return ErrorHandler.handleGeneralError(
+        c,
+        error,
+        "Recommendations API error:",
+        FallbackResponses.getRecommendationsResponse(),
+        200
+      );
     }
   }
 }

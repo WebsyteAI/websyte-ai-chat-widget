@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ArrowUp, Square, Minimize2, FileText, Headphones, MessageCircle, Play, Pause, X, SkipBack, SkipForward } from "lucide-react";
 import { marked } from "marked";
+import { ContentExtractor } from "../lib/content-extractor";
 
 interface Message {
   id: string;
@@ -115,27 +116,27 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
 
   const extractPageContent = () => {
     try {
-      const targetElement = document.querySelector(contentTarget);
-      if (targetElement) {
+      const pageContent = ContentExtractor.extractPageContent(contentTarget);
+      
+      // Validate content quality
+      if (!ContentExtractor.isValidContent(pageContent.content)) {
+        console.warn('Extracted content failed validation, using meta description fallback');
+        
+        // Final fallback to meta description
         return {
-          title: document.title,
-          url: window.location.href,
-          content: targetElement.textContent?.replace(/\s+/g, ' ').trim().slice(0, 3000) || ''
+          title: pageContent.title,
+          url: pageContent.url,
+          content: pageContent.description || ''
         };
       }
       
-      // Fallback to basic page info
-      return {
-        title: document.title,
-        url: window.location.href,
-        content: document.querySelector('meta[name="description"]')?.getAttribute('content') || ''
-      };
+      return pageContent;
     } catch (error) {
       console.warn('Failed to extract page content:', error);
       return {
         title: document.title,
         url: window.location.href,
-        content: ''
+        content: document.querySelector('meta[name="description"]')?.getAttribute('content') || ''
       };
     }
   };
@@ -248,7 +249,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
       const summaryMessage: Message = {
         id: Date.now().toString(),
         role: "assistant",
-        content: `**Summary of "${pageContent.title}"**\n\n${data.summary || "No summary available."}`,
+        content: `${data.summary || "No summary available."}`,
         timestamp: new Date(),
       };
 
