@@ -362,7 +362,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     <>
       {/* Action Bar / Audio Player - Single Container */}
       <div className={`${isTargetedInjection ? 'relative top-0 left-0 mx-auto' : 'fixed top-4 left-1/2'} z-50 ${
-        hasRendered ? (isTargetedInjection ? 'opacity-100' : 'animate-slide-in-from-top') : 'opacity-0 transform -translate-x-1/2'
+        hasRendered ? (isTargetedInjection ? 'animate-fade-in' : 'animate-slide-in-from-top') : 'opacity-0 transform -translate-x-1/2'
       }`}>
         <div className={`bg-white/98 action-bar-blur shadow-lg border border-gray-300 px-4 py-2 flex items-center gap-3 ${
           currentContent === "audio" ? 'container-audio' : 'container-action'

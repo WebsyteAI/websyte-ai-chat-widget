@@ -161,9 +161,15 @@ body {
 @keyframes fade-in {
   0% {
     opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  60% {
+    opacity: 0.8;
+    transform: scale(1.02) translateY(-2px);
   }
   100% {
     opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 
@@ -191,7 +197,7 @@ body {
 }
 
 .animate-fade-in {
-  animation: fade-in 0.2s ease-out forwards;
+  animation: fade-in 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 .animate-slide-in-from-top {
