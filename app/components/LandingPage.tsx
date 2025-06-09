@@ -107,7 +107,7 @@ export function LandingPage() {
           <Badge variant="secondary" className="mb-4">
             🚀 Production Ready
           </Badge>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
             Embed Intelligent AI Chat on Any Website
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">

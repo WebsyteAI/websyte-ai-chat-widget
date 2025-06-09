@@ -21,7 +21,12 @@
       "Bash(mv:*)",
       "Bash(pnpm remove:*)",
       "Bash(npm run build:widget:*)",
-      "Bash(pnpm test:*)"
+      "Bash(pnpm test:*)",
+      "WebFetch(domain:saas-magicui.vercel.app)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(kill:*)",
+      "Bash(pkill:*)",
+      "Bash(pnpm list:*)"
     ],
     "deny": []
   }

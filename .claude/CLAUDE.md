@@ -12,6 +12,13 @@ This project uses **pnpm** as the package manager. Always use pnpm commands:
 - Deploy command: `pnpm deploy` 
 - The deploy script automatically runs build first
 
+## Testing Requirements
+- **Always create tests when adding new features**
+- Test command: `pnpm test`
+- Tests are located in the `test/` directory and alongside source files with `.test.ts` extension
+- Maintain 100% test coverage for worker services
+- Use Vitest for testing framework
+
 ## Architecture
 - Chat widget built with React and deployed as Cloudflare Workers
 - Uses Vite for bundling
