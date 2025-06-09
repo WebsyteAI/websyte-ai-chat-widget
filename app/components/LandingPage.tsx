@@ -105,57 +105,98 @@ export function LandingPage() {
       <section className="relative py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <Badge variant="secondary" className="mb-4">
-            🚀 Production Ready
+            Zero Setup Conflicts Guaranteed
           </Badge>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
-            Embed Intelligent AI Chat on Any Website
+            Stop Losing Visitors Who Can't Find What They Need
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Add context-aware AI conversations to your articles and web pages. One script tag, zero conflicts, infinite possibilities.
+            Turn every article into an interactive conversation. Your readers get instant answers, you get better engagement, all with one line of code that won't break your design.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button size="lg" asChild>
               <a href="https://websyte-ai-chat-widget.clementineso.workers.dev" target="_blank" rel="noopener noreferrer">
-                View Live Demo
+                See It Work in 30 Seconds
                 <ExternalLink className="ml-2 h-4 w-4" />
               </a>
             </Button>
             <Button size="lg" variant="outline">
-              Get Started Free
+              Fix My Website's Engagement
             </Button>
           </div>
           
-          {/* Quick Preview */}
-          <Card className="max-w-4xl mx-auto">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="h-5 w-5" />
-                Live Widget Preview
-              </CardTitle>
-              <CardDescription>
-                See how the AI chat widget appears on your website
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-muted rounded-lg p-8 min-h-[200px] flex items-center justify-center">
-                <div className="text-center space-y-4">
-                  <div className="flex items-center justify-center gap-3 bg-background rounded-full px-6 py-3 shadow-sm border">
-                    <FileText className="h-5 w-5 text-blue-600" />
-                    <span className="font-medium">Summarize</span>
-                    <Separator orientation="vertical" className="h-4" />
-                    <Headphones className="h-5 w-5 text-green-600" />
-                    <span className="font-medium">Listen</span>
-                    <Separator orientation="vertical" className="h-4" />
-                    <MessageCircle className="h-5 w-5 text-purple-600" />
-                    <span className="font-medium">Chat</span>
+          {/* Video Demo in Hero */}
+          <div className="max-w-4xl mx-auto">
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 aspect-video flex items-center justify-center">
+                  {/* Placeholder for video - replace with actual video component */}
+                  <div className="text-center space-y-4">
+                    <div className="w-20 h-20 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                      <div className="w-0 h-0 border-l-[12px] border-l-white border-y-[8px] border-y-transparent ml-1"></div>
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-white text-xl font-semibold">See the Transformation</h3>
+                      <p className="text-white/70 text-sm max-w-md mx-auto">
+                        Watch confused visitors become engaged users in real-time
+                      </p>
+                    </div>
+                    <Button 
+                      size="lg" 
+                      className="bg-white text-gray-900 hover:bg-white/90"
+                    >
+                      Watch Demo (2:30)
+                    </Button>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Interactive AI widget with summarization, audio, and chat features
-                  </p>
+                  
+                  {/* Video overlay elements */}
+                  <div className="absolute top-4 left-4">
+                    <Badge variant="secondary" className="bg-black/20 text-white border-white/20">
+                      Live Demo
+                    </Badge>
+                  </div>
+                  
+                  <div className="absolute bottom-4 right-4">
+                    <div className="flex items-center gap-2 text-white/70 text-sm">
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                      Recording
+                    </div>
+                  </div>
                 </div>
+              </CardContent>
+            </Card>
+            
+            {/* Video highlights below hero video */}
+            <div className="grid md:grid-cols-3 gap-6 mt-8">
+              <div className="text-center space-y-2">
+                <div className="w-8 h-8 mx-auto bg-primary/10 rounded-lg flex items-center justify-center">
+                  <MessageCircle className="h-4 w-4 text-primary" />
+                </div>
+                <h4 className="font-medium text-sm">Real User Interaction</h4>
+                <p className="text-xs text-muted-foreground">
+                  Watch visitors get instant answers instead of bouncing
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="text-center space-y-2">
+                <div className="w-8 h-8 mx-auto bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Zap className="h-4 w-4 text-primary" />
+                </div>
+                <h4 className="font-medium text-sm">30-Second Setup</h4>
+                <p className="text-xs text-muted-foreground">
+                  From zero to fully functional in under half a minute
+                </p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="w-8 h-8 mx-auto bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Shield className="h-4 w-4 text-primary" />
+                </div>
+                <h4 className="font-medium text-sm">Zero Conflicts</h4>
+                <p className="text-xs text-muted-foreground">
+                  Your design stays perfect, no matter what
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -164,10 +205,10 @@ export function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Everything You Need for Intelligent Web Experiences
+              Why Your Visitors Will Actually Stay and Engage
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Powerful AI features designed for seamless integration and maximum user engagement.
+              Stop watching analytics show high bounce rates. Give visitors the smart, instant help they're desperately looking for.
             </p>
           </div>
           
@@ -193,155 +234,68 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Integration Demo Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+
+      {/* Quick Setup Section */}
+      <section className="py-20 px-4 bg-muted/30">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Simple Integration, Powerful Results
+              Ready to Get Started? It's This Simple
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Get started in minutes with our flexible embedding options and interactive configuration.
+            <p className="text-xl text-muted-foreground">
+              Copy this one line of code and paste it anywhere on your website
             </p>
           </div>
-
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
-            {/* Code Examples */}
-            <div>
-              <div className="w-full">
-                <div className="bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px] grid grid-cols-2">
-                  <Button
-                    variant={activeTab === "basic" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setActiveTab("basic")}
-                    className="h-7"
-                  >
-                    Basic Setup
-                  </Button>
-                  <Button
-                    variant={activeTab === "advanced" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setActiveTab("advanced")}
-                    className="h-7"
-                  >
-                    Advanced Config
-                  </Button>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Code className="h-5 w-5" />
+                One Line Setup
+              </CardTitle>
+              <CardDescription>
+                Paste this anywhere in your HTML and you're done
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                  <code className="text-green-400">
+                    {`<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" async></script>`}
+                  </code>
                 </div>
-                
-                {activeTab === "basic" && (
-                  <div className="space-y-4 mt-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Quick Start</CardTitle>
-                        <CardDescription>
-                          Add this single line to your website
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="bg-muted rounded-md p-4 font-mono text-sm overflow-x-auto">
-                          <code>
-                            {`<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" async></script>`}
-                          </code>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-                
-                {activeTab === "advanced" && (
-                  <div className="space-y-4 mt-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Custom Configuration</CardTitle>
-                        <CardDescription>
-                          Full control over widget behavior and appearance
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="bg-muted rounded-md p-4 font-mono text-sm overflow-x-auto">
-                          <code className="whitespace-pre-wrap">
-{`<script 
-  src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" 
-  data-content-target="main, .content, article"
-  data-advertiser-name="Your Brand"
-  data-advertiser-logo="https://example.com/logo.png"
-  data-target-element="#widget-container"
-  async>
-</script>`}
-                          </code>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="absolute top-2 right-2"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(`<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" async></script>`);
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
               </div>
-            </div>
-
-            {/* Interactive Configuration */}
-            <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Embed Code Generator</CardTitle>
-                  <CardDescription>
-                    Customize your widget configuration and generate the embed code
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm font-medium">Content Target Selector</label>
-                      <Input
-                        value={embedConfig.contentTarget}
-                        onChange={(e) => setEmbedConfig(prev => ({ ...prev, contentTarget: e.target.value }))}
-                        placeholder="article, main, .content"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium">Advertiser Name</label>
-                      <Input
-                        value={embedConfig.advertiserName}
-                        onChange={(e) => setEmbedConfig(prev => ({ ...prev, advertiserName: e.target.value }))}
-                        placeholder="Your Brand"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium">Logo URL (Optional)</label>
-                      <Input
-                        value={embedConfig.advertiserLogo}
-                        onChange={(e) => setEmbedConfig(prev => ({ ...prev, advertiserLogo: e.target.value }))}
-                        placeholder="https://example.com/logo.png"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium">Target Element (Optional)</label>
-                      <Input
-                        value={embedConfig.targetElement}
-                        onChange={(e) => setEmbedConfig(prev => ({ ...prev, targetElement: e.target.value }))}
-                        placeholder="#widget-container"
-                      />
-                    </div>
+              
+              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
                   </div>
-                  
-                  <Separator />
-                  
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-sm font-medium">Generated Embed Code</label>
-                      <Button size="sm" variant="outline" onClick={copyToClipboard}>
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copy
+                    <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                      Need custom configuration?
+                    </h4>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      Add data attributes for branding, targeting, and positioning. 
+                      <Button variant="link" className="p-0 h-auto text-blue-600 dark:text-blue-400">
+                        View documentation →
                       </Button>
-                    </div>
-                    <div className="bg-muted rounded-md p-3 font-mono text-xs overflow-x-auto border">
-                      <code className="whitespace-pre-wrap break-all">
-                        {generateEmbedCode()}
-                      </code>
-                    </div>
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -410,20 +364,20 @@ export function LandingPage() {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Transform Your Website?
+            Stop Losing Visitors. Start Converting Them.
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join thousands of websites already using intelligent AI chat to engage their visitors.
+            Every day you wait is another day of missed opportunities. Your competitors are already keeping visitors engaged longer.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild>
               <a href="https://websyte-ai-chat-widget.clementineso.workers.dev" target="_blank" rel="noopener noreferrer">
-                Try Live Demo
+                See the Results Now
                 <ExternalLink className="ml-2 h-4 w-4" />
               </a>
             </Button>
             <Button size="lg" variant="outline">
-              View Documentation
+              Get Started in 5 Minutes
             </Button>
           </div>
         </div>
