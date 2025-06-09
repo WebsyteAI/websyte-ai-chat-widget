@@ -23,7 +23,7 @@ export interface UseContentSummarizationReturn {
   setTargetElement: (element: Element | null) => void;
   setMainContentElement: (element: Element | null) => void;
   handleContentModeChange: (mode: ContentMode) => void;
-  loadSummaries: () => Promise<void>;
+  loadSummaries: (preloadedSummaries?: Summaries) => Promise<void>;
 }
 
 export function useContentSummarization({ 
@@ -101,7 +101,18 @@ export function useContentSummarization({
     }
   }, [currentContentMode, summaries, restoreOriginalContent, replaceWithSummary]);
 
-  const loadSummaries = useCallback(async () => {
+  const loadSummaries = useCallback(async (preloadedSummaries?: Summaries) => {
+    // If preloaded summaries are provided, use them directly
+    if (preloadedSummaries) {
+      console.log('Using preloaded summaries:', {
+        short: preloadedSummaries.short.substring(0, 100) + '...',
+        medium: preloadedSummaries.medium.substring(0, 100) + '...'
+      });
+      setSummaries(preloadedSummaries);
+      setIsLoadingSummaries(false);
+      return;
+    }
+    
     setIsLoadingSummaries(true);
     
     try {

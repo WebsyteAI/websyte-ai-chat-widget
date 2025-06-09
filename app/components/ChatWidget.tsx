@@ -162,8 +162,8 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
         
         const html = targetElement.outerHTML;
         
-        // Run selector analysis and recommendations in parallel
-        const [selectorResponse, recommendationsResponse] = await Promise.all([
+        // Run selector analysis, recommendations, and summaries in parallel
+        const [selectorResponse, recommendationsResponse, summariesResponse] = await Promise.all([
           fetch(`${baseUrl}/api/analyze-selector`, {
             method: "POST",
             headers: {
@@ -176,6 +176,17 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
             }),
           }),
           fetch(`${baseUrl}/api/recommendations`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              content: pageContent.content,
+              url: pageContent.url,
+              title: pageContent.title,
+            }),
+          }),
+          fetch(`${baseUrl}/api/summaries`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -219,8 +230,19 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
           throw new Error(`Recommendations API error: ${recommendationsResponse.status}`);
         }
 
-        // Load summaries using the hook
-        loadSummaries();
+        // Handle summaries response
+        if (summariesResponse.ok) {
+          const summariesData = await summariesResponse.json() as { short?: string; medium?: string };
+          if (summariesData.short && summariesData.medium) {
+            // Update the hook with the fetched summaries
+            loadSummaries({
+              short: summariesData.short,
+              medium: summariesData.medium
+            });
+          }
+        } else {
+          console.warn('Summaries API failed, but continuing without summaries');
+        }
 
       } catch (error) {
         console.error("Failed to load initial data:", error);
@@ -365,13 +387,13 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
       <div className={`${isTargetedInjection ? 'relative top-0 left-0 mx-auto' : 'fixed top-4 left-1/2'} z-50 ${
         hasRendered ? (isTargetedInjection ? 'animate-fade-in' : 'animate-slide-in-from-top') : 'opacity-0 transform -translate-x-1/2'
       }`}>
-        <div className={`bg-white/98 action-bar-blur shadow-lg border border-gray-300 px-4 py-2 flex items-center gap-3 ${
+        <div className={`bg-white/98 action-bar-blur shadow-lg border border-gray-300 px-4 py-2 flex flex-col gap-2 ${
           currentContent === "audio" ? 'container-audio' : 'container-action'
         } ${
           isPlaying ? 'animate-audio-border' : ''
         }`}>
           
-          {/* Content Container with Fade Animation */}
+          {/* Main Content Container with Fade Animation */}
           <div className={`flex items-center justify-center gap-3 w-full ${contentFadeClass}`}>
             
             {currentContent === "action" ? (
@@ -407,15 +429,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
                     >
                       <FileText size={18} className="text-gray-600 group-hover:text-gray-800" />
                       <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">
-                        {isLoadingSummaries 
-                          ? "Loading..." 
-                          : currentContentMode === 'original' 
-                            ? "Original" 
-                            : currentContentMode === 'short' 
-                              ? "Short" 
-                              : "Medium"
-                        }
-                        {!isLoadingSummaries && !summaries && " (No summaries)"}
+                        Summarize Content
                       </span>
                       <ChevronDown size={16} className={`text-gray-600 group-hover:text-gray-800 transition-transform ${showSummaryDropdown ? 'rotate-180' : ''}`} />
                     </button>
@@ -461,20 +475,20 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
                     onClick={handleStartAudio}
                     disabled={isTransitioning}
                     className="action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer disabled:opacity-50"
-                    title="Listen to me"
+                    title="Audio Version"
                   >
                     <Headphones size={18} className="text-gray-600 group-hover:text-gray-800" />
-                    <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">Listen to me</span>
+                    <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">Audio Version</span>
                   </button>
                   
                   <button
                     onClick={() => setCurrentView(currentView === "chat" ? "main" : "chat")}
                     disabled={isTransitioning}
                     className={`action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer disabled:opacity-50 ${currentView === "chat" ? "bg-gray-100" : ""}`}
-                    title="Chat with me"
+                    title="Ask Questions"
                   >
                     <MessageCircle size={18} className="text-gray-600 group-hover:text-gray-800" />
-                    <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">Chat with me</span>
+                    <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">Ask Questions</span>
                   </button>
                 </div>
               </>
@@ -531,6 +545,93 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
               </>
             )}
           </div>
+          
+          {/* Recommendations Row - Only show in action mode and when recommendations are available */}
+          {currentContent === "action" && recommendations.length > 0 && (
+            <div className={`flex items-center gap-2 w-full overflow-x-auto ${contentFadeClass}`}>
+              <div className="flex items-center gap-2 min-w-fit">
+                {isLoadingRecommendations ? (
+                  // Loading state for recommendations
+                  Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="bg-gray-100 rounded-lg px-3 py-1.5 animate-pulse">
+                      <div className="h-3 bg-gray-300 rounded w-20"></div>
+                    </div>
+                  ))
+                ) : (
+                  recommendations.slice(0, 4).map((rec, index) => (
+                    <button
+                      key={index}
+                      onClick={async () => {
+                        setCurrentView("chat");
+                        
+                        // Send the message directly with the recommendation text
+                        if (isLoading) return;
+
+                        addMessage({
+                          role: "user",
+                          content: rec.title,
+                        });
+                        setInputValue("");
+                        setIsLoading(true);
+
+                        const controller = new AbortController();
+                        setAbortController(controller);
+
+                        try {
+                          const pageContent = await extractPageContent();
+                          
+                          const response = await fetch(`${baseUrl}${apiEndpoint}`, {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              message: rec.title,
+                              history: messages.slice(-10),
+                              context: pageContent,
+                            }),
+                            signal: controller.signal,
+                          });
+
+                          if (!response.ok) {
+                            throw new Error("Failed to send message");
+                          }
+
+                          const data = await response.json() as { message?: string };
+                          
+                          addMessage({
+                            role: "assistant",
+                            content: data.message || "Sorry, I couldn't process your request.",
+                          });
+                        } catch (error) {
+                          if (error instanceof Error && error.name === 'AbortError') {
+                            addMessage({
+                              role: "assistant",
+                              content: "Message cancelled.",
+                            });
+                          } else {
+                            console.error("Error sending message:", error);
+                            addMessage({
+                              role: "assistant",
+                              content: "Sorry, I'm having trouble connecting right now. Please try again.",
+                            });
+                          }
+                        } finally {
+                          setIsLoading(false);
+                          setAbortController(null);
+                        }
+                      }}
+                      disabled={isTransitioning || isLoading}
+                      className="bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 hover:text-gray-900 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={rec.description}
+                    >
+                      {rec.title}
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

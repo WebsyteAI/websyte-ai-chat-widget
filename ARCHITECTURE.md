@@ -4,6 +4,48 @@
 
 The ChatWidget has been refactored from a monolithic 875-line component into a modular architecture using custom React hooks. This refactoring improves testability, maintainability, and code organization while preserving the exact same user interface and functionality.
 
+## Performance Enhancements
+
+### Parallel API Loading
+
+The widget now implements high-performance parallel API loading for optimal user experience:
+
+- **Simultaneous API Calls**: Three critical APIs (analyze-selector, recommendations, summaries) execute in parallel during widget initialization
+- **Reduced Load Time**: Eliminated sequential API bottlenecks for faster widget startup
+- **Smart Caching**: Content extraction is warmed once and reused across all API calls
+- **Error Resilience**: Individual API failures don't block other operations
+
+```typescript
+// Parallel execution implementation
+const [selectorResponse, recommendationsResponse, summariesResponse] = await Promise.all([
+  fetch(`${baseUrl}/api/analyze-selector`, { /* ... */ }),
+  fetch(`${baseUrl}/api/recommendations`, { /* ... */ }),
+  fetch(`${baseUrl}/api/summaries`, { /* ... */ })
+]);
+```
+
+### Enhanced Action Bar
+
+The action bar now features a two-row design for improved user engagement:
+
+**Row 1 - Core Actions**:
+- "Summarize Content" - Dropdown with Original/Short/Medium options
+- "Audio Version" - Transform to audio player mode
+- "Ask Questions" - Open chat panel
+
+**Row 2 - Prompt Recommendations**:
+- Up to 4 AI-generated question suggestions
+- Directly clickable for immediate chat interaction
+- Horizontally scrollable if needed
+- Loading states with skeleton placeholders
+
+### Flexible Height Design
+
+The action bar container uses `min-height` instead of fixed height:
+- Automatically expands to show both rows when recommendations are available
+- Maintains minimum 3.5rem height for consistent audio player mode
+- Smooth transitions between single and double-row layouts
+
 ## Architecture Goals
 
 - **Zero UI Changes**: Maintain identical user experience
@@ -104,7 +146,7 @@ interface UseContentSummarizationReturn {
   setTargetElement: (element: Element | null) => void;
   setMainContentElement: (element: Element | null) => void;
   handleContentModeChange: (mode: ContentMode) => void;
-  loadSummaries: () => Promise<void>;
+  loadSummaries: (preloadedSummaries?: Summaries) => Promise<void>;
 }
 ```
 
@@ -112,6 +154,8 @@ interface UseContentSummarizationReturn {
 - Complex DOM manipulation logic isolated and testable
 - API integration separated from UI concerns
 - Reusable content management functionality
+- Supports both API-based and pre-loaded summary data
+- Optimized for parallel loading scenarios
 
 ## Refactoring Benefits
 

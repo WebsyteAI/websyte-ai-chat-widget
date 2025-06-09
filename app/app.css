@@ -234,13 +234,13 @@ body {
 
 .container-audio {
   width: 20rem;
-  height: 3.5rem;
+  min-height: 3.5rem;
   transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .container-action {
   width: 42rem;
-  height: 3.5rem;
+  min-height: 3.5rem;
   transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   justify-content: center;
 }
