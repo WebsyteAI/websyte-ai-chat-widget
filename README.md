@@ -171,9 +171,9 @@ The widget is built from:
 - `app/widget-entry.tsx` - Standalone widget entry point with Shadow DOM setup
 - `app/components/ChatWidget.tsx` - Main React component with modular hooks architecture ✅ **REFACTORED**
 - `app/components/ChatWidget/hooks/` - Extracted business logic hooks for better testability ✅ **NEW**
-- Built with Vite into a self-contained IIFE bundle
+- Built with Vite into a self-contained IIFE bundle with TypeScript path resolution ✅ **UPDATED**
 - Shadow DOM isolation for complete style encapsulation
-- Tailwind CSS v4 compiled and inlined for Shadow DOM compatibility
+- Tailwind CSS v4 compiled and inlined for Shadow DOM compatibility ✅ **UPDATED**
 - Optimized build process outputs to `public/dist/` directory
 - Single command development workflow with `pnpm run dev:widget`
 
@@ -375,7 +375,14 @@ Built with ❤️ using React Router and Cloudflare Workers.
 
 ## Recent Updates
 
-### ✅ ChatWidget Component Architecture Refactoring (Latest)
+### ✅ Widget Build Configuration Updates (Latest)
+- **Path Resolution Fix**: Added `vite-tsconfig-paths` plugin to widget build configuration for proper "@/lib/utils" import resolution
+- **CSS Import Cleanup**: Removed non-existent `tw-animate-css` import that was causing build failures
+- **Hook State Management**: Fixed `setIsPlaying` and `setElapsedTime` function access in ChatWidget audio controls
+- **Animation System**: Maintained custom CSS animations while removing problematic import dependencies
+- **Build Stability**: Ensured widget builds complete successfully with proper TypeScript path mapping
+
+### ✅ ChatWidget Component Architecture Refactoring
 - **Component-Based Architecture**: Completely restructured ChatWidget from monolithic 875-line component into 6 focused UI components
 - **Separated UI Components**: Created ActionBar, AudioPlayer, ChatMessage, ChatPanel, MessageInput, and RecommendationsList components
 - **Enhanced Testability**: Each component can now be tested independently with focused test cases and clear interfaces

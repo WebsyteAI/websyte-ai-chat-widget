@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import tailwindcss from '@tailwindcss/postcss';
+import tsconfigPaths from 'vite-tsconfig-paths';
 import fs from 'fs';
 import path from 'path';
 
@@ -9,6 +10,7 @@ export default defineConfig({
   publicDir: false,
   plugins: [
     react(),
+    tsconfigPaths(),
     {
       name: 'inline-css-and-copy',
       writeBundle(options, bundle) {

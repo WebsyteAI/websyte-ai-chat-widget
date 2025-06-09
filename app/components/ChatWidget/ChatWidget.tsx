@@ -51,7 +51,9 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     handlePlayPause,
     handleSpeedChange,
     formatTime,
-    setAudioProgress
+    setAudioProgress,
+    setIsPlaying,
+    setElapsedTime
   } = useAudioPlayer(180);
   const {
     summaries,
