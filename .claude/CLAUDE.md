@@ -1,11 +1,14 @@
 # Claude Development Notes
 
 ## Package Manager
-This project uses **pnpm** as the package manager. Always use pnpm commands:
+This project uses **pnpm** as the package manager. **ALWAYS use pnpm commands, never npm**:
 - `pnpm install` - Install dependencies
 - `pnpm build` - Build the application
 - `pnpm deploy` - Deploy to Cloudflare Workers
 - `pnpm dev` - Start development server
+- `pnpm test` - Run tests
+
+**IMPORTANT**: Never use `npm` commands in this project. Always use `pnpm` for consistency with the workspace configuration.
 
 ## Build and Deploy
 - Build command: `pnpm build`
