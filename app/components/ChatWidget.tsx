@@ -122,22 +122,36 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
       if (!ContentExtractor.isValidContent(pageContent.content)) {
         console.warn('Extracted content failed validation, using meta description fallback');
         
-        // Final fallback to meta description
-        return {
-          title: pageContent.title,
-          url: pageContent.url,
-          content: pageContent.description || ''
-        };
+        // Try meta description as fallback
+        const fallbackContent = pageContent.description || '';
+        if (ContentExtractor.isValidContent(fallbackContent)) {
+          return {
+            title: pageContent.title,
+            url: pageContent.url,
+            content: fallbackContent
+          };
+        }
+        
+        // If meta description is also insufficient, throw error
+        throw new Error('No valid content available for extraction');
       }
       
       return pageContent;
     } catch (error) {
       console.warn('Failed to extract page content:', error);
-      return {
-        title: document.title,
-        url: window.location.href,
-        content: document.querySelector('meta[name="description"]')?.getAttribute('content') || ''
-      };
+      
+      // Try meta description as final fallback
+      const metaContent = document.querySelector('meta[name="description"]')?.getAttribute('content') || '';
+      if (ContentExtractor.isValidContent(metaContent)) {
+        return {
+          title: document.title,
+          url: window.location.href,
+          content: metaContent
+        };
+      }
+      
+      // If all fallbacks fail, throw error to prevent empty content
+      throw new Error('No sufficient content found on page for processing');
     }
   };
 
@@ -228,6 +242,11 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     try {
       const pageContent = extractPageContent();
       
+      // Additional validation to ensure we have content
+      if (!pageContent.content || pageContent.content.trim().length === 0) {
+        throw new Error("No content available for summarization");
+      }
+      
       const response = await fetch(`${baseUrl}/api/summarize`, {
         method: "POST",
         headers: {
@@ -256,10 +275,18 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
       setMessages(prev => [...prev, summaryMessage]);
     } catch (error) {
       console.error("Error generating summary:", error);
+      
+      let errorContent = "Sorry, I couldn't generate a summary right now. Please try again.";
+      
+      // Provide specific error message for content extraction issues
+      if (error instanceof Error && error.message.includes('content')) {
+        errorContent = "I couldn't find enough content on this page to summarize. Please make sure you're on a page with substantial text content.";
+      }
+      
       const errorMessage: Message = {
         id: Date.now().toString(),
         role: "assistant",
-        content: "Sorry, I couldn't generate a summary right now. Please try again.",
+        content: errorContent,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -616,7 +643,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
                             }
                           }}
                         >
-                          <h3 className="font-semibold text-gray-900 mb-1">{rec.title}</h3>
+                          <h3 className="font-medium text-sm text-gray-900 mb-1">{rec.title}</h3>
                           <p className="text-gray-600 text-sm">{rec.description}</p>
                         </div>
                       ))
