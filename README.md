@@ -1,23 +1,24 @@
 # Websyte AI Chat Widget
 
-An embeddable AI chat widget with modern glass morphism design that provides intelligent, context-aware conversations using OpenAI integration.
+An embeddable AI chat widget with modern design that provides intelligent, context-aware conversations using OpenAI integration, featuring a professional landing page and interactive configuration tools.
 
 **🚀 Live Demo**: [https://websyte-ai-chat-widget.clementineso.workers.dev](https://websyte-ai-chat-widget.clementineso.workers.dev)
 
 ## Features
 
-- 🎨 **Modern Glass Design**: Transparent blur effects with customizable advertiser branding
-- 🎯 **Multi-Action Interface**: Summarize, Listen (with audio player), and Chat capabilities with smooth animations
-- 🧠 **Enhanced Content Extraction**: Smart filtering removes scripts, ads, and navigation
-- 🔗 **Configurable Base URLs**: Connect to any API backend via `data-base-url`
+- 🎯 **Professional Landing Page**: Modern SaaS-style homepage with interactive demo and configuration tools ✅ **NEW**
+- 🛠️ **Interactive Configuration**: Real-time embed code generator with customizable options ✅ **NEW**
+- 🎨 **shadcn/ui Components**: Beautiful, accessible UI components with TypeScript support ✅ **NEW**
+- 🧠 **Context-Aware AI**: Understands page content for intelligent, relevant responses
+- ⚡ **One-Click Summarization**: Instant AI-powered page summaries with loading states
+- 🎯 **Flexible Injection**: Inject widget into any DOM element or use as fixed overlay
 - 🎭 **Shadow DOM Isolation**: Complete style isolation prevents conflicts with host page
-- 🎨 **Tailwind CSS v4**: Modern utility-first styling with Shadow DOM compatibility
-- 🎯 **Flexible Injection**: Inject widget into any DOM element or use as fixed overlay ✅ **NEW**
-- 💬 **Smooth Animations**: Slide-out chat panel with persistent action bar
+- 🎨 **Modern Design**: Clean, professional UI with customizable branding
+- 🎵 **Audio Player**: Text-to-speech conversion with full playback controls
 - 📝 **Script Tag Configuration**: Easy customization via data attributes
-- ⚡️ **Fast & Lightweight**: Self-contained bundle with minimal impact
+- ⚡️ **Fast & Lightweight**: Self-contained bundle with minimal impact (~200KB)
 - 💾 **Persistent History**: Chat history stored locally
-- 🔒 **Secure**: Built on Cloudflare Workers with proper CORS handling
+- 🔒 **Enterprise Security**: Built on Cloudflare Workers with proper CORS handling
 
 ## Quick Start - Embedding the Widget
 
@@ -349,7 +350,23 @@ Built with ❤️ using React Router and Cloudflare Workers.
 
 ## Recent Updates
 
-### ✅ Content Limit Optimization (Latest)
+### ✅ Professional Landing Page (Latest)
+- Created comprehensive SaaS-style landing page with modern design and interactive features
+- Integrated shadcn/ui component library (Button, Card, Badge, Input, Separator) with proper TypeScript support
+- Built interactive embed code generator with real-time configuration updates
+- Added hero section, features grid, integration demo, and technical highlights sections
+- Implemented SEO optimization with meta tags, Open Graph data, and keyword targeting
+- Fixed React 19 compatibility issues by replacing Radix UI Tabs with custom state-based implementation
+- Ensured full responsive design with dark mode support and accessibility features
+
+### ✅ Enhanced Animation System
+- Fixed missing load-in animation for target element injection with smooth 0.8s fade-in effect
+- Added professional scale and movement transitions with subtle bounce effect
+- Enhanced user experience with consistent animation behavior across all injection methods
+- Deployed smooth entrance animations using cubic-bezier easing for polished feel
+- Maintained 60fps performance with optimized keyframe timing
+
+### ✅ Content Limit Optimization
 - Optimized content processing limit to 50,000 characters for better performance
 - Reduced API token usage by ~50% while maintaining content quality
 - Updated all services and tests to use new 50KB content limit
