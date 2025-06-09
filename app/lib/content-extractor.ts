@@ -20,14 +20,23 @@ export class ContentExtractor {
   private static async extractMainContentWithRetry(contentTarget: string, maxRetries: number = 3, delay: number = 1000): Promise<string> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        return this.extractMainContent(contentTarget);
+        console.log(`Content extraction attempt ${attempt}/${maxRetries} for selector: "${contentTarget}"`);
+        const result = this.extractMainContent(contentTarget);
+        console.log(`Content extraction successful on attempt ${attempt}`);
+        return result;
       } catch (error) {
+        console.warn(`Content extraction attempt ${attempt}/${maxRetries} failed:`, error instanceof Error ? error.message : error);
+        
         if (attempt === maxRetries) {
+          console.error(`All ${maxRetries} content extraction attempts failed for selector: "${contentTarget}"`);
           throw error; // Final attempt failed, throw the error
         }
         
+        const nextDelay = Math.round(delay);
+        console.log(`Retrying content extraction in ${nextDelay}ms... (attempt ${attempt + 1}/${maxRetries})`);
+        
         // Wait before retrying
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise(resolve => setTimeout(resolve, nextDelay));
         
         // Increase delay for next attempt (exponential backoff)
         delay *= 1.5;

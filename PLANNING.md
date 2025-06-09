@@ -933,6 +933,31 @@ const webpageInfo = title || url ?
 ### Technical Implementation Details
 - **Test File**: `workers/services/common.test.ts` with 45 comprehensive tests
 - **Coverage**: 100% statement, 100% branch, 100% function, 100% line coverage for common.ts
+
+## Recent Implementation: Content Extraction Retry Logic and UI Refinements ✅
+
+### What Was Completed
+- **Robust Retry Mechanism**: Implemented 3-retry system with exponential backoff for content extraction
+- **Required Content Targeting**: Made contentTarget parameter mandatory, removed default fallback selectors  
+- **Async Content Processing**: Converted all content extraction to async with proper error propagation
+- **Comprehensive Logging**: Added detailed console logging for retry attempts and debugging
+- **Typography Improvements**: Fixed chat panel header and recommendation title font sizes
+- **No Fallback Policy**: Removed all fallback recommendations and content sources
+
+### Key Technical Achievements
+- **Exponential Backoff**: 1s → 1.5s → 2.25s delay progression for retry attempts
+- **Fail-Fast Architecture**: Proper error throwing when content truly doesn't exist
+- **Async Integration**: Updated all ChatWidget content extraction calls to handle async operations
+- **Console Logging**: Real-time visibility into retry attempts and content extraction status
+- **UI Polish**: Consistent typography sizing across widget components
+
+### Technical Implementation Details
+- **Retry Logic**: `app/lib/content-extractor.ts:extractMainContentWithRetry()` with configurable retry parameters
+- **Error Handling**: Comprehensive error messages for content extraction failures
+- **Logging**: Detailed console output for attempt numbers, delays, and failure reasons
+- **UI Updates**: Font size adjustments in `app/components/ChatWidget.tsx` for header and recommendations
+- **Required Props**: ContentExtractor now requires explicit contentTarget specification
+- **Bundle Size**: Maintained ~248KB with enhanced functionality
 - **Test Categories**: HTTP validation, JSON parsing, error handling, fallback responses
 - **Mock Patterns**: Reusable context factories for consistent testing across utility classes
 - **Edge Cases**: Null/undefined handling, type validation, shared state behavior

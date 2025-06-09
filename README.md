@@ -9,13 +9,14 @@ An embeddable AI chat widget with modern design that provides intelligent, conte
 - 🎯 **Professional Landing Page**: Modern SaaS-style homepage with interactive demo and configuration tools ✅ **NEW**
 - 🛠️ **Interactive Configuration**: Real-time embed code generator with customizable options ✅ **NEW**
 - 🎨 **shadcn/ui Components**: Beautiful, accessible UI components with TypeScript support ✅ **NEW**
+- 🔄 **Robust Content Extraction**: 3-retry mechanism with exponential backoff for dynamic content ✅ **ENHANCED**
 - 🧠 **Context-Aware AI**: Understands page content for intelligent, relevant responses
 - ⚡ **One-Click Summarization**: Instant AI-powered page summaries with loading states
 - 🎯 **Flexible Injection**: Inject widget into any DOM element or use as fixed overlay
 - 🎭 **Shadow DOM Isolation**: Complete style isolation prevents conflicts with host page
-- 🎨 **Modern Design**: Clean, professional UI with customizable branding
+- 🎨 **Modern Design**: Clean, professional UI with customizable branding and refined typography ✅ **UPDATED**
 - 🎵 **Audio Player**: Text-to-speech conversion with full playback controls
-- 📝 **Script Tag Configuration**: Easy customization via data attributes
+- 📝 **Script Tag Configuration**: Easy customization via data attributes with required content targeting ✅ **UPDATED**
 - ⚡️ **Fast & Lightweight**: Self-contained bundle with minimal impact (~200KB)
 - 💾 **Persistent History**: Chat history stored locally
 - 🔒 **Enterprise Security**: Built on Cloudflare Workers with proper CORS handling
@@ -356,7 +357,16 @@ Built with ❤️ using React Router and Cloudflare Workers.
 
 ## Recent Updates
 
-### ✅ Analytics Code Removal (Latest)
+### ✅ Content Extraction Retry Logic and UI Refinements (Latest)
+- **Robust Content Extraction**: Implemented 3-retry mechanism with exponential backoff (1s → 1.5s → 2.25s) for dynamic content
+- **Required Content Targeting**: Made contentTarget a required parameter, removed default selector fallbacks
+- **Async Content Processing**: Converted content extraction to async with proper error propagation throughout widget
+- **Comprehensive Logging**: Added detailed console logging for retry attempts and content extraction debugging
+- **Typography Improvements**: Reduced chat panel header font size and recommendation title font weight for better readability
+- **No Fallback Policy**: Removed all fallback recommendations and content sources for fail-fast behavior
+- **Enhanced Error Handling**: Improved error messages for content extraction failures with specific user guidance
+
+### ✅ Analytics Code Removal
 - **Clean Architecture**: Removed all Plausible Analytics tracking code for simplified codebase
 - **Bundle Size Optimization**: Reduced widget size from 254KB to 248KB (5KB savings)
 - **Performance Improvement**: Eliminated tracking overhead for faster widget initialization
