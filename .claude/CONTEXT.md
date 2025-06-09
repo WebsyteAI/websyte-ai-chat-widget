@@ -1,4 +1,4 @@
-# Claude Code Memory for Websyte AI Chat Widget
+# Development Context & Guidelines
 
 ## Project Overview
 This is a production-ready AI chat widget for article websites built with React/TypeScript, Cloudflare Workers, and OpenAI integration. The widget can be embedded via a single script tag and provides context-aware chat, summarization, and content analysis features.
