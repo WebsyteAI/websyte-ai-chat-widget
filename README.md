@@ -9,15 +9,16 @@ An embeddable AI chat widget with modern design that provides intelligent, conte
 - 🎯 **Professional Landing Page**: Modern SaaS-style homepage with interactive demo and configuration tools ✅ **NEW**
 - 🛠️ **Interactive Configuration**: Real-time embed code generator with customizable options ✅ **NEW**
 - 🎨 **shadcn/ui Components**: Beautiful, accessible UI components with TypeScript support ✅ **NEW**
-- 🧠 **Smart Content Detection**: AI-powered content analysis that preserves headers while replacing body text ✅ **NEW**
-- 🔄 **Robust Content Extraction**: 3-retry mechanism with exponential backoff for dynamic content ✅ **ENHANCED**
+- 🧠 **Smart Content Ingestion**: Zero-configuration content extraction that automatically processes entire pages ✅ **NEW**
+- 🔄 **Intelligent Content Filtering**: Removes noise (scripts, styles, ads, navigation) and converts to markdown ✅ **NEW**
+- 🎯 **AI-Powered Content Analysis**: Advanced content analysis that preserves headers while replacing body text ✅ **ENHANCED**
 - 🧠 **Context-Aware AI**: Understands page content for intelligent, relevant responses
 - ⚡ **Selective Summarization**: Smart summaries that preserve article structure and branding ✅ **ENHANCED**
 - 🎯 **Flexible Injection**: Inject widget into any DOM element or use as fixed overlay
 - 🎭 **Shadow DOM Isolation**: Complete style isolation prevents conflicts with host page
 - 🎨 **Modern Design**: Clean, professional UI with customizable branding and refined typography ✅ **UPDATED**
 - 🎵 **Audio Player**: Text-to-speech conversion with full playback controls
-- 📝 **Script Tag Configuration**: Easy customization via data attributes with required content targeting ✅ **UPDATED**
+- 📝 **Zero-Configuration Setup**: No content selectors required - automatically processes entire pages ✅ **UPDATED**
 - ⚡️ **Fast & Lightweight**: Self-contained bundle with minimal impact (~200KB)
 - 💾 **Persistent History**: Chat history stored locally
 - 🔒 **Enterprise Security**: Built on Cloudflare Workers with proper CORS handling
@@ -39,7 +40,6 @@ Customize the widget behavior with data attributes:
 ```html
 <script 
   src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" 
-  data-content-target="main, .content, article"
   data-api-endpoint="/api/chat"
   data-base-url=""
   data-target-element="#my-container"
@@ -53,11 +53,6 @@ Customize the widget behavior with data attributes:
 
 ### Configuration Options
 
-- **`data-content-target`**: CSS selector for page content extraction (default: `"article, main, .content, #content"`) ✅ **ENHANCED**
-  - **Required**: Content extraction now strictly validates this selector
-  - **Quality assured**: Ensures minimum 50 characters and 10 words of content
-  - **Error handling**: Clear error messages if selector not found or content insufficient
-  - **Advanced cleaning**: Removes scripts, styles, navigation, ads, and unwanted elements
 - **`data-api-endpoint`**: Custom API endpoint URL (default: `"/api/chat"`)
 - **`data-base-url`**: Base URL for all API endpoints (default: `""`)
 - **`data-target-element`**: CSS selector for widget injection target (default: none - uses fixed overlay) ✅ **NEW**
@@ -68,8 +63,9 @@ Customize the widget behavior with data attributes:
 
 The widget will automatically:
 - Display a persistent action bar (top center of viewport or within target container)
-- Extract content from your specified target elements
-- Generate AI-powered question recommendations specific to the article content
+- **Extract content from entire HTML page automatically** ✅ **NEW** - no configuration required
+- **Filter out noise** (scripts, styles, navigation, ads) and convert to structured markdown ✅ **NEW**
+- Generate AI-powered question recommendations specific to the page content
 - Provide multiple AI interaction modes (Chat, Summarize, Listen)
 - Show a slide-out chat panel when needed (or below action bar for targeted injection)
 - Display "Powered by Nativo" attribution in the chat welcome message
@@ -368,6 +364,22 @@ Inject the widget into a specific DOM element:
 - If target element is not found, widget initialization is aborted
 - Console error logged when target element cannot be found
 - Widget will not appear if target element is incorrectly configured
+
+---
+
+## Recent Updates
+
+### ✅ Smart Content Ingestion System (Latest)
+**Zero-configuration content extraction that automatically processes entire pages**
+
+- **What's New**: Completely removed the need for `data-content-target` attribute
+- **Smart Processing**: Automatically extracts content from entire HTML document
+- **Intelligent Filtering**: Removes scripts, styles, navigation, ads, and other noise elements
+- **Markdown Conversion**: Converts filtered HTML to structured markdown for better AI processing
+- **Enhanced AI Understanding**: Improved recommendations and summaries through better content structure
+- **Developer Experience**: Simplified embedding with one-line script tag integration
+
+**Migration**: Simply remove the `data-content-target` attribute from existing implementations - the widget now works automatically!
 
 ---
 

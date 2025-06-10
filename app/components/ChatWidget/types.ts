@@ -8,7 +8,6 @@ export interface Message {
 export interface ChatWidgetProps {
   apiEndpoint?: string;
   baseUrl?: string;
-  contentTarget: string;
   advertiserName?: string;
   advertiserLogo?: string;
   isTargetedInjection?: boolean;

@@ -38,6 +38,7 @@
       "Bash(/Users/myang/.nvm/versions/node/v21.7.3/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -n \"extractPageContent\\(\\)\" /Users/myang/git/websyte-workers/websyte-ai-chat-widget/app/components/ChatWidget.tsx)",
       "Bash(/Users/myang/.nvm/versions/node/v21.7.3/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -n \"Recent Updates\" /Users/myang/git/websyte-workers/websyte-ai-chat-widget/README.md)",
       "Bash(/Users/myang/.nvm/versions/node/v21.7.3/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -n \"Recent Implementation\" /Users/myang/git/websyte-workers/websyte-ai-chat-widget/PLANNING.md)",
+      "Bash(pnpm build:*)",
       "Bash(pnpm build:*)"
     ],
     "deny": []

@@ -12,7 +12,6 @@ declare global {
         apiEndpoint?: string;
         position?: string;
         theme?: string;
-        contentTarget?: string;
         advertiserName?: string;
         advertiserLogo?: string;
         targetElement?: string;
@@ -43,8 +42,6 @@ declare global {
     
     if (scriptTag) {
       // Read data attributes from script tag
-      const contentTarget = scriptTag.getAttribute('data-content-target');
-      if (contentTarget) scriptConfig.contentTarget = contentTarget;
       
       const apiEndpoint = scriptTag.getAttribute('data-api-endpoint');
       if (apiEndpoint) scriptConfig.apiEndpoint = apiEndpoint;
@@ -77,7 +74,6 @@ declare global {
     baseUrl: '',
     position: 'bottom-center',
     theme: 'default',
-    contentTarget: 'article, main, .content, #content',
     advertiserName: 'Nativo',
     advertiserLogo: '',
     targetElement: ''
@@ -169,7 +165,6 @@ declare global {
       React.createElement(ChatWidget, {
         apiEndpoint: config.apiEndpoint,
         baseUrl: config.baseUrl,
-        contentTarget: config.contentTarget,
         advertiserName: config.advertiserName,
         advertiserLogo: config.advertiserLogo,
         isTargetedInjection: isTargetedInjection

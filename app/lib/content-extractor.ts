@@ -1,3 +1,4 @@
+import TurndownService from 'turndown';
 import { contentCache } from './content-cache';
 
 interface PageContent {
@@ -16,35 +17,35 @@ interface ContentStructure {
 export class ContentExtractor {
   /**
    * Extract page content with caching support
-   * @param contentTarget CSS selector for content extraction
    * @param useCache Whether to use caching (default: true)
    * @param cacheOnly Whether to only return cached content (default: false)
    */
   static async extractPageContent(
-    contentTarget: string, 
     useCache: boolean = true,
     cacheOnly: boolean = false
   ): Promise<PageContent> {
     const url = window.location.href;
     
+    const cacheKey = 'full-page';
+    
     // Try cache first if enabled
     if (useCache) {
-      const cachedContent = contentCache.get(url, contentTarget);
+      const cachedContent = contentCache.get(url, cacheKey);
       if (cachedContent) {
-        console.log(`ContentExtractor: Using cached content for "${contentTarget}"`);
+        console.log(`ContentExtractor: Using cached content for full page`);
         return cachedContent;
       }
       
       // If cache-only mode and no cache hit, throw error
       if (cacheOnly) {
-        throw new Error(`No cached content available for selector "${contentTarget}"`);
+        throw new Error(`No cached content available for full page`);
       }
     }
 
     // Extract fresh content
-    console.log(`ContentExtractor: Extracting fresh content for "${contentTarget}"`);
+    console.log(`ContentExtractor: Extracting fresh content for full page`);
     const title = document.title || "";
-    const content = await this.extractMainContentWithRetry(contentTarget);
+    const content = await this.extractMainContentWithRetry();
 
     const pageContent: PageContent = {
       url,
@@ -54,8 +55,8 @@ export class ContentExtractor {
 
     // Cache the result if caching is enabled
     if (useCache) {
-      contentCache.set(url, contentTarget, pageContent);
-      console.log(`ContentExtractor: Cached content for "${contentTarget}"`);
+      contentCache.set(url, cacheKey, pageContent);
+      console.log(`ContentExtractor: Cached content for full page`);
     }
 
     return pageContent;
@@ -64,12 +65,12 @@ export class ContentExtractor {
   /**
    * Warm up the cache by extracting and caching content
    */
-  static async warmCache(contentTarget: string): Promise<void> {
+  static async warmCache(): Promise<void> {
     try {
-      await this.extractPageContent(contentTarget, true, false);
-      console.log(`ContentExtractor: Cache warmed for "${contentTarget}"`);
+      await this.extractPageContent(true, false);
+      console.log(`ContentExtractor: Cache warmed for full page`);
     } catch (error) {
-      console.warn(`ContentExtractor: Failed to warm cache for "${contentTarget}":`, error);
+      console.warn(`ContentExtractor: Failed to warm cache for full page:`, error);
     }
   }
 
@@ -93,18 +94,18 @@ export class ContentExtractor {
     return contentCache.getStats();
   }
 
-  private static async extractMainContentWithRetry(contentTarget: string, maxRetries: number = 3, delay: number = 1000): Promise<string> {
+  private static async extractMainContentWithRetry(maxRetries: number = 3, delay: number = 1000): Promise<string> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`Content extraction attempt ${attempt}/${maxRetries} for selector: "${contentTarget}"`);
-        const result = this.extractMainContent(contentTarget);
+        console.log(`Content extraction attempt ${attempt}/${maxRetries} for full page`);
+        const result = this.extractMainContent();
         console.log(`Content extraction successful on attempt ${attempt}`);
         return result;
       } catch (error) {
         console.warn(`Content extraction attempt ${attempt}/${maxRetries} failed:`, error instanceof Error ? error.message : error);
         
         if (attempt === maxRetries) {
-          console.error(`All ${maxRetries} content extraction attempts failed for selector: "${contentTarget}"`);
+          console.error(`All ${maxRetries} content extraction attempts failed for full page`);
           throw error; // Final attempt failed, throw the error
         }
         
@@ -123,23 +124,25 @@ export class ContentExtractor {
     throw new Error('Unexpected error in retry logic');
   }
 
-  private static extractMainContent(contentTarget: string): string {
-    const targetElement = document.querySelector(contentTarget);
-    if (!targetElement) {
-      throw new Error(`Content target selector "${contentTarget}" not found on page`);
+  private static extractMainContent(): string {
+    // Use the entire HTML document
+    const targetElement = document.documentElement;
+    
+    const markdownContent = this.convertToMarkdown(this.filterContentElements(targetElement));
+    if (!this.isValidContent(markdownContent)) {
+      throw new Error(`Full page content contains insufficient content`);
     }
     
-    const targetContent = this.cleanText(this.removeScriptAndStyleContent(targetElement));
-    if (!this.isValidContent(targetContent)) {
-      throw new Error(`Content target "${contentTarget}" found but contains insufficient content`);
-    }
-    
-    return targetContent;
+    return markdownContent;
   }
 
-  private static removeScriptAndStyleContent(element: Element): string {
+  private static filterContentElements(element: Element): Element {
     // Clone the element to avoid modifying the original DOM
     const clonedElement = element.cloneNode(true) as Element;
+    
+    // Remove head element entirely
+    const head = clonedElement.querySelector('head');
+    if (head) head.remove();
     
     // Remove all script tags and their content
     const scripts = clonedElement.querySelectorAll('script');
@@ -149,16 +152,47 @@ export class ContentExtractor {
     const styles = clonedElement.querySelectorAll('style');
     styles.forEach(style => style.remove());
     
+    // Remove common noise elements
+    const noiseSelectors = [
+      'nav', 'header', 'footer',
+      '.nav', '.navigation', '.menu',
+      '.header', '.footer', '.sidebar',
+      '.ads', '.advertisement', '.social-share',
+      '.cookie-banner', '.popup', '.modal',
+      '[role="banner"]', '[role="navigation"]', '[role="complementary"]'
+    ];
     
-    return clonedElement.textContent || "";
+    noiseSelectors.forEach(selector => {
+      const elements = clonedElement.querySelectorAll(selector);
+      elements.forEach(el => el.remove());
+    });
+    
+    return clonedElement;
   }
 
-  private static cleanText(text: string): string {
-    return text
-      .replace(/\s+/g, " ")
-      .replace(/[\r\n]+/g, " ")
+  private static convertToMarkdown(element: Element): string {
+    const turndownService = new TurndownService({
+      headingStyle: 'atx',
+      bulletListMarker: '-',
+      codeBlockStyle: 'fenced',
+      emDelimiter: '*'
+    });
+    
+    // Convert HTML to markdown
+    const markdown = turndownService.turndown(element.innerHTML || '');
+    
+    // Clean up the markdown
+    return this.cleanMarkdown(markdown);
+  }
+  
+  private static cleanMarkdown(markdown: string): string {
+    return markdown
+      // Remove excessive whitespace and empty lines
+      .replace(/\n\s*\n\s*\n/g, '\n\n')
+      // Remove leading/trailing whitespace
       .trim()
-      .slice(0, 10000);
+      // Limit content size
+      .slice(0, 15000);
   }
 
   /**
@@ -272,10 +306,8 @@ export class ContentExtractor {
   /**
    * Find the main content element that should be replaced with summaries
    */
-  static findMainContentElement(contentTarget: string): Element | null {
-    const targetElement = document.querySelector(contentTarget);
-    if (!targetElement) return null;
-
+  static findMainContentElement(): Element | null {
+    const targetElement = document.body;
     const structure = this.analyzeContentStructure(targetElement);
     
     // Return the main content if found, otherwise the whole target

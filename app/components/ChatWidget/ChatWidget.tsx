@@ -26,7 +26,7 @@ marked.setOptions({
   gfm: true,
 });
 
-export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTarget, advertiserName = "Nativo", advertiserLogo, isTargetedInjection = false }: ChatWidgetProps) {
+export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", advertiserName = "Nativo", advertiserLogo, isTargetedInjection = false }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -69,7 +69,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     loadSummaries
   } = useContentSummarization({ 
     baseUrl, 
-    extractPageContent: () => ContentExtractor.extractPageContent(contentTarget) 
+    extractPageContent: () => ContentExtractor.extractPageContent() 
   });
   
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -114,27 +114,13 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
       
       try {
         // Warm the cache first to ensure subsequent calls are fast
-        await ContentExtractor.warmCache(contentTarget);
+        await ContentExtractor.warmCache();
         
         const pageContent = await extractPageContent();
         
-        // Find target element for selector analysis
-        const selectors = contentTarget.split(',').map(s => s.trim());
-        let targetElement: Element | null = null;
-        
-        for (const selector of selectors) {
-          const element = document.querySelector(selector);
-          if (element) {
-            targetElement = element;
-            setTargetElement(element);
-            break;
-          }
-        }
-        
-        if (!targetElement) {
-          console.warn('No content element found with any of the selectors:', selectors);
-          return;
-        }
+        // Use the entire document body as the target element
+        const targetElement = document.body;
+        setTargetElement(targetElement);
         
         const html = targetElement.outerHTML;
         
@@ -230,11 +216,11 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", contentTar
     };
 
     loadInitialData();
-  }, [contentTarget]);
+  }, []);
 
   const extractPageContent = async () => {
     // This will use cached content if available, otherwise extract fresh content
-    return await ContentExtractor.extractPageContent(contentTarget);
+    return await ContentExtractor.extractPageContent();
   };
 
   const sendMessage = async () => {

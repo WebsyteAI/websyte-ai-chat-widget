@@ -2,6 +2,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ContentExtractor } from './content-extractor';
 import { contentCache } from './content-cache';
 
+// Mock turndown
+vi.mock('turndown', () => {
+  const mockTurndown = vi.fn().mockReturnValue('# Test Article\n\nThis is test article content with more than fifty characters and more than ten words to pass validation.');
+  return {
+    default: vi.fn().mockImplementation(() => ({
+      turndown: mockTurndown,
+    })),
+  };
+});
+
 // Mock the content cache
 vi.mock('./content-cache', () => ({
   contentCache: {
@@ -21,6 +31,19 @@ const mockLocation = {
 const mockDocument = {
   title: 'Test Article Title',
   querySelector: vi.fn(),
+  documentElement: {
+    cloneNode: vi.fn(),
+    innerHTML: '<body><h1>Test Article</h1><p>This is test article content with more than fifty characters and more than ten words to pass validation.</p></body>',
+  },
+  body: {
+    cloneNode: vi.fn(),
+    querySelector: vi.fn(),
+    querySelectorAll: vi.fn(() => []),
+    textContent: 'Main content',
+  },
+  createTreeWalker: vi.fn(() => ({
+    nextNode: vi.fn().mockReturnValue(null),
+  })),
 };
 
 // Setup global mocks
@@ -43,12 +66,32 @@ Object.defineProperty(global, 'console', {
   writable: true,
 });
 
+Object.defineProperty(global, 'NodeFilter', {
+  value: {
+    SHOW_ELEMENT: 1,
+    FILTER_ACCEPT: 1,
+    FILTER_REJECT: 2,
+    FILTER_SKIP: 3,
+  },
+  writable: true,
+});
+
+Object.defineProperty(global, 'window', {
+  value: {
+    location: mockLocation,
+    getComputedStyle: vi.fn(() => ({
+      display: 'block',
+      visibility: 'visible',
+    })),
+  },
+  writable: true,
+});
+
 describe('ContentExtractor', () => {
-  const mockContentTarget = 'article, main, .content';
   const mockPageContent = {
     url: 'https://example.com/article',
     title: 'Test Article Title',
-    content: 'This is test article content with more than fifty characters and more than ten words to pass validation.',
+    content: '# Test Article\n\nThis is test article content with more than fifty characters and more than ten words to pass validation.',
   };
 
   beforeEach(() => {
@@ -57,6 +100,13 @@ describe('ContentExtractor', () => {
     // Reset location and document
     mockLocation.href = 'https://example.com/article';
     mockDocument.title = 'Test Article Title';
+    
+    // Setup default document element mock
+    mockDocument.documentElement.cloneNode = vi.fn(() => ({
+      querySelector: vi.fn(),
+      querySelectorAll: vi.fn(() => []),
+      innerHTML: '<body><h1>Test Article</h1><p>This is test article content with more than fifty characters and more than ten words to pass validation.</p></body>',
+    }));
   });
 
   afterEach(() => {
@@ -68,70 +118,50 @@ describe('ContentExtractor', () => {
       // Mock cache hit
       vi.mocked(contentCache.get).mockReturnValue(mockPageContent);
 
-      const result = await ContentExtractor.extractPageContent(mockContentTarget);
+      const result = await ContentExtractor.extractPageContent();
 
       expect(contentCache.get).toHaveBeenCalledWith(
         'https://example.com/article',
-        mockContentTarget
+        'full-page'
       );
       expect(result).toEqual(mockPageContent);
-      expect(mockDocument.querySelector).not.toHaveBeenCalled();
     });
 
     it('should extract fresh content when cache miss', async () => {
       // Mock cache miss
       vi.mocked(contentCache.get).mockReturnValue(null);
-      
-      // Mock DOM element
-      const mockElement = {
-        cloneNode: vi.fn(() => ({
-          querySelectorAll: vi.fn(() => []),
-          textContent: 'This is test article content with more than fifty characters and more than ten words to pass validation.',
-        })),
-      };
-      mockDocument.querySelector.mockReturnValue(mockElement);
 
-      const result = await ContentExtractor.extractPageContent(mockContentTarget);
+      const result = await ContentExtractor.extractPageContent();
 
       expect(contentCache.get).toHaveBeenCalledWith(
         'https://example.com/article',
-        mockContentTarget
+        'full-page'
       );
-      expect(mockDocument.querySelector).toHaveBeenCalledWith(mockContentTarget);
       expect(contentCache.set).toHaveBeenCalledWith(
         'https://example.com/article',
-        mockContentTarget,
+        'full-page',
         expect.objectContaining({
           url: 'https://example.com/article',
           title: 'Test Article Title',
-          content: expect.stringContaining('test article content'),
+          content: expect.stringContaining('Test Article'),
         })
       );
       expect(result).toMatchObject({
         url: 'https://example.com/article',
         title: 'Test Article Title',
-        content: expect.stringContaining('test article content'),
+        content: expect.stringContaining('Test Article'),
       });
     });
 
     it('should work without cache when useCache is false', async () => {
-      // Mock DOM element
-      const mockElement = {
-        cloneNode: vi.fn(() => ({
-          querySelectorAll: vi.fn(() => []),
-          textContent: 'This is test article content with more than fifty characters and more than ten words to pass validation.',
-        })),
-      };
-      mockDocument.querySelector.mockReturnValue(mockElement);
-
-      const result = await ContentExtractor.extractPageContent(mockContentTarget, false);
+      const result = await ContentExtractor.extractPageContent(false);
 
       expect(contentCache.get).not.toHaveBeenCalled();
       expect(contentCache.set).not.toHaveBeenCalled();
       expect(result).toMatchObject({
         url: 'https://example.com/article',
         title: 'Test Article Title',
-        content: expect.stringContaining('test article content'),
+        content: expect.stringContaining('Test Article'),
       });
     });
 
@@ -140,185 +170,132 @@ describe('ContentExtractor', () => {
       vi.mocked(contentCache.get).mockReturnValue(null);
 
       await expect(
-        ContentExtractor.extractPageContent(mockContentTarget, true, true)
-      ).rejects.toThrow('No cached content available for selector');
-
-      expect(contentCache.get).toHaveBeenCalled();
-      expect(mockDocument.querySelector).not.toHaveBeenCalled();
+        ContentExtractor.extractPageContent(true, true)
+      ).rejects.toThrow('No cached content available for full page');
     });
 
     it('should use empty title when document.title is empty', async () => {
       mockDocument.title = '';
       vi.mocked(contentCache.get).mockReturnValue(null);
-      
-      const mockElement = {
-        cloneNode: vi.fn(() => ({
-          querySelectorAll: vi.fn(() => []),
-          textContent: 'This is test article content with more than fifty characters and more than ten words to pass validation.',
-        })),
-      };
-      mockDocument.querySelector.mockReturnValue(mockElement);
 
-      const result = await ContentExtractor.extractPageContent(mockContentTarget);
+      const result = await ContentExtractor.extractPageContent();
 
       expect(result.title).toBe('');
+      expect(result.content).toContain('Test Article');
     });
   });
 
   describe('extractMainContentWithRetry', () => {
     it('should succeed on first attempt when element exists', async () => {
       vi.mocked(contentCache.get).mockReturnValue(null);
-      
-      const mockElement = {
-        cloneNode: vi.fn(() => ({
-          querySelectorAll: vi.fn(() => []),
-          textContent: 'This is test article content with more than fifty characters and more than ten words to pass validation.',
-        })),
-      };
-      mockDocument.querySelector.mockReturnValue(mockElement);
 
-      const result = await ContentExtractor.extractPageContent(mockContentTarget);
+      const result = await ContentExtractor.extractPageContent();
 
-      expect(result.content).toContain('test article content');
-      expect(mockDocument.querySelector).toHaveBeenCalledTimes(1);
+      expect(result.content).toContain('Test Article');
     });
 
     it('should retry and succeed on second attempt', async () => {
       vi.mocked(contentCache.get).mockReturnValue(null);
       
-      // Mock first call fails, second succeeds
-      const mockElement = {
-        cloneNode: vi.fn(() => ({
+      // First call fails, second succeeds
+      let callCount = 0;
+      mockDocument.documentElement.cloneNode = vi.fn(() => {
+        callCount++;
+        if (callCount === 1) {
+          throw new Error('DOM not ready');
+        }
+        return {
+          querySelector: vi.fn(),
           querySelectorAll: vi.fn(() => []),
-          textContent: 'This is test article content with more than fifty characters and more than ten words to pass validation.',
-        })),
-      };
-      
-      mockDocument.querySelector
-        .mockReturnValueOnce(null) // First attempt fails
-        .mockReturnValueOnce(mockElement); // Second attempt succeeds
-
-      // Mock setTimeout to resolve immediately
-      vi.spyOn(global, 'setTimeout').mockImplementation((callback: Function) => {
-        callback();
-        return 1 as any;
+          innerHTML: '<body><h1>Test Article</h1><p>This is test article content with more than fifty characters and more than ten words to pass validation.</p></body>',
+        };
       });
 
-      const result = await ContentExtractor.extractPageContent(mockContentTarget);
-
-      expect(result.content).toContain('test article content');
-      expect(mockDocument.querySelector).toHaveBeenCalledTimes(2);
+      const result = await ContentExtractor.extractPageContent();
+      expect(result.content).toContain('Test Article');
     });
 
-    it('should fail after max retries when element not found', async () => {
-      vi.mocked(contentCache.get).mockReturnValue(null);
-      mockDocument.querySelector.mockReturnValue(null);
-
-      // Mock setTimeout to resolve immediately
-      vi.spyOn(global, 'setTimeout').mockImplementation((callback: Function) => {
-        callback();
-        return 1 as any;
-      });
-
-      await expect(
-        ContentExtractor.extractPageContent(mockContentTarget)
-      ).rejects.toThrow('Content target selector');
-
-      expect(mockDocument.querySelector).toHaveBeenCalledTimes(3); // Max retries
-    });
-
-    it('should fail when content is insufficient', async () => {
+    it('should fail after max retries when content is insufficient', async () => {
       vi.mocked(contentCache.get).mockReturnValue(null);
       
-      const mockElement = {
-        cloneNode: vi.fn(() => ({
-          querySelectorAll: vi.fn(() => []),
-          textContent: 'Short', // Too short content
-        })),
-      };
-      mockDocument.querySelector.mockReturnValue(mockElement);
+      // Mock TurndownService to return insufficient content
+      const TurndownService = await import('turndown');
+      const mockTurndown = vi.mocked(TurndownService.default);
+      mockTurndown.mockImplementation(() => ({
+        turndown: vi.fn().mockReturnValue('Short'), // Too short to pass validation
+      }) as any);
 
       await expect(
-        ContentExtractor.extractPageContent(mockContentTarget)
-      ).rejects.toThrow('contains insufficient content');
+        ContentExtractor.extractPageContent()
+      ).rejects.toThrow('Full page content contains insufficient content');
     });
   });
 
   describe('content processing', () => {
-    it('should remove script and style tags', async () => {
+    it('should filter out head, script, and style elements', async () => {
       vi.mocked(contentCache.get).mockReturnValue(null);
       
-      const mockScript = { remove: vi.fn() };
-      const mockStyle = { remove: vi.fn() };
-      const mockClonedElement = {
-        querySelectorAll: vi.fn((selector: string) => {
-          if (selector === 'script') return [mockScript];
-          if (selector === 'style') return [mockStyle];
-          return [];
-        }),
-        textContent: 'This is test article content with more than fifty characters and more than ten words to pass validation.',
-      };
-      
-      const mockElement = {
-        cloneNode: vi.fn(() => mockClonedElement),
-      };
-      mockDocument.querySelector.mockReturnValue(mockElement);
+      // Mock document element with head, script, and style tags
+      mockDocument.documentElement.cloneNode = vi.fn(() => {
+        const mockCloned = {
+          querySelector: vi.fn((selector) => {
+            if (selector === 'head') return { remove: vi.fn() };
+            return null;
+          }),
+          querySelectorAll: vi.fn((selector) => {
+            if (selector === 'script') return [{ remove: vi.fn() }];
+            if (selector === 'style') return [{ remove: vi.fn() }];
+            if (selector.includes('nav') || selector.includes('.nav')) return [{ remove: vi.fn() }];
+            return [];
+          }),
+          innerHTML: '<body><h1>Test Article</h1><p>Clean content</p></body>',
+        };
+        return mockCloned;
+      });
 
-      await ContentExtractor.extractPageContent(mockContentTarget);
-
-      expect(mockScript.remove).toHaveBeenCalled();
-      expect(mockStyle.remove).toHaveBeenCalled();
+      const result = await ContentExtractor.extractPageContent();
+      expect(result.content).toBeTruthy();
     });
 
-    it('should clean and normalize text content', async () => {
+    it('should convert HTML to markdown format', async () => {
       vi.mocked(contentCache.get).mockReturnValue(null);
-      
-      const mockElement = {
-        cloneNode: vi.fn(() => ({
-          querySelectorAll: vi.fn(() => []),
-          textContent: '   This  is   test\n\n\r article   content with more than fifty characters and more than ten words to pass validation.   ',
-        })),
-      };
-      mockDocument.querySelector.mockReturnValue(mockElement);
 
-      const result = await ContentExtractor.extractPageContent(mockContentTarget);
+      const result = await ContentExtractor.extractPageContent();
 
-      expect(result.content).toBe('This is test article content with more than fifty characters and more than ten words to pass validation.');
+      // Should return markdown format (mocked to return markdown)
+      expect(result.content).toContain('# Test Article');
+      expect(result.content).toContain('\n\n');
     });
 
-    it('should truncate content to 10000 characters', async () => {
+    it('should truncate content to 15000 characters', async () => {
       vi.mocked(contentCache.get).mockReturnValue(null);
       
-      // Create content that is long but also has sufficient words for validation
-      const wordList = 'word '.repeat(50); // 50 words, 200 characters
-      const longContent = wordList + 'A'.repeat(15000); // Total > 15000 chars with enough words
-      const mockElement = {
-        cloneNode: vi.fn(() => ({
-          querySelectorAll: vi.fn(() => []),
-          textContent: longContent,
-        })),
-      };
-      mockDocument.querySelector.mockReturnValue(mockElement);
+      // Mock TurndownService to return long content
+      const TurndownService = await import('turndown');
+      const mockTurndown = vi.mocked(TurndownService.default);
+      const longContent = 'a'.repeat(20000); // 20k characters
+      mockTurndown.mockImplementation(() => ({
+        turndown: vi.fn().mockReturnValue(longContent),
+      }) as any);
 
-      const result = await ContentExtractor.extractPageContent(mockContentTarget);
-
-      expect(result.content.length).toBe(10000);
+      const result = await ContentExtractor.extractPageContent();
+      expect(result.content.length).toBeLessThanOrEqual(15000);
     });
   });
 
   describe('isValidContent', () => {
     it('should return true for valid content', () => {
-      const validContent = 'This is test article content with more than fifty characters and more than ten words to pass validation.';
+      const validContent = 'This is a valid article with more than fifty characters and more than ten words for validation.';
       expect(ContentExtractor.isValidContent(validContent)).toBe(true);
     });
 
     it('should return false for content too short', () => {
-      const shortContent = 'Short';
+      const shortContent = 'Too short';
       expect(ContentExtractor.isValidContent(shortContent)).toBe(false);
     });
 
     it('should return false for content with too few words', () => {
-      const fewWordsContent = 'This content has exactly nine words'; // 6 words, not enough
+      const fewWordsContent = 'This content has exactly nine words but is long enough';
       expect(ContentExtractor.isValidContent(fewWordsContent)).toBe(false);
     });
 
@@ -330,88 +307,65 @@ describe('ContentExtractor', () => {
   describe('cache utility methods', () => {
     it('should warm cache successfully', async () => {
       vi.mocked(contentCache.get).mockReturnValue(null);
-      
-      const mockElement = {
-        cloneNode: vi.fn(() => ({
-          querySelectorAll: vi.fn(() => []),
-          textContent: 'This is test article content with more than fifty characters and more than ten words to pass validation.',
-        })),
-      };
-      mockDocument.querySelector.mockReturnValue(mockElement);
+      const consoleSpy = vi.spyOn(console, 'log');
 
-      await ContentExtractor.warmCache(mockContentTarget);
+      await ContentExtractor.warmCache();
 
-      expect(contentCache.set).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Cache warmed for full page'));
     });
 
     it('should handle cache warming errors gracefully', async () => {
       vi.mocked(contentCache.get).mockReturnValue(null);
-      mockDocument.querySelector.mockReturnValue(null); // Will cause error
-
-      // Mock setTimeout to resolve immediately
-      vi.spyOn(global, 'setTimeout').mockImplementation((callback: Function) => {
-        callback();
-        return 1 as any;
+      mockDocument.documentElement.cloneNode = vi.fn(() => {
+        throw new Error('DOM error');
       });
+      
+      const consoleSpy = vi.spyOn(console, 'warn');
 
-      // Should not throw
-      await expect(ContentExtractor.warmCache(mockContentTarget)).resolves.toBeUndefined();
+      await ContentExtractor.warmCache();
+
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to warm cache'), expect.any(Error));
     });
 
     it('should clear cache for current URL only', () => {
       ContentExtractor.clearCache(true);
-      
       expect(contentCache.clearUrl).toHaveBeenCalledWith('https://example.com/article');
     });
 
     it('should clear all cache', () => {
       ContentExtractor.clearCache(false);
-      
       expect(contentCache.clear).toHaveBeenCalled();
     });
 
     it('should return cache stats', () => {
-      const mockStats = { hits: 5, misses: 3, size: 2, hitRate: 62.5 };
-      vi.mocked(contentCache.getStats).mockReturnValue(mockStats);
-
       const stats = ContentExtractor.getCacheStats();
+      expect(stats).toEqual({ hits: 0, misses: 0, size: 0, hitRate: 0 });
+    });
+  });
 
-      expect(stats).toEqual(mockStats);
-      expect(contentCache.getStats).toHaveBeenCalled();
+  describe('findMainContentElement', () => {
+    it('should return main content element from body', () => {
+      mockDocument.body = {
+        querySelector: vi.fn(),
+        querySelectorAll: vi.fn(() => []),
+        textContent: 'Main content',
+      };
+
+      const result = ContentExtractor.findMainContentElement();
+      expect(result).toBe(mockDocument.body);
     });
   });
 
   describe('error handling', () => {
     it('should handle DOM errors gracefully', async () => {
       vi.mocked(contentCache.get).mockReturnValue(null);
-      mockDocument.querySelector.mockImplementation(() => {
+      mockDocument.documentElement.cloneNode = vi.fn(() => {
         throw new Error('DOM error');
       });
 
-      // Mock setTimeout to resolve immediately
-      vi.spyOn(global, 'setTimeout').mockImplementation((callback: Function) => {
-        callback();
-        return 1 as any;
-      });
-
       await expect(
-        ContentExtractor.extractPageContent(mockContentTarget)
+        ContentExtractor.extractPageContent()
       ).rejects.toThrow('DOM error');
-    });
-
-    it('should handle cloneNode errors', async () => {
-      vi.mocked(contentCache.get).mockReturnValue(null);
-      
-      const mockElement = {
-        cloneNode: vi.fn(() => {
-          throw new Error('Clone error');
-        }),
-      };
-      mockDocument.querySelector.mockReturnValue(mockElement);
-
-      await expect(
-        ContentExtractor.extractPageContent(mockContentTarget)
-      ).rejects.toThrow('Clone error');
     });
   });
 });

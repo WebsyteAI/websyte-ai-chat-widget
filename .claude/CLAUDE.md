@@ -82,7 +82,20 @@
 
 ## Recent Implementation Updates
 
-### ✅ Recommendations Loading State Improvements (Latest)
+### ✅ Smart Content Ingestion System (Latest)
+- **What Changed**: Completely redesigned content ingestion to automatically process entire HTML pages without requiring content selectors
+- **Technical Details**: 
+  - **Removed content selector requirement**: Eliminated `data-content-target` attribute and related configuration from `app/widget-entry.tsx`
+  - **Full page processing**: Updated `app/lib/content-extractor.ts` to process `document.documentElement` instead of targeted elements
+  - **Enhanced content filtering**: Added comprehensive filtering to remove `<head>`, `<script>`, `<style>`, navigation, ads, and other noise elements
+  - **HTML-to-markdown conversion**: Integrated `turndown` library to convert filtered HTML to structured markdown format
+  - **Updated integration points**: Modified `app/components/ChatWidget/ChatWidget.tsx` and type definitions to remove contentTarget dependencies
+  - **Smart caching**: Updated cache system to use 'full-page' keys instead of selector-specific keys
+- **User Impact**: Zero-configuration content extraction that automatically captures all relevant page content while filtering out noise
+- **Testing**: Widget builds successfully, core functionality working, worker service tests passing
+- **Benefits**: Smarter automatic content detection, complete page coverage, cleaner content for AI processing, better recommendations and summaries
+
+### ✅ Recommendations Loading State Improvements
 - **What Changed**: Enhanced recommendations loading state in action bar to prevent layout shifts
 - **Technical Details**: 
   - Modified `app/components/ChatWidget/components/RecommendationsList.tsx` to show loading placeholders within marquee component

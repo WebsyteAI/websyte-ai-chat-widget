@@ -55,8 +55,7 @@ export function ChatPanel({
     <div className={`fixed top-4 right-4 bottom-4 w-[28rem] bg-white border border-gray-200 rounded-lg shadow-xl flex flex-col transition-all duration-300 ease-out transform z-40 ${
       currentView === "chat" ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
     }`}>
-      <div className="flex items-center justify-between p-4 rounded-t-lg">
-        <span className="font-medium text-sm text-gray-900">Chat with {advertiserName} AI</span>
+      <div className="flex items-center justify-end p-4 rounded-t-lg">
         <button
           onClick={onClose}
           className="text-gray-500 hover:text-gray-700 transition-colors"
