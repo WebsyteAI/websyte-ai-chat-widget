@@ -16,23 +16,19 @@ export function RecommendationsList({
   contentFadeClass,
   onRecommendationClick,
 }: RecommendationsListProps) {
-  if (recommendations.length === 0) return null;
+  if (recommendations.length === 0 && !isLoading) return null;
 
   return (
     <div className={`w-full ${contentFadeClass}`}>
-      {isLoading ? (
-        <div className="flex items-center gap-2 overflow-x-auto">
-          <div className="flex items-center gap-2 min-w-fit">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="bg-gray-100 rounded-lg px-3 py-1.5 animate-pulse">
-                <div className="h-3 bg-gray-300 rounded w-20"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <Marquee pauseOnHover className="[--duration:20s]">
-          {recommendations.map((rec, index) => (
+      <Marquee pauseOnHover className="[--duration:20s]">
+        {isLoading ? (
+          Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 animate-pulse mx-1 w-[260px] h-[34px] flex items-center">
+              <div className="h-3 bg-gray-300 rounded flex-1"></div>
+            </div>
+          ))
+        ) : (
+          recommendations.map((rec, index) => (
             <button
               key={index}
               onClick={() => onRecommendationClick(rec)}
@@ -42,9 +38,9 @@ export function RecommendationsList({
             >
               {rec.title}
             </button>
-          ))}
-        </Marquee>
-      )}
+          ))
+        )}
+      </Marquee>
     </div>
   );
 }

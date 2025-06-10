@@ -79,3 +79,26 @@
 - **Testing**: Test coverage impact and validation approach
 - **Benefits**: Why this change was made and its advantages
 ```
+
+## Recent Implementation Updates
+
+### ✅ Recommendations Loading State Improvements (Latest)
+- **What Changed**: Enhanced recommendations loading state in action bar to prevent layout shifts
+- **Technical Details**: 
+  - Modified `app/components/ChatWidget/components/RecommendationsList.tsx` to show loading placeholders within marquee component
+  - Fixed render condition to display loading state even when recommendations array is empty
+  - Set loading placeholder dimensions to exactly match recommendation buttons (260px width, 34px height)
+  - Updated loading count from 3 to 6 items to match backend generation
+- **User Impact**: Seamless loading experience with no height jumping or layout shifts during recommendations loading
+- **Testing**: Widget build validation, visual consistency testing
+- **Benefits**: Better user experience with smooth transitions and consistent action bar behavior
+
+### ✅ Widget Build Configuration Updates
+- **What Changed**: Fixed widget build configuration and import path resolution
+- **Technical Details**:
+  - Added `vite-tsconfig-paths` plugin to `vite.widget.config.ts` for proper "@/lib/utils" import resolution
+  - Removed non-existent `tw-animate-css` import from `app.css` that was causing build failures
+  - Fixed `setIsPlaying` and `setElapsedTime` function access in ChatWidget audio controls
+- **User Impact**: Stable widget builds and properly functioning audio controls
+- **Testing**: Build process validation, widget functionality testing
+- **Benefits**: Reliable build process and improved widget stability
