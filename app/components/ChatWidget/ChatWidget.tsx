@@ -26,7 +26,7 @@ marked.setOptions({
   gfm: true,
 });
 
-export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", advertiserName = "Nativo", advertiserLogo, isTargetedInjection = false }: ChatWidgetProps) {
+export function ChatWidget({ baseUrl = "", advertiserName = "Nativo", advertiserLogo, isTargetedInjection = false }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -239,7 +239,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", advertiser
     try {
       const pageContent = await extractPageContent();
       
-      const response = await fetch(`${baseUrl}${apiEndpoint}`, {
+      const response = await fetch(`${baseUrl}/api/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -362,7 +362,7 @@ export function ChatWidget({ apiEndpoint = "/api/chat", baseUrl = "", advertiser
     try {
       const pageContent = await extractPageContent();
       
-      const response = await fetch(`${baseUrl}${apiEndpoint}`, {
+      const response = await fetch(`${baseUrl}/api/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

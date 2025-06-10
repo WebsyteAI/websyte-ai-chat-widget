@@ -6,7 +6,6 @@ export interface Message {
 }
 
 export interface ChatWidgetProps {
-  apiEndpoint?: string;
   baseUrl?: string;
   advertiserName?: string;
   advertiserLogo?: string;

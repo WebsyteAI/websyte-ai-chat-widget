@@ -7,8 +7,6 @@ export default function TargetTest() {
     const targetedScript = document.createElement('script');
     targetedScript.src = `${window.location.origin}/dist/widget.js`;
     targetedScript.setAttribute('data-target-element', '#widget-target');
-    targetedScript.setAttribute('data-content-target', 'main, .content, article');
-    targetedScript.setAttribute('data-api-endpoint', '/api/chat');
     targetedScript.setAttribute('data-base-url', '');
     targetedScript.setAttribute('data-advertiser-name', 'Targeted Widget');
     targetedScript.setAttribute('data-advertiser-logo', 'https://logo.clearbit.com/example.com');
@@ -18,8 +16,6 @@ export default function TargetTest() {
     // Inject standard widget
     const standardScript = document.createElement('script');
     standardScript.src = `${window.location.origin}/dist/widget.js`;
-    standardScript.setAttribute('data-content-target', 'article');
-    standardScript.setAttribute('data-api-endpoint', '/api/chat');
     standardScript.setAttribute('data-base-url', '');
     standardScript.setAttribute('data-advertiser-name', 'Standard Widget');
     standardScript.setAttribute('data-advertiser-logo', 'https://logo.clearbit.com/standard.com');

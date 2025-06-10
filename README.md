@@ -40,7 +40,6 @@ Customize the widget behavior with data attributes:
 ```html
 <script 
   src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" 
-  data-api-endpoint="/api/chat"
   data-base-url=""
   data-target-element="#my-container"
   data-advertiser-name="Your Brand"
@@ -53,7 +52,6 @@ Customize the widget behavior with data attributes:
 
 ### Configuration Options
 
-- **`data-api-endpoint`**: Custom API endpoint URL (default: `"/api/chat"`)
 - **`data-base-url`**: Base URL for all API endpoints (default: `""`)
 - **`data-target-element`**: CSS selector for widget injection target (default: none - uses fixed overlay) ✅ **NEW**
 - **`data-advertiser-name`**: Custom advertiser/brand name (default: `"Nativo"`)
@@ -231,8 +229,6 @@ The widget supports multiple configuration methods:
 ```html
 <script 
   src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" 
-  data-content-target="main, .content"
-  data-api-endpoint="/api/chat"
   data-base-url=""
   data-target-element="#widget-container"
   data-advertiser-name="Your Brand"
@@ -249,9 +245,7 @@ The widget supports multiple configuration methods:
 // Optional: Set configuration before loading widget
 window.WebsyteChat = {
   config: {
-    apiEndpoint: '/api/chat',
     baseUrl: 'https://api.example.com',
-    contentTarget: 'article, main, .content',
     targetElement: '#widget-container',
     advertiserName: 'Your Brand',
     advertiserLogo: 'https://example.com/logo.png',
@@ -369,17 +363,18 @@ Inject the widget into a specific DOM element:
 
 ## Recent Updates
 
-### ✅ Smart Content Ingestion System (Latest)
-**Zero-configuration content extraction that automatically processes entire pages**
+### ✅ Simplified Configuration System (Latest)
+**Streamlined widget configuration with hardcoded API endpoint for better security and simplicity**
 
-- **What's New**: Completely removed the need for `data-content-target` attribute
-- **Smart Processing**: Automatically extracts content from entire HTML document
-- **Intelligent Filtering**: Removes scripts, styles, navigation, ads, and other noise elements
-- **Markdown Conversion**: Converts filtered HTML to structured markdown for better AI processing
-- **Enhanced AI Understanding**: Improved recommendations and summaries through better content structure
-- **Developer Experience**: Simplified embedding with one-line script tag integration
+- **What's New**: Removed `data-api-endpoint` configuration - widget now uses hardcoded `/api/chat` endpoint
+- **Enhanced Security**: API endpoint is no longer configurable, preventing potential misuse
+- **Simplified Setup**: One less configuration parameter to worry about during implementation
+- **Consistent Behavior**: All widgets use the same API endpoint for predictable behavior
+- **Zero-Configuration Content**: Automatically extracts content from entire HTML document
+- **Smart Processing**: Removes scripts, styles, navigation, ads, and other noise elements
+- **Developer Experience**: Even simpler embedding with minimal configuration
 
-**Migration**: Simply remove the `data-content-target` attribute from existing implementations - the widget now works automatically!
+**Migration**: Remove both `data-content-target` and `data-api-endpoint` attributes from existing implementations - the widget now works automatically with hardcoded endpoints!
 
 ---
 

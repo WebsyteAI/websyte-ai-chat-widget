@@ -9,7 +9,6 @@ declare global {
     WebsyteChat: {
       initialized?: boolean;
       config?: {
-        apiEndpoint?: string;
         position?: string;
         theme?: string;
         advertiserName?: string;
@@ -43,8 +42,6 @@ declare global {
     if (scriptTag) {
       // Read data attributes from script tag
       
-      const apiEndpoint = scriptTag.getAttribute('data-api-endpoint');
-      if (apiEndpoint) scriptConfig.apiEndpoint = apiEndpoint;
       
       const baseUrl = scriptTag.getAttribute('data-base-url');
       if (baseUrl) scriptConfig.baseUrl = baseUrl;
@@ -70,7 +67,6 @@ declare global {
   
   // Default configuration
   const defaultConfig = {
-    apiEndpoint: '/api/chat',
     baseUrl: '',
     position: 'bottom-center',
     theme: 'default',
@@ -163,7 +159,6 @@ declare global {
     // Render the ChatWidget component
     widgetRoot.render(
       React.createElement(ChatWidget, {
-        apiEndpoint: config.apiEndpoint,
         baseUrl: config.baseUrl,
         advertiserName: config.advertiserName,
         advertiserLogo: config.advertiserLogo,

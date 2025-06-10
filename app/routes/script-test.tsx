@@ -5,8 +5,6 @@ export default function ScriptTest() {
   useEffect(() => {
     const script = document.createElement('script');
     script.src = `${window.location.origin}/dist/widget.js`;
-    script.setAttribute('data-content-target', '#main-article');
-    script.setAttribute('data-api-endpoint', '/api/chat');
     script.setAttribute('data-base-url', '');
     script.setAttribute('data-advertiser-name', 'TIME Magazine');
     script.setAttribute('data-advertiser-logo', 'https://logo.clearbit.com/time.com');
