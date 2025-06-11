@@ -20,12 +20,10 @@ export function RecommendationsList({
 
   return (
     <div className={`w-full ${contentFadeClass}`}>
-      <Marquee pauseOnHover className="[--duration:20s]">
+      <Marquee pauseOnHover className="[--duration:25s]">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 animate-pulse mx-1 w-[260px] h-[34px] flex items-center">
-              <div className="h-3 bg-gray-300 rounded flex-1"></div>
-            </div>
+            <div key={index} className="bg-gray-200 rounded animate-pulse mx-1 w-[260px] h-5"></div>
           ))
         ) : (
           recommendations.map((rec, index) => (
