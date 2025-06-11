@@ -14,6 +14,7 @@ declare global {
         advertiserName?: string;
         advertiserLogo?: string;
         targetElement?: string;
+        contentSelector?: string;
       };
       open?: () => void;
       close?: () => void;
@@ -60,6 +61,9 @@ declare global {
       
       const targetElement = scriptTag.getAttribute('data-target-element');
       if (targetElement) scriptConfig.targetElement = targetElement;
+      
+      const contentSelector = scriptTag.getAttribute('data-content-selector');
+      if (contentSelector) scriptConfig.contentSelector = contentSelector;
     }
     
     return scriptConfig;
@@ -72,7 +76,8 @@ declare global {
     theme: 'default',
     advertiserName: 'Nativo',
     advertiserLogo: '',
-    targetElement: ''
+    targetElement: '',
+    contentSelector: ''
   };
   
   // Merge configs: defaults < window config < script attributes
@@ -162,7 +167,8 @@ declare global {
         baseUrl: config.baseUrl,
         advertiserName: config.advertiserName,
         advertiserLogo: config.advertiserLogo,
-        isTargetedInjection: isTargetedInjection
+        isTargetedInjection: isTargetedInjection,
+        contentSelector: config.contentSelector
       })
     );
   }

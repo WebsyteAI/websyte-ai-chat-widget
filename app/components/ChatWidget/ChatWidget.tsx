@@ -26,7 +26,7 @@ marked.setOptions({
   gfm: true,
 });
 
-export function ChatWidget({ baseUrl = "", advertiserName = "Nativo", advertiserLogo, isTargetedInjection = false }: ChatWidgetProps) {
+export function ChatWidget({ baseUrl = "", advertiserName = "Nativo", advertiserLogo, isTargetedInjection = false, contentSelector }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -124,8 +124,8 @@ export function ChatWidget({ baseUrl = "", advertiserName = "Nativo", advertiser
         
         const html = targetElement.outerHTML;
         
-        // Run selector analysis, recommendations, and summaries in parallel
-        const [selectorResponse, recommendationsResponse, summariesResponse] = await Promise.all([
+        // Always run selector analysis for chat context, recommendations, and summaries in parallel
+        const apiCalls = [
           fetch(`${baseUrl}/api/analyze-selector`, {
             method: "POST",
             headers: {
@@ -159,41 +159,55 @@ export function ChatWidget({ baseUrl = "", advertiserName = "Nativo", advertiser
               title: pageContent.title,
             }),
           })
-        ]);
+        ];
+        
+        const [selectorResponse, recommendationsResponse, summariesResponse] = await Promise.all(apiCalls);
 
-        // Handle selector analysis response
-        if (selectorResponse.ok) {
+        // Handle selector for summary replacement
+        if (contentSelector) {
+          console.log('Using override selector for summaries:', contentSelector);
+          const overrideElement = targetElement.querySelector(contentSelector);
+          if (overrideElement) {
+            console.log('Override selector found:', overrideElement.tagName, overrideElement.className);
+            setMainContentElement(overrideElement);
+            setOriginalContent(overrideElement.innerHTML);
+          } else {
+            console.warn('Override selector failed, summaries disabled');
+            setMainContentElement(null);
+            setOriginalContent('');
+          }
+        } else if (selectorResponse && selectorResponse.ok) {
+          // Use AI selector for both chat context and summaries
           const analysis = await selectorResponse.json() as { contentSelector: string; reasoning: string };
-          console.log('AI analysis result:', analysis);
+          console.log('Using AI selector for summaries:', analysis.contentSelector);
           
-          // Try to find element with AI-generated selector
           const aiSelectedElement = targetElement.querySelector(analysis.contentSelector);
           if (aiSelectedElement) {
-            console.log('AI-generated selector found element:', aiSelectedElement);
+            console.log('AI selector found:', aiSelectedElement.tagName, aiSelectedElement.className);
             setMainContentElement(aiSelectedElement);
             setOriginalContent(aiSelectedElement.innerHTML);
           } else {
-            console.log('AI-generated selector failed, falling back to full element');
-            setMainContentElement(targetElement);
-            setOriginalContent(targetElement.innerHTML);
+            console.warn('AI selector failed, summaries disabled');
+            setMainContentElement(null);
+            setOriginalContent('');
           }
         } else {
-          console.warn('AI selector analysis failed, using fallback');
-          setMainContentElement(targetElement);
-          setOriginalContent(targetElement.innerHTML);
+          console.warn('No selector analysis, summaries disabled');
+          setMainContentElement(null);
+          setOriginalContent('');
         }
 
         // Handle recommendations response
-        if (recommendationsResponse.ok) {
+        if (recommendationsResponse && recommendationsResponse.ok) {
           const data = await recommendationsResponse.json() as { recommendations?: Recommendation[]; placeholder?: string };
           setRecommendations(data.recommendations || []);
           setPlaceholder(data.placeholder || "Ask me about this content");
-        } else {
+        } else if (recommendationsResponse) {
           throw new Error(`Recommendations API error: ${recommendationsResponse.status}`);
         }
 
         // Handle summaries response
-        if (summariesResponse.ok) {
+        if (summariesResponse && summariesResponse.ok) {
           const summariesData = await summariesResponse.json() as { short?: string; medium?: string };
           if (summariesData.short && summariesData.medium) {
             // Update the hook with the fetched summaries

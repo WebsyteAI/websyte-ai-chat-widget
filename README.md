@@ -267,6 +267,7 @@ window.WebsyteChat = {
 - **Configuration**: Script tag data attributes with automatic parsing
 - **Content Extraction**: Enhanced content processing with strict selector validation and quality assurance ✅ **ENHANCED**
 - **Storage**: localStorage for chat history and widget state
+- **Analytics**: Umami analytics integration for usage tracking ✅ **NEW**
 - **Build**: Vite with custom widget configuration, protected public directory, and stable CSS inlining
 
 ## API Endpoints

@@ -1,5 +1,5 @@
-import TurndownService from 'turndown';
 import { contentCache } from './content-cache';
+import { htmlToMarkdown } from './html-to-markdown';
 
 interface PageContent {
   url: string;
@@ -171,15 +171,8 @@ export class ContentExtractor {
   }
 
   private static convertToMarkdown(element: Element): string {
-    const turndownService = new TurndownService({
-      headingStyle: 'atx',
-      bulletListMarker: '-',
-      codeBlockStyle: 'fenced',
-      emDelimiter: '*'
-    });
-    
-    // Convert HTML to markdown
-    const markdown = turndownService.turndown(element.innerHTML || '');
+    // Convert HTML to markdown using our server-compatible converter
+    const markdown = htmlToMarkdown.convert(element.innerHTML || '');
     
     // Clean up the markdown
     return this.cleanMarkdown(markdown);

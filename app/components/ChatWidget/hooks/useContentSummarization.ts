@@ -15,12 +15,12 @@ export function useContentSummarization({ baseUrl, extractPageContent }: UseCont
   const [mainContentElement, setMainContentElement] = useState<Element | null>(null);
 
   const replaceWithSummary = (summaryContent: string) => {
-    console.log('Replacing content with summary:', summaryContent.substring(0, 100) + '...');
-    
     if (!mainContentElement) {
-      console.error('No main content element available for content replacement');
+      console.warn('No content selector element found - summaries disabled');
       return;
     }
+    
+    console.log('Replacing content in:', mainContentElement.tagName, mainContentElement.className);
     
     // Store current classes and attributes to preserve them
     const currentClasses = mainContentElement.className;
@@ -35,7 +35,7 @@ export function useContentSummarization({ baseUrl, extractPageContent }: UseCont
     mainContentElement.id = currentId;
     (mainContentElement as HTMLElement).style.cssText = currentStyles;
     
-    console.log('Main content replaced successfully with summary HTML');
+    console.log('Content replaced successfully');
   };
 
   const restoreOriginalContent = () => {
@@ -46,9 +46,7 @@ export function useContentSummarization({ baseUrl, extractPageContent }: UseCont
   };
 
   const handleContentModeChange = (mode: ContentMode) => {
-    console.log('Content mode change requested:', mode);
-    console.log('Current mode:', currentContentMode);
-    console.log('Available summaries:', summaries);
+    console.log('Content mode:', currentContentMode, '→', mode);
     
     if (mode === currentContentMode) return;
 
@@ -56,12 +54,10 @@ export function useContentSummarization({ baseUrl, extractPageContent }: UseCont
 
     switch (mode) {
       case 'original':
-        console.log('Restoring original content');
         restoreOriginalContent();
         break;
       case 'short':
         if (summaries?.short) {
-          console.log('Replacing with short summary:', summaries.short.substring(0, 100) + '...');
           replaceWithSummary(summaries.short);
         } else {
           console.warn('Short summary not available');
@@ -69,7 +65,6 @@ export function useContentSummarization({ baseUrl, extractPageContent }: UseCont
         break;
       case 'medium':
         if (summaries?.medium) {
-          console.log('Replacing with medium summary:', summaries.medium.substring(0, 100) + '...');
           replaceWithSummary(summaries.medium);
         } else {
           console.warn('Medium summary not available');

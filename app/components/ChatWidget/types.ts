@@ -10,6 +10,7 @@ export interface ChatWidgetProps {
   advertiserName?: string;
   advertiserLogo?: string;
   isTargetedInjection?: boolean;
+  contentSelector?: string;
 }
 
 export interface Recommendation {
