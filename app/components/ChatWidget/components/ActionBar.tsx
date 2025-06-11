@@ -11,6 +11,7 @@ interface ActionBarProps {
   isLoadingSummaries: boolean;
   currentContentMode: ContentMode;
   isTransitioning: boolean;
+  hidePoweredBy?: boolean;
   onToggleSummaryDropdown: () => void;
   onContentModeChange: (mode: ContentMode) => void;
   onStartAudio: () => void;
@@ -28,6 +29,7 @@ export function ActionBar({
   isLoadingSummaries,
   currentContentMode,
   isTransitioning,
+  hidePoweredBy,
   onToggleSummaryDropdown,
   onContentModeChange,
   onStartAudio,

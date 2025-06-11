@@ -26,7 +26,7 @@ marked.setOptions({
   gfm: true,
 });
 
-export function ChatWidget({ baseUrl = "", advertiserName = "Nativo", advertiserLogo, isTargetedInjection = false, contentSelector }: ChatWidgetProps) {
+export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, isTargetedInjection = false, contentSelector, hidePoweredBy = false }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -436,7 +436,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "Nativo", advertiser
             {currentContent === "action" ? (
               <ActionBar
                 advertiserLogo={advertiserLogo}
-                advertiserName={advertiserName || "Nativo"}
+                advertiserName={advertiserName}
                 baseUrl={baseUrl}
                 currentView={currentView}
                 showSummaryDropdown={showSummaryDropdown}
@@ -444,6 +444,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "Nativo", advertiser
                 isLoadingSummaries={isLoadingSummaries}
                 currentContentMode={currentContentMode}
                 isTransitioning={isTransitioning}
+                hidePoweredBy={hidePoweredBy}
                 onToggleSummaryDropdown={() => setShowSummaryDropdown(!showSummaryDropdown)}
                 onContentModeChange={handleContentModeChange}
                 onStartAudio={handleStartAudio}
@@ -489,7 +490,8 @@ export function ChatWidget({ baseUrl = "", advertiserName = "Nativo", advertiser
         isLoading={isLoading}
         recommendations={recommendations}
         isLoadingRecommendations={isLoadingRecommendations}
-        advertiserName={advertiserName || "Nativo"}
+        advertiserName={advertiserName}
+        hidePoweredBy={hidePoweredBy}
         advertiserLogo={advertiserLogo}
         baseUrl={baseUrl}
         onClose={() => setCurrentView("main")}

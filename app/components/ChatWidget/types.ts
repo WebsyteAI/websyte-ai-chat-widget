@@ -11,6 +11,7 @@ export interface ChatWidgetProps {
   advertiserLogo?: string;
   isTargetedInjection?: boolean;
   contentSelector?: string;
+  hidePoweredBy?: boolean;
 }
 
 export interface Recommendation {

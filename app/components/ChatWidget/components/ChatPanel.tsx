@@ -15,6 +15,7 @@ interface ChatPanelProps {
   advertiserName: string;
   advertiserLogo?: string;
   baseUrl: string;
+  hidePoweredBy?: boolean;
   onClose: () => void;
   onInputChange: (value: string) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
@@ -34,6 +35,7 @@ export function ChatPanel({
   advertiserName,
   advertiserLogo,
   baseUrl,
+  hidePoweredBy,
   onClose,
   onInputChange,
   onKeyDown,
@@ -79,15 +81,17 @@ export function ChatPanel({
                 )}
                 AI
               </h1>
-              <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
-                Powered by 
-                <img 
-                  src={`${baseUrl}/nativo-logo.png`} 
-                  alt="Nativo" 
-                  className="w-4 h-4"
-                />
-                Nativo
-              </p>
+              {!hidePoweredBy && (
+                <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
+                  Powered by 
+                  <img 
+                    src={`${baseUrl}/nativo-logo.png`} 
+                    alt="Nativo" 
+                    className="w-4 h-4"
+                  />
+                  Nativo
+                </p>
+              )}
             </div>
             
             <div className="w-full relative group">

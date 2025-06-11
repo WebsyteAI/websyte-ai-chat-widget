@@ -15,6 +15,7 @@ declare global {
         advertiserLogo?: string;
         targetElement?: string;
         contentSelector?: string;
+        hidePoweredBy?: boolean;
       };
       open?: () => void;
       close?: () => void;
@@ -64,6 +65,9 @@ declare global {
       
       const contentSelector = scriptTag.getAttribute('data-content-selector');
       if (contentSelector) scriptConfig.contentSelector = contentSelector;
+      
+      const hidePoweredBy = scriptTag.getAttribute('data-hide-powered-by');
+      if (hidePoweredBy !== null) scriptConfig.hidePoweredBy = hidePoweredBy === 'true';
     }
     
     return scriptConfig;
@@ -71,13 +75,14 @@ declare global {
   
   // Default configuration
   const defaultConfig = {
-    baseUrl: '',
+    baseUrl: 'https://websyte.ai',
     position: 'bottom-center',
     theme: 'default',
-    advertiserName: 'Nativo',
+    advertiserName: 'WebsyteAI',
     advertiserLogo: '',
     targetElement: '',
-    contentSelector: ''
+    contentSelector: '',
+    hidePoweredBy: false
   };
   
   // Merge configs: defaults < window config < script attributes
@@ -168,7 +173,8 @@ declare global {
         advertiserName: config.advertiserName,
         advertiserLogo: config.advertiserLogo,
         isTargetedInjection: isTargetedInjection,
-        contentSelector: config.contentSelector
+        contentSelector: config.contentSelector,
+        hidePoweredBy: config.hidePoweredBy
       })
     );
   }
