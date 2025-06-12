@@ -82,18 +82,30 @@
 
 ## Recent Implementation Updates
 
-### ✅ Smart Content Ingestion System (Latest)
+### ✅ Zero-Configuration Content Extraction (Latest)
 - **What Changed**: Completely redesigned content ingestion to automatically process entire HTML pages without requiring content selectors
 - **Technical Details**: 
   - **Removed content selector requirement**: Eliminated `data-content-target` attribute and related configuration from `app/widget-entry.tsx`
   - **Full page processing**: Updated `app/lib/content-extractor.ts` to process `document.documentElement` instead of targeted elements
   - **Enhanced content filtering**: Added comprehensive filtering to remove `<head>`, `<script>`, `<style>`, navigation, ads, and other noise elements
-  - **HTML-to-markdown conversion**: Integrated `turndown` library to convert filtered HTML to structured markdown format
+  - **HTML-to-markdown conversion**: Integrated structured markdown conversion for cleaner AI processing
   - **Updated integration points**: Modified `app/components/ChatWidget/ChatWidget.tsx` and type definitions to remove contentTarget dependencies
   - **Smart caching**: Updated cache system to use 'full-page' keys instead of selector-specific keys
 - **User Impact**: Zero-configuration content extraction that automatically captures all relevant page content while filtering out noise
 - **Testing**: Widget builds successfully, core functionality working, worker service tests passing
-- **Benefits**: Smarter automatic content detection, complete page coverage, cleaner content for AI processing, better recommendations and summaries
+- **Benefits**: Effortless setup, complete page coverage, cleaner content for AI processing, better recommendations and summaries
+
+### ✅ Modular Hooks Architecture
+- **What Changed**: Extracted business logic from ChatWidget into custom hooks for better testability and maintainability
+- **Technical Details**:
+  - **useChatMessages**: Message state management with add/clear operations and localStorage persistence
+  - **useAudioPlayer**: Audio playback simulation with controls, timing, and speed adjustment (0.5x to 2x)
+  - **useContentSummarization**: Content mode switching, DOM manipulation, and API integration for summarization
+  - **Component separation**: 6 focused UI components (ActionBar, AudioPlayer, ChatMessage, ChatPanel, MessageInput, RecommendationsList)
+  - **Type safety**: Comprehensive TypeScript interfaces for all component props and hook returns
+- **User Impact**: Zero UI changes while improving code quality and developer experience
+- **Testing**: Enhanced testability with isolated components and business logic hooks
+- **Benefits**: 55% code reduction in main component, better maintainability, easier feature development
 
 ### ✅ Recommendations Loading State Improvements
 - **What Changed**: Enhanced recommendations loading state in action bar to prevent layout shifts

@@ -72,7 +72,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
     extractPageContent: () => ContentExtractor.extractPageContent() 
   });
   
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null!);
 
   const handleContentModeChange = (mode: ContentMode) => {
     handleContentModeChangeHook(mode);
@@ -431,7 +431,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         }`}>
           
           {/* Main Content Container with Fade Animation */}
-          <div className={`flex items-center justify-center gap-3 w-full ${contentFadeClass}`}>
+          <div className={`flex items-center justify-center gap-2 w-full ${contentFadeClass}`}>
             
             {currentContent === "action" ? (
               <ActionBar
@@ -468,15 +468,29 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
             )}
           </div>
           
-          {/* Recommendations Row - Only show in action mode and when recommendations are available */}
+          {/* Recommendations Row or Summary - Only show in action mode */}
           {currentContent === "action" && (
-            <RecommendationsList
-              recommendations={recommendations}
-              isLoading={isLoadingRecommendations}
-              isTransitioning={isTransitioning}
-              contentFadeClass={contentFadeClass}
-              onRecommendationClick={handleRecommendationClick}
-            />
+            <div className={`w-full ${contentFadeClass}`}>
+              {currentContentMode !== "original" && summaries && !mainContentElement ? (
+                // Show summary content only if no content-selector is available
+                <div className="text-sm text-gray-700 px-2 py-1">
+                  {currentContentMode === "short" && summaries.short ? (
+                    <div dangerouslySetInnerHTML={{ __html: summaries.short }} />
+                  ) : currentContentMode === "medium" && summaries.medium ? (
+                    <div dangerouslySetInnerHTML={{ __html: summaries.medium }} />
+                  ) : null}
+                </div>
+              ) : (
+                // Show recommendations
+                <RecommendationsList
+                  recommendations={recommendations}
+                  isLoading={isLoadingRecommendations}
+                  isTransitioning={isTransitioning}
+                  contentFadeClass=""
+                  onRecommendationClick={handleRecommendationClick}
+                />
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -494,6 +508,9 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         hidePoweredBy={hidePoweredBy}
         advertiserLogo={advertiserLogo}
         baseUrl={baseUrl}
+        summaries={summaries}
+        currentContentMode={currentContentMode}
+        mainContentElement={mainContentElement}
         onClose={() => setCurrentView("main")}
         onInputChange={setInputValue}
         onKeyDown={handleKeyDown}

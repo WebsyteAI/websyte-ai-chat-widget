@@ -5,4 +5,5 @@ export default [
   route("/test", "routes/test.tsx"),
   route("/script-test", "routes/script-test.tsx"),
   route("/target-test", "routes/target-test.tsx"),
+  route("/summary-test", "routes/summary-test.tsx"),
 ] satisfies RouteConfig;

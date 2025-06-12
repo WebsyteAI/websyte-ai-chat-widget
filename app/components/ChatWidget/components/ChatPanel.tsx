@@ -1,8 +1,9 @@
 import { useRef, useEffect } from "react";
 import { Minimize2 } from "lucide-react";
-import type { Message, Recommendation } from "../types";
+import type { Message, Recommendation, Summaries, ContentMode } from "../types";
 import { ChatMessage } from "./ChatMessage";
 import { MessageInput } from "./MessageInput";
+import { Marquee } from "../../ui/marquee";
 
 interface ChatPanelProps {
   currentView: "main" | "chat";
@@ -16,6 +17,9 @@ interface ChatPanelProps {
   advertiserLogo?: string;
   baseUrl: string;
   hidePoweredBy?: boolean;
+  summaries: Summaries | null;
+  currentContentMode: ContentMode;
+  mainContentElement: Element | null;
   onClose: () => void;
   onInputChange: (value: string) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
@@ -36,6 +40,9 @@ export function ChatPanel({
   advertiserLogo,
   baseUrl,
   hidePoweredBy,
+  summaries,
+  currentContentMode,
+  mainContentElement,
   onClose,
   onInputChange,
   onKeyDown,
@@ -54,7 +61,7 @@ export function ChatPanel({
   }, [messages]);
 
   return (
-    <div className={`fixed top-4 right-4 bottom-4 w-[28rem] bg-white border border-gray-200 rounded-lg shadow-xl flex flex-col transition-all duration-300 ease-out transform z-40 ${
+    <div className={`fixed top-4 right-4 bottom-4 w-[28rem] min-w-[400px] bg-white border border-gray-200 rounded-lg shadow-xl flex flex-col transition-all duration-300 ease-out transform z-40 ${
       currentView === "chat" ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
     }`}>
       <div className="flex items-center justify-end p-4 rounded-t-lg">
@@ -94,34 +101,33 @@ export function ChatPanel({
               )}
             </div>
             
-            <div className="w-full relative group">
-              <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 group-hover:opacity-50 transition-opacity"></div>
-              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 group-hover:opacity-50 transition-opacity"></div>
+            
+            <div className="w-full relative">
+              <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
               
-              <div className="overflow-hidden group-hover:overflow-x-auto group-hover:scrollbar-thin group-hover:scrollbar-thumb-gray-300 group-hover:scrollbar-track-transparent">
-                <div className="flex space-x-3 animate-marquee-infinite group-hover:animate-none">
-                  {isLoadingRecommendations ? (
-                    // Loading state
-                    Array.from({ length: 4 }).map((_, index) => (
-                      <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex-shrink-0 w-64 animate-pulse">
-                        <div className="h-4 bg-gray-300 rounded mb-2"></div>
-                        <div className="h-3 bg-gray-200 rounded"></div>
-                      </div>
-                    ))
-                  ) : (
-                    recommendations.map((rec, index) => (
-                      <div 
-                        key={index} 
-                        className="bg-gray-50 border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors flex-shrink-0 w-64"
-                        onClick={() => onRecommendationClick(rec)}
-                      >
-                        <h3 className="font-medium text-sm text-gray-900 mb-1">{rec.title}</h3>
-                        <p className="text-gray-600 text-sm">{rec.description}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
+              <Marquee pauseOnHover className="[--gap:0.75rem]">
+                {isLoadingRecommendations ? (
+                  // Loading state
+                  Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex-shrink-0 w-64 animate-pulse">
+                      <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded"></div>
+                    </div>
+                  ))
+                ) : (
+                  recommendations.map((rec, index) => (
+                    <div 
+                      key={index} 
+                      className="bg-gray-50 border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors flex-shrink-0 w-64"
+                      onClick={() => onRecommendationClick(rec)}
+                    >
+                      <h3 className="font-medium text-sm text-gray-900 mb-1">{rec.title}</h3>
+                      <p className="text-gray-600 text-sm">{rec.description}</p>
+                    </div>
+                  ))
+                )}
+              </Marquee>
             </div>
           </div>
         )}

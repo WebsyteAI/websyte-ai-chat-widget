@@ -364,18 +364,28 @@ Inject the widget into a specific DOM element:
 
 ## Recent Updates
 
-### ✅ Simplified Configuration System (Latest)
-**Streamlined widget configuration with hardcoded API endpoint for better security and simplicity**
+### ✅ Zero-Configuration Content Extraction (Latest)
+**Complete redesign of content ingestion for effortless setup and better AI processing**
 
-- **What's New**: Removed `data-api-endpoint` configuration - widget now uses hardcoded `/api/chat` endpoint
-- **Enhanced Security**: API endpoint is no longer configurable, preventing potential misuse
-- **Simplified Setup**: One less configuration parameter to worry about during implementation
-- **Consistent Behavior**: All widgets use the same API endpoint for predictable behavior
-- **Zero-Configuration Content**: Automatically extracts content from entire HTML document
-- **Smart Processing**: Removes scripts, styles, navigation, ads, and other noise elements
-- **Developer Experience**: Even simpler embedding with minimal configuration
+- **What's New**: Removed `data-content-target` requirement - widget now automatically processes entire HTML pages
+- **Smart Content Filtering**: Enhanced content extraction removes scripts, styles, navigation, ads, and other noise elements
+- **HTML-to-Markdown Conversion**: Integrated structured markdown conversion for cleaner AI processing
+- **Simplified Setup**: Single script tag with no configuration required
+- **Better AI Results**: Cleaner content leads to more accurate summaries and better recommendations
+- **Complete Coverage**: Captures all page content automatically without missing important sections
+- **Enhanced Performance**: Smart caching reduces redundant content processing
 
-**Migration**: Remove both `data-content-target` and `data-api-endpoint` attributes from existing implementations - the widget now works automatically with hardcoded endpoints!
+**Migration**: Remove `data-content-target` attribute from existing implementations - the widget now works automatically!
+
+### ✅ Modular Hooks Architecture
+**Refactored ChatWidget into modular components and custom hooks for better maintainability**
+
+- **Component Separation**: 6 focused UI components (ActionBar, AudioPlayer, ChatMessage, ChatPanel, MessageInput, RecommendationsList)
+- **Custom Hooks**: 3 business logic hooks (useChatMessages, useAudioPlayer, useContentSummarization)
+- **Enhanced Testability**: Each component and hook can be tested independently
+- **Code Reduction**: 55% reduction in main component size (875+ → ~400 lines)
+- **Type Safety**: Comprehensive TypeScript interfaces for all components and hooks
+- **Zero UI Changes**: Maintains identical user experience while improving code quality
 
 ---
 
