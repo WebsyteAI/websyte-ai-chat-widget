@@ -236,13 +236,13 @@ export function LandingPage() {
               <div className="relative">
                 <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm overflow-x-auto">
                   <code className="text-green-400">
-                    {`<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" async></script>`}
+                    {`<script src="https://websyte.ai/dist/widget.js" async></script>`}
                   </code>
                 </div>
                 <button 
                   className="absolute top-2 right-2 px-3 py-2 rounded-md border border-black bg-white text-black text-sm hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
                   onClick={async () => {
-                    await navigator.clipboard.writeText(`<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" async></script>`);
+                    await navigator.clipboard.writeText(`<script src="https://websyte.ai/dist/widget.js" async></script>`);
                   }}
                 >
                   <Copy className="h-4 w-4" />
@@ -323,23 +323,6 @@ export function LandingPage() {
               <p className="text-muted-foreground">
                 Built with ❤️ using React Router and Cloudflare Workers
               </p>
-            </div>
-            <div className="flex gap-6">
-              <Button variant="link" asChild>
-                <a href="https://websyte-ai-chat-widget.clementineso.workers.dev" target="_blank" rel="noopener noreferrer">
-                  Documentation
-                </a>
-              </Button>
-              <Button variant="link" asChild>
-                <a href="https://websyte-ai-chat-widget.clementineso.workers.dev/test" target="_blank" rel="noopener noreferrer">
-                  API Reference
-                </a>
-              </Button>
-              <Button variant="link" asChild>
-                <a href="https://websyte-ai-chat-widget.clementineso.workers.dev" target="_blank" rel="noopener noreferrer">
-                  Live Demo
-                </a>
-              </Button>
             </div>
           </div>
           <Separator className="my-8" />

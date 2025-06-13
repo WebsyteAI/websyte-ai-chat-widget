@@ -32,13 +32,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
-        <script defer src={UmamiTracking.SCRIPT_URL} data-website-id={UmamiTracking.WEBSITE_ID}></script>
+        <script
+          defer
+          src={UmamiTracking.SCRIPT_URL}
+          data-website-id={UmamiTracking.WEBSITE_ID}
+        ></script>
       </head>
       <body>
         {children}
         <ScrollRestoration />
         <Scripts />
-        <script src="/dist/widget.js"></script>
+        <script
+          src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js"
+          data-base-url="https://websyte-ai-chat-widget.clementineso.workers.dev"
+        ></script>
       </body>
     </html>
   );
