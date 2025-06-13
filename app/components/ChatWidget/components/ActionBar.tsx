@@ -4,6 +4,7 @@ import type { ContentMode, Summaries } from "../types";
 interface ActionBarProps {
   advertiserLogo?: string;
   advertiserName: string;
+  advertiserUrl?: string;
   baseUrl: string;
   currentView: "main" | "chat";
   showSummaryDropdown: boolean;
@@ -23,6 +24,7 @@ interface ActionBarProps {
 export function ActionBar({
   advertiserLogo,
   advertiserName,
+  advertiserUrl = "https://websyte.ai",
   baseUrl,
   currentView,
   showSummaryDropdown,
@@ -42,11 +44,18 @@ export function ActionBar({
     <>
       {/* Action Bar Content */}
       <div className="flex items-center gap-1 whitespace-nowrap overflow-hidden flex-shrink-0">
-        <img
-          src={advertiserLogo || `${baseUrl}/websyte-ai-logo.svg`}
-          alt={advertiserName}
-          className="w-8 h-8 rounded flex-shrink-0"
-        />
+        <a
+          href={advertiserUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-shrink-0"
+        >
+          <img
+            src={advertiserLogo || `${baseUrl}/websyte-ai-logo.svg`}
+            alt={advertiserName}
+            className="w-8 h-8 rounded flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+          />
+        </a>
         <span className="font-bold text-gray-800 text-base">AI</span>
       </div>
 

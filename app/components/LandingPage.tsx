@@ -101,6 +101,20 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3">
+            <img
+              src="/websyte-ai-logo.svg"
+              alt="Websyte AI"
+              className="w-8 h-8"
+            />
+            <span className="text-xl font-bold text-foreground">websyte.ai</span>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="relative py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">

@@ -13,6 +13,7 @@ declare global {
         theme?: string;
         advertiserName?: string;
         advertiserLogo?: string;
+        advertiserUrl?: string;
         targetElement?: string;
         contentSelector?: string;
         hidePoweredBy?: boolean;
@@ -61,6 +62,9 @@ declare global {
       const advertiserLogo = scriptTag.getAttribute('data-advertiser-logo');
       if (advertiserLogo) scriptConfig.advertiserLogo = advertiserLogo;
       
+      const advertiserUrl = scriptTag.getAttribute('data-advertiser-url');
+      if (advertiserUrl) scriptConfig.advertiserUrl = advertiserUrl;
+      
       const targetElement = scriptTag.getAttribute('data-target-element');
       if (targetElement) scriptConfig.targetElement = targetElement;
       
@@ -84,6 +88,7 @@ declare global {
     theme: 'default',
     advertiserName: 'Websyte',
     advertiserLogo: '',
+    advertiserUrl: 'https://websyte.ai',
     targetElement: '',
     contentSelector: '',
     hidePoweredBy: true,
@@ -177,6 +182,7 @@ declare global {
         baseUrl: config.baseUrl,
         advertiserName: config.advertiserName,
         advertiserLogo: config.advertiserLogo,
+        advertiserUrl: config.advertiserUrl,
         isTargetedInjection: isTargetedInjection,
         contentSelector: config.contentSelector,
         hidePoweredBy: config.hidePoweredBy,

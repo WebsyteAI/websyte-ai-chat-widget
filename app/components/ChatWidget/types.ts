@@ -9,6 +9,7 @@ export interface ChatWidgetProps {
   baseUrl?: string;
   advertiserName?: string;
   advertiserLogo?: string;
+  advertiserUrl?: string;
   isTargetedInjection?: boolean;
   contentSelector?: string;
   hidePoweredBy?: boolean;
