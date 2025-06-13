@@ -82,7 +82,21 @@
 
 ## Recent Implementation Updates
 
-### ✅ Zero-Configuration Content Extraction (Latest)
+### ✅ Umami Analytics Integration (Latest)
+- **What Changed**: Implemented comprehensive Umami tracking using API-based approach with centralized configuration
+- **Technical Details**: 
+  - **API-based tracking**: Created `app/lib/umami-tracker.ts` using Umami Cloud API (`https://cloud.umami.is/api/send`) instead of client-side scripts
+  - **Centralized configuration**: Shared website ID and script URL constants used by both widget and landing page
+  - **Comprehensive event tracking**: Added tracking for widget load, button clicks, chat messages, and landing page actions
+  - **Automatic browser data**: Programmatically generates hostname, language, referrer, screen resolution, title, and URL using browser APIs
+  - **Widget integration**: `app/components/ChatWidget/ChatWidget.tsx` tracks all user interactions with detailed context
+  - **Landing page integration**: `app/components/LandingPage.tsx` tracks demo clicks, code copying, and CTA interactions
+  - **Root layout update**: `app/root.tsx` uses shared configuration for script tag
+- **User Impact**: Comprehensive analytics tracking with no performance impact on user interactions
+- **Testing**: All tracking events implemented and tested, proper error handling with graceful fallbacks
+- **Benefits**: Reliable tracking via direct API calls, comprehensive user interaction data, privacy-friendly analytics, consistent tracking across components
+
+### ✅ Zero-Configuration Content Extraction
 - **What Changed**: Completely redesigned content ingestion to automatically process entire HTML pages without requiring content selectors
 - **Technical Details**: 
   - **Removed content selector requirement**: Eliminated `data-content-target` attribute and related configuration from `app/widget-entry.tsx`

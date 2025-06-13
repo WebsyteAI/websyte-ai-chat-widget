@@ -12,6 +12,7 @@ export interface ChatWidgetProps {
   isTargetedInjection?: boolean;
   contentSelector?: string;
   hidePoweredBy?: boolean;
+  enableSmartSelector?: boolean;
 }
 
 export interface Recommendation {

@@ -16,6 +16,7 @@ declare global {
         targetElement?: string;
         contentSelector?: string;
         hidePoweredBy?: boolean;
+        enableSmartSelector?: boolean;
       };
       open?: () => void;
       close?: () => void;
@@ -68,6 +69,9 @@ declare global {
       
       const hidePoweredBy = scriptTag.getAttribute('data-hide-powered-by');
       if (hidePoweredBy !== null) scriptConfig.hidePoweredBy = hidePoweredBy === 'true';
+      
+      const enableSmartSelector = scriptTag.getAttribute('data-enable-smart-selector');
+      if (enableSmartSelector !== null) scriptConfig.enableSmartSelector = enableSmartSelector === 'true';
     }
     
     return scriptConfig;
@@ -75,14 +79,15 @@ declare global {
   
   // Default configuration
   const defaultConfig = {
-    baseUrl: '',
+    baseUrl: 'https://websyte.ai',
     position: 'bottom-center',
     theme: 'default',
     advertiserName: 'Websyte',
     advertiserLogo: '',
     targetElement: '',
     contentSelector: '',
-    hidePoweredBy: false
+    hidePoweredBy: true,
+    enableSmartSelector: false
   };
   
   // Merge configs: defaults < window config < script attributes
@@ -174,7 +179,8 @@ declare global {
         advertiserLogo: config.advertiserLogo,
         isTargetedInjection: isTargetedInjection,
         contentSelector: config.contentSelector,
-        hidePoweredBy: config.hidePoweredBy
+        hidePoweredBy: config.hidePoweredBy,
+        enableSmartSelector: config.enableSmartSelector
       })
     );
   }

@@ -12,6 +12,7 @@ interface ActionBarProps {
   currentContentMode: ContentMode;
   isTransitioning: boolean;
   hidePoweredBy?: boolean;
+  enableSmartSelector?: boolean;
   onToggleSummaryDropdown: () => void;
   onContentModeChange: (mode: ContentMode) => void;
   onStartAudio: () => void;
@@ -30,6 +31,7 @@ export function ActionBar({
   currentContentMode,
   isTransitioning,
   hidePoweredBy,
+  enableSmartSelector = false,
   onToggleSummaryDropdown,
   onContentModeChange,
   onStartAudio,

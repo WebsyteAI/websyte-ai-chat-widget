@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { marked } from "marked";
 import { ContentExtractor } from "../../lib/content-extractor";
+import { UmamiTracking } from "../../lib/umami-tracker";
 import { 
   useChatMessages, 
   useAudioPlayer, 
@@ -26,7 +27,7 @@ marked.setOptions({
   gfm: true,
 });
 
-export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, isTargetedInjection = false, contentSelector, hidePoweredBy = false }: ChatWidgetProps) {
+export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -75,6 +76,9 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
   const dropdownRef = useRef<HTMLDivElement>(null!);
 
   const handleContentModeChange = (mode: ContentMode) => {
+    // Track summary mode change
+    UmamiTracking.trackButtonClick('summary-mode', { mode });
+    
     handleContentModeChangeHook(mode);
     setShowSummaryDropdown(false);
   };
@@ -100,6 +104,9 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
   }, [showSummaryDropdown]);
 
   useEffect(() => {
+    // Track widget load
+    UmamiTracking.trackWidgetLoad(window.location.href);
+    
     // Trigger slide-in animation after component mounts
     const timer = setTimeout(() => {
       setHasRendered(true);
@@ -163,36 +170,43 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         
         const [selectorResponse, recommendationsResponse, summariesResponse] = await Promise.all(apiCalls);
 
-        // Handle selector for summary replacement
-        if (contentSelector) {
-          console.log('Using override selector for summaries:', contentSelector);
-          const overrideElement = targetElement.querySelector(contentSelector);
-          if (overrideElement) {
-            console.log('Override selector found:', overrideElement.tagName, overrideElement.className);
-            setMainContentElement(overrideElement);
-            setOriginalContent(overrideElement.innerHTML);
+        // Handle selector for summary replacement - only if enableSmartSelector is true
+        if (enableSmartSelector) {
+          if (contentSelector) {
+            console.log('Using override selector for summaries:', contentSelector);
+            const overrideElement = targetElement.querySelector(contentSelector);
+            if (overrideElement) {
+              console.log('Override selector found:', overrideElement.tagName, overrideElement.className);
+              setMainContentElement(overrideElement);
+              setOriginalContent(overrideElement.innerHTML);
+            } else {
+              console.warn('Override selector failed, content replacement disabled');
+              setMainContentElement(null);
+              setOriginalContent('');
+            }
+          } else if (selectorResponse && selectorResponse.ok) {
+            // Use AI selector for content replacement
+            const analysis = await selectorResponse.json() as { contentSelector: string; reasoning: string };
+            console.log('Using AI selector for content replacement:', analysis.contentSelector);
+            
+            const aiSelectedElement = targetElement.querySelector(analysis.contentSelector);
+            if (aiSelectedElement) {
+              console.log('AI selector found:', aiSelectedElement.tagName, aiSelectedElement.className);
+              setMainContentElement(aiSelectedElement);
+              setOriginalContent(aiSelectedElement.innerHTML);
+            } else {
+              console.warn('AI selector failed, content replacement disabled');
+              setMainContentElement(null);
+              setOriginalContent('');
+            }
           } else {
-            console.warn('Override selector failed, summaries disabled');
-            setMainContentElement(null);
-            setOriginalContent('');
-          }
-        } else if (selectorResponse && selectorResponse.ok) {
-          // Use AI selector for both chat context and summaries
-          const analysis = await selectorResponse.json() as { contentSelector: string; reasoning: string };
-          console.log('Using AI selector for summaries:', analysis.contentSelector);
-          
-          const aiSelectedElement = targetElement.querySelector(analysis.contentSelector);
-          if (aiSelectedElement) {
-            console.log('AI selector found:', aiSelectedElement.tagName, aiSelectedElement.className);
-            setMainContentElement(aiSelectedElement);
-            setOriginalContent(aiSelectedElement.innerHTML);
-          } else {
-            console.warn('AI selector failed, summaries disabled');
+            console.warn('No selector analysis, content replacement disabled');
             setMainContentElement(null);
             setOriginalContent('');
           }
         } else {
-          console.warn('No selector analysis, summaries disabled');
+          // When enableSmartSelector is false, don't set up content replacement
+          console.log('Smart selector disabled, summaries will show in panel only');
           setMainContentElement(null);
           setOriginalContent('');
         }
@@ -240,10 +254,15 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
+    const messageContent = inputValue.trim();
     const userMessage = addMessage({
       role: "user",
-      content: inputValue.trim(),
+      content: messageContent,
     });
+    
+    // Track chat message
+    UmamiTracking.trackChatMessage(messageContent.length, 'user');
+    
     setInputValue("");
     setIsLoading(true);
 
@@ -338,6 +357,9 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
   const handleStartAudio = () => {
     if (isTransitioning) return;
     
+    // Track button click
+    UmamiTracking.trackButtonClick('audio-version');
+    
     setIsTransitioning(true);
     setContentFadeClass("animate-fade-out");
     
@@ -358,6 +380,9 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
   };
 
   const handleRecommendationClick = async (rec: Recommendation) => {
+    // Track recommendation click
+    UmamiTracking.trackChatMessage(rec.title.length, 'recommendation');
+    
     setCurrentView("chat");
     
     // Send the message directly with the recommendation text
@@ -445,10 +470,18 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
                 currentContentMode={currentContentMode}
                 isTransitioning={isTransitioning}
                 hidePoweredBy={hidePoweredBy}
-                onToggleSummaryDropdown={() => setShowSummaryDropdown(!showSummaryDropdown)}
+                enableSmartSelector={enableSmartSelector}
+                onToggleSummaryDropdown={() => {
+                  UmamiTracking.trackButtonClick('summary-dropdown', { action: showSummaryDropdown ? 'close' : 'open' });
+                  setShowSummaryDropdown(!showSummaryDropdown);
+                }}
                 onContentModeChange={handleContentModeChange}
                 onStartAudio={handleStartAudio}
-                onToggleChat={() => setCurrentView(currentView === "chat" ? "main" : "chat")}
+                onToggleChat={() => {
+                  const newView = currentView === "chat" ? "main" : "chat";
+                  UmamiTracking.trackButtonClick('chat-toggle', { view: newView });
+                  setCurrentView(newView);
+                }}
                 dropdownRef={dropdownRef}
               />
             ) : (

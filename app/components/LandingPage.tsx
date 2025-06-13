@@ -39,7 +39,7 @@ export function LandingPage() {
   });
 
   const generateEmbedCode = () => {
-    const baseScript = `<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js"`;
+    const baseScript = `<script src="https://websyte.ai/dist/widget.js"`;
     const attributes = [];
     
     if (embedConfig.contentTarget !== "article, main, .content") {
@@ -138,32 +138,26 @@ export function LandingPage() {
           <div className="max-w-4xl mx-auto">
             <Card className="overflow-hidden">
               <CardContent className="p-0">
-                <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 aspect-video flex items-center justify-center">
-                  {/* Placeholder for video - replace with actual video component */}
-                  <div className="text-center space-y-4">
-                    <div className="w-20 h-20 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                      <div className="w-0 h-0 border-l-[12px] border-l-white border-y-[8px] border-y-transparent ml-1"></div>
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-white text-xl font-semibold">See the Transformation</h3>
-                      <p className="text-white/70 text-sm max-w-md mx-auto">
-                        Watch confused visitors become engaged users in real-time
-                      </p>
-                    </div>
-                    <button className="px-6 py-3 rounded-md border border-white bg-white text-black text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(255,255,255)] transition duration-200 cursor-pointer">
-                      Watch Demo (2:30)
-                    </button>
-                  </div>
+                <div className="relative aspect-video">
+                  <video 
+                    className="w-full h-full object-cover"
+                    controls
+                    poster="/websyte-ai-logo.svg"
+                    preload="metadata"
+                  >
+                    <source src="/wai-chat-widget-demo.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
                   
                   {/* Video overlay elements */}
                   <div className="absolute top-4 left-4">
-                    <Badge variant="secondary" className="bg-black/20 text-white border-white/20">
+                    <Badge variant="secondary" className="bg-black/20 text-white border-white/20 backdrop-blur-sm">
                       Live Demo
                     </Badge>
                   </div>
                   
                   <div className="absolute bottom-4 right-4">
-                    <div className="flex items-center gap-2 text-white/70 text-sm">
+                    <div className="flex items-center gap-2 text-white/70 text-sm bg-black/20 backdrop-blur-sm px-2 py-1 rounded">
                       <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                       Recording
                     </div>
@@ -383,7 +377,13 @@ export function LandingPage() {
               See the Results Now
               <ExternalLink className="ml-2 h-4 w-4" />
             </a>
-            <button className="px-6 py-3 rounded-md border border-black bg-black text-white text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer">
+            <button 
+              onClick={() => {
+                const getStartedSection = document.getElementById('get-started');
+                getStartedSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-6 py-3 rounded-md border border-black bg-black text-white text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
+            >
               Get Started in 5 Minutes
             </button>
           </div>

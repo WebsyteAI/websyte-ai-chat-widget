@@ -453,6 +453,45 @@ export function ChatWidget(props: ChatWidgetProps) {
 - **Context integration**: Use React Context for global state if needed
 - **Custom hook libraries**: Create reusable hook collections for different features
 
+## Recent Implementation: Umami Analytics Integration ✅
+
+### What Was Completed
+- **API-Based Tracking**: Implemented Umami tracking using the official Umami Cloud API instead of client-side scripts
+- **Centralized Configuration**: Created shared Umami configuration in `app/lib/umami-tracker.ts` used by both widget and landing page
+- **Comprehensive Event Tracking**: Added tracking for all requested widget interactions and landing page actions
+- **Automatic Browser Data**: Programmatically generates all required Umami payload fields using browser APIs
+- **Error Handling**: Graceful fallback with console warnings if tracking fails
+
+### Key Technical Achievements
+- **API Integration**: Uses `https://cloud.umami.is/api/send` endpoint with proper payload structure
+- **Shared Service**: Single source of truth for website ID, script URL, and API endpoint configuration
+- **Browser Data Collection**: Automatically generates hostname, language, referrer, screen resolution, title, and URL
+- **No Script Dependencies**: Direct API calls eliminate need for client-side Umami script loading
+- **Consistent Tracking**: Same tracking service used across widget and landing page components
+
+### Technical Implementation Details
+- **Umami Tracker**: `app/lib/umami-tracker.ts` with API-based tracking and shared configuration constants
+- **Widget Tracking**: `app/components/ChatWidget/ChatWidget.tsx` tracks widget load, button clicks, and chat messages
+- **Landing Page Tracking**: `app/components/LandingPage.tsx` tracks user actions like demo clicks and code copying
+- **Root Layout**: `app/root.tsx` uses shared configuration for script tag (maintains existing client-side tracking)
+- **Payload Structure**: Follows official Umami API specification with all required fields
+
+### Tracking Events Implemented
+**Widget Events:**
+- `widget-loaded` - When widget initializes (includes current URL)
+- `button-click` - For all action button interactions (audio, chat toggle, summary dropdown, summary mode changes)
+- `chat-message-sent` - For chat messages (user/recommendation with message length, type, and URL)
+
+**Landing Page Events:**
+- `landing-page-action` - For landing page interactions (demo clicks, copy actions, CTA clicks)
+
+### User Experience Benefits
+- **No Performance Impact**: API calls don't block UI interactions
+- **Reliable Tracking**: Direct API calls more reliable than client-side script dependencies
+- **Comprehensive Data**: Captures all user interactions with detailed context
+- **Privacy Friendly**: Uses Umami's privacy-focused analytics approach
+- **Consistent Behavior**: Same tracking logic across all components
+
 ## Recent Implementation: Zero-Configuration Content Extraction ✅
 
 ### What Was Completed
