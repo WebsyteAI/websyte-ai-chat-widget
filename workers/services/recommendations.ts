@@ -3,10 +3,12 @@ import { OpenAIService } from './openai';
 import type { RecommendationsRequest, Env } from '../types';
 import { ServiceValidation, ErrorHandler, FallbackResponses } from './common';
 
+type AppContext = Context<{ Bindings: Env; Variables: any }>;
+
 export class RecommendationsService {
   constructor(private openai: OpenAIService) {}
 
-  async handleRecommendations(c: Context<{ Bindings: Env }>): Promise<Response> {
+  async handleRecommendations(c: AppContext): Promise<Response> {
     const methodError = ServiceValidation.validatePostMethod(c);
     if (methodError) return methodError;
 

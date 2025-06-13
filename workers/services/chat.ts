@@ -3,10 +3,12 @@ import { OpenAIService } from './openai';
 import type { ChatRequest, ChatMessage, Env } from '../types';
 import { ServiceValidation, ErrorHandler } from './common';
 
+type AppContext = Context<{ Bindings: Env; Variables: any }>;
+
 export class ChatService {
   constructor(private openai: OpenAIService) {}
 
-  async handleChat(c: Context<{ Bindings: Env }>): Promise<Response> {
+  async handleChat(c: AppContext): Promise<Response> {
     const methodError = ServiceValidation.validatePostMethod(c);
     if (methodError) return methodError;
 

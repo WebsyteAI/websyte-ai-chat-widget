@@ -1,33 +1,35 @@
 import type { Context } from 'hono';
 import type { Env } from '../types';
 
+type AppContext = Context<{ Bindings: Env; Variables: any }>;
+
 export class ServiceValidation {
-  static validatePostMethod(c: Context<{ Bindings: Env }>): Response | null {
+  static validatePostMethod(c: AppContext): Response | null {
     if (c.req.method !== "POST") {
       return c.json({ error: "Method not allowed" }, 405);
     }
     return null;
   }
 
-  static async parseRequestBody<T>(c: Context<{ Bindings: Env }>): Promise<T> {
+  static async parseRequestBody<T>(c: AppContext): Promise<T> {
     return await c.req.json();
   }
 }
 
 export class ErrorHandler {
-  static handleAbortError(c: Context<{ Bindings: Env }>, customResponse?: any): Response {
+  static handleAbortError(c: AppContext, customResponse?: any): Response {
     return c.json({ 
       error: "Request cancelled",
       ...customResponse
-    }, 499);
+    }, 400);
   }
 
   static handleGeneralError(
-    c: Context<{ Bindings: Env }>, 
+    c: AppContext, 
     error: unknown, 
     logMessage: string,
     fallbackResponse: any,
-    statusCode: number = 500
+    statusCode: 200 | 400 | 500 = 500
   ): Response {
     console.error(logMessage, error);
     return c.json(fallbackResponse, statusCode);

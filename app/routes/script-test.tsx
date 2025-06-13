@@ -5,7 +5,7 @@ export default function ScriptTest() {
   useEffect(() => {
     const script = document.createElement('script');
     script.src = `${window.location.origin}/dist/widget.js`;
-    script.setAttribute('data-base-url', '');
+    script.setAttribute('data-base-url', window.location.origin);
     script.async = true;
     document.head.appendChild(script);
     

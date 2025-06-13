@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { cors } from 'hono/cors';
 import { createRequestHandler } from "react-router";
 import { OpenAIService } from './services/openai';
@@ -33,13 +33,31 @@ type AppType = {
 
 const app = new Hono<AppType>();
 
-// Apply CORS middleware
+// Apply CORS middleware with more permissive settings for development
 app.use('*', cors({
-  origin: '*',
+  origin: (origin) => {
+    // Allow all origins in development
+    return origin || '*';
+  },
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
   maxAge: 86400,
+  credentials: false,
 }));
+
+// Explicit OPTIONS handler for preflight requests
+app.options('*', (c) => {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+});
 
 // Services cache to avoid recreation
 let servicesCache: {

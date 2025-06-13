@@ -113,16 +113,7 @@ export function LandingPage() {
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
             Your readers get instant answers, you get better engagement, all with one line of code that won't break your design.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <a 
-              href="https://websyte-ai-chat-widget.clementineso.workers.dev" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-md border border-black bg-white text-black text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
-            >
-              See It Work in 30 Seconds
-              <ExternalLink className="ml-2 h-4 w-4" />
-            </a>
+          <div className="flex justify-center mb-12">
             <button 
               onClick={() => {
                 const getStartedSection = document.getElementById('get-started');
@@ -130,7 +121,7 @@ export function LandingPage() {
               }}
               className="px-6 py-3 rounded-md border border-black bg-black text-white text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
             >
-              Fix My Website's Engagement
+              Increase My Website's Engagement
             </button>
           </div>
           
@@ -142,26 +133,11 @@ export function LandingPage() {
                   <video 
                     className="w-full h-full object-cover"
                     controls
-                    poster="/websyte-ai-logo.svg"
                     preload="metadata"
                   >
                     <source src="/wai-chat-widget-demo.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
-                  
-                  {/* Video overlay elements */}
-                  <div className="absolute top-4 left-4">
-                    <Badge variant="secondary" className="bg-black/20 text-white border-white/20 backdrop-blur-sm">
-                      Live Demo
-                    </Badge>
-                  </div>
-                  
-                  <div className="absolute bottom-4 right-4">
-                    <div className="flex items-center gap-2 text-white/70 text-sm bg-black/20 backdrop-blur-sm px-2 py-1 rounded">
-                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                      Recording
-                    </div>
-                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -234,7 +210,6 @@ export function LandingPage() {
         </div>
       </section>
 
-
       {/* Quick Setup Section */}
       <section id="get-started" className="py-20 px-4 bg-muted/30">
         <div className="max-w-4xl mx-auto">
@@ -272,25 +247,6 @@ export function LandingPage() {
                 >
                   <Copy className="h-4 w-4" />
                 </button>
-              </div>
-              
-              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
-                      Need custom configuration?
-                    </h4>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                      Add data attributes for branding, targeting, and positioning. 
-                      <Button variant="link" className="p-0 h-auto text-blue-600 dark:text-blue-400">
-                        View documentation →
-                      </Button>
-                    </p>
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -354,38 +310,6 @@ export function LandingPage() {
                 <div className="text-sm text-muted-foreground">Cross-Browser</div>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Stop Losing Visitors. Start Converting Them.
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Every day you wait is another day of missed opportunities. Your competitors are already keeping visitors engaged longer.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a 
-              href="https://websyte-ai-chat-widget.clementineso.workers.dev" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-md border border-black bg-white text-black text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
-            >
-              See the Results Now
-              <ExternalLink className="ml-2 h-4 w-4" />
-            </a>
-            <button 
-              onClick={() => {
-                const getStartedSection = document.getElementById('get-started');
-                getStartedSection?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="px-6 py-3 rounded-md border border-black bg-black text-white text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
-            >
-              Get Started in 5 Minutes
-            </button>
           </div>
         </div>
       </section>

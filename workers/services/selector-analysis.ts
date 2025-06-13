@@ -1,12 +1,14 @@
 import type { Context } from 'hono';
-import type { SelectorAnalysisRequest, SelectorAnalysisResponse } from '../types';
+import type { SelectorAnalysisRequest, SelectorAnalysisResponse, Env } from '../types';
 import { ServiceValidation, ErrorHandler } from './common';
 import { OpenAIService } from './openai';
+
+type AppContext = Context<{ Bindings: Env; Variables: any }>;
 
 export class SelectorAnalysisService {
   constructor(private openaiService: OpenAIService) {}
 
-  async handle(c: Context): Promise<Response> {
+  async handle(c: AppContext): Promise<Response> {
     try {
       // Validate HTTP method
       ServiceValidation.validatePostMethod(c);
@@ -49,7 +51,16 @@ export class SelectorAnalysisService {
         return ErrorHandler.handleAbortError(c);
       }
       
-      return ErrorHandler.handleGeneralError(c, error, 'Failed to analyze HTML structure');
+      return ErrorHandler.handleGeneralError(
+        c,
+        error,
+        'Selector analysis service error:',
+        { 
+          error: 'Failed to analyze HTML structure',
+          contentSelector: 'main',
+          reasoning: 'Unable to analyze content structure'
+        }
+      );
     }
   }
 }
