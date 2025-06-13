@@ -131,19 +131,30 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         
         const html = targetElement.outerHTML;
         
-        // Always run selector analysis for chat context, recommendations, and summaries in parallel
-        const apiCalls = [
-          fetch(`${baseUrl}/api/analyze-selector`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              html,
-              title: pageContent.title,
-              url: pageContent.url
-            }),
-          }),
+        // Build API calls array - only include selector analysis if enableSmartSelector is true
+        const apiCalls = [];
+        
+        // Only call analyze-selector if enableSmartSelector is true and no contentSelector is provided
+        if (enableSmartSelector && !contentSelector) {
+          apiCalls.push(
+            fetch(`${baseUrl}/api/analyze-selector`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                html,
+                title: pageContent.title,
+                url: pageContent.url
+              }),
+            })
+          );
+        } else {
+          // Push null placeholder to maintain array index consistency
+          apiCalls.push(Promise.resolve(null));
+        }
+        
+        apiCalls.push(
           fetch(`${baseUrl}/api/recommendations`, {
             method: "POST",
             headers: {
@@ -166,7 +177,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
               title: pageContent.title,
             }),
           })
-        ];
+        );
         
         const [selectorResponse, recommendationsResponse, summariesResponse] = await Promise.all(apiCalls);
 

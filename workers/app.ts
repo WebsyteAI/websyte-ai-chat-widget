@@ -3,7 +3,6 @@ import { cors } from 'hono/cors';
 import { createRequestHandler } from "react-router";
 import { OpenAIService } from './services/openai';
 import { ChatService } from './services/chat';
-import { SummarizeService } from './services/summarize';
 import { SummariesService } from './services/summaries';
 import { RecommendationsService } from './services/recommendations';
 import { SelectorAnalysisService } from './services/selector-analysis';
@@ -23,7 +22,6 @@ type AppType = {
   Variables: {
     services: {
       chat: ChatService;
-      summarize: SummarizeService;
       summaries: SummariesService;
       recommendations: RecommendationsService;
       selectorAnalysis: SelectorAnalysisService;
@@ -33,36 +31,12 @@ type AppType = {
 
 const app = new Hono<AppType>();
 
-// Apply CORS middleware with more permissive settings for development
-app.use('*', cors({
-  origin: (origin) => {
-    // Allow all origins in development
-    return origin || '*';
-  },
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
-  maxAge: 86400,
-  credentials: false,
-}));
-
-// Explicit OPTIONS handler for preflight requests
-app.options('*', (c) => {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
-      'Access-Control-Max-Age': '86400',
-    },
-  });
-});
+// Apply CORS middleware
+app.use('*', cors());
 
 // Services cache to avoid recreation
 let servicesCache: {
   chat: ChatService;
-  summarize: SummarizeService;
   summaries: SummariesService;
   recommendations: RecommendationsService;
   selectorAnalysis: SelectorAnalysisService;
@@ -73,7 +47,6 @@ const getServices = (env: Env) => {
     const openai = new OpenAIService(env.OPENAI_API_KEY);
     servicesCache = {
       chat: new ChatService(openai),
-      summarize: new SummarizeService(openai),
       summaries: new SummariesService(openai),
       recommendations: new RecommendationsService(openai),
       selectorAnalysis: new SelectorAnalysisService(openai),
@@ -93,16 +66,12 @@ app.post('/api/chat', async (c) => {
   return c.get('services').chat.handleChat(c);
 });
 
-app.post('/api/summarize', async (c) => {
-  return c.get('services').summarize.handleSummarize(c);
-});
-
 app.post('/api/recommendations', async (c) => {
-  return c.get('services').recommendations.handleRecommendations(c);
+  return c.get('services').recommendations.handleRecommendations(c as any);
 });
 
 app.post('/api/summaries', async (c) => {
-  return c.get('services').summaries.handleSummaries(c);
+  return c.get('services').summaries.handleSummaries(c as any);
 });
 
 app.post('/api/analyze-selector', async (c) => {

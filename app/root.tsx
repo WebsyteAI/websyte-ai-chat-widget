@@ -38,7 +38,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
-        <script src="https://websyte.ai/dist/widget.js" async></script>
+        <script src="/dist/widget.js"></script>
       </body>
     </html>
   );

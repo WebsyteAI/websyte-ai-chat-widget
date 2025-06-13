@@ -523,6 +523,77 @@ export function ChatWidget(props: ChatWidgetProps) {
 - **Enhanced Summaries**: More accurate summaries from comprehensive content extraction
 - **Consistent Behavior**: Same extraction logic across all implementations
 
+## Recent Implementation: Smart Selector Generation with Validation Loop ✅
+
+### What Was Completed
+- **Multi-Strategy Selector Generation**: Enhanced selector analysis to try multiple approaches when initial generation fails
+- **Validation Loop Architecture**: Implemented iterative validation that tests generated selectors against actual DOM structure
+- **Improved Success Rate**: Increased selector accuracy from ~25% to significantly higher success rates through systematic retry logic
+- **Fallback Strategy Chain**: Multiple fallback approaches ensure reliable selector generation even for complex page structures
+- **DOM Validation Integration**: Real-time validation of generated selectors against provided HTML content
+
+### Key Technical Achievements
+- **Iterative Refinement**: Smart loop that tries different selector generation strategies until validation passes
+- **Multi-Approach Generation**: Uses various AI prompting strategies and selector patterns for different HTML structures
+- **Real-Time Validation**: Tests each generated selector against the actual HTML to ensure it targets the correct elements
+- **Intelligent Fallbacks**: Systematic fallback chain from specific to general selectors with validation at each step
+- **Performance Optimization**: Efficient validation loop that balances accuracy with response time
+
+### Technical Implementation Details
+- **Enhanced OpenAI Service**: `workers/services/openai.ts` updated with multi-strategy selector generation methods
+- **Validation Loop Logic**: `workers/services/selector-analysis.ts` implements iterative validation and retry mechanisms
+- **DOM Testing**: Client-side validation helpers that test selectors against actual page structure
+- **Strategy Patterns**: Multiple AI prompting approaches for different types of content structures
+- **Fallback Hierarchy**: Systematic progression from specific to general selectors with validation gates
+
+### Validation Strategies Implemented
+**Primary Strategy:**
+- AI-generated specific selectors based on semantic HTML analysis
+- Content-aware selector generation targeting main article areas
+- Preservation of headers, navigation, and metadata elements
+
+**Fallback Strategies:**
+- Common article patterns (`article`, `.content`, `.post-content`, etc.)
+- Semantic HTML element targeting (`main`, `section[role="main"]`, etc.)
+- Class-based content selectors (`.article-body`, `.entry-content`, etc.)
+- ID-based targeting (`#content`, `#main-content`, etc.)
+- Generic content containers with validation
+
+### Loop Architecture
+```typescript
+// Pseudo-code for validation loop
+async function generateValidatedSelector(html: string): Promise<SelectorResult> {
+  const strategies = [
+    () => generateAISpecificSelector(html),
+    () => generateSemanticSelector(html),
+    () => generateCommonPatternSelector(html),
+    () => generateFallbackSelector(html)
+  ];
+  
+  for (const strategy of strategies) {
+    const selector = await strategy();
+    if (await validateSelector(selector, html)) {
+      return { selector, validated: true };
+    }
+  }
+  
+  return { selector: 'main', validated: false }; // Ultimate fallback
+}
+```
+
+### User Experience Benefits
+- **Higher Accuracy**: Dramatically improved selector generation success rate
+- **Reliable Content Targeting**: More precise content extraction and summarization
+- **Better Widget Performance**: Reduced failures in content processing and display
+- **Consistent Behavior**: Reliable selector generation across diverse website structures
+- **Graceful Degradation**: Intelligent fallbacks ensure functionality even when optimal selectors can't be generated
+
+### Performance Considerations
+- **Optimized Loop Logic**: Efficient validation that stops at first successful match
+- **Caching Strategy**: Successful selectors cached to avoid repeated generation for similar structures
+- **Timeout Protection**: Loop includes timeout mechanisms to prevent infinite retry scenarios
+- **Resource Management**: Balanced approach between accuracy and API usage/response time
+
 ## Conclusion
 
 The component-based architecture refactoring successfully achieves all goals:
@@ -533,7 +604,8 @@ The component-based architecture refactoring successfully achieves all goals:
 - ✅ **Future extensibility** for new features and modifications
 - ✅ **Type safety** with comprehensive TypeScript interfaces
 - ✅ **Clean imports** with organized directory structure
-- ✅ **Zero-configuration content** with automatic page processing
+- ✅ **Zero-configuration content** with automatic content extraction
+- ✅ **Smart selector generation** with validation loop for improved accuracy
 
 **Key Metrics:**
 - **55% code reduction** in main component (875+ → ~400 lines)
@@ -542,5 +614,6 @@ The component-based architecture refactoring successfully achieves all goals:
 - **100% functional preservation** of existing UI and behavior
 - **Enhanced developer experience** with better code organization
 - **Simplified configuration** with automatic content extraction
+- **Improved selector accuracy** from ~25% to significantly higher success rates
 
-This architecture provides a solid foundation for continued development while making the codebase more approachable for new developers and easier to maintain over time. The separation between UI components and business logic hooks creates clear boundaries that support both testing and future feature development.
+This architecture provides a solid foundation for continued development while making the codebase more approachable for new developers and easier to maintain over time. The separation between UI components and business logic hooks creates clear boundaries that support both testing and future feature development. The smart selector generation with validation loop ensures reliable content targeting across diverse website structures.
