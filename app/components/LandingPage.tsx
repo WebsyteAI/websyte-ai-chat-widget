@@ -1,24 +1,27 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Brain, 
-  Zap, 
-  Target, 
-  Shield, 
-  Code, 
+import {
+  Brain,
+  Zap,
+  Target,
+  Shield,
+  Code,
   Palette,
   Copy,
-  ExternalLink,
   MessageCircle,
-  FileText,
-  Headphones,
   Globe,
-  ArrowUp
+  ArrowUp,
 } from "lucide-react";
 
 interface EmbedConfig {
@@ -36,13 +39,13 @@ export function LandingPage() {
     advertiserName: "Your Brand",
     advertiserLogo: "",
     targetElement: "",
-    baseUrl: ""
+    baseUrl: "",
   });
 
   const generateEmbedCode = () => {
     const baseScript = `<script src="https://websyte.ai/dist/widget.js"`;
     const attributes = [];
-    
+
     if (embedConfig.contentTarget !== "article, main, .content") {
       attributes.push(`data-content-target="${embedConfig.contentTarget}"`);
     }
@@ -58,8 +61,9 @@ export function LandingPage() {
     if (embedConfig.baseUrl) {
       attributes.push(`data-base-url="${embedConfig.baseUrl}"`);
     }
-    
-    const attributeString = attributes.length > 0 ? ` ${attributes.join(' ')}` : '';
+
+    const attributeString =
+      attributes.length > 0 ? ` ${attributes.join(" ")}` : "";
     return `${baseScript}${attributeString} async></script>`;
   };
 
@@ -71,33 +75,39 @@ export function LandingPage() {
     {
       icon: <Brain className="h-6 w-6" />,
       title: "Context-Aware AI",
-      description: "Understands page content and provides intelligent, relevant responses based on your article or webpage."
+      description:
+        "Understands page content and provides intelligent, relevant responses based on your article or webpage.",
     },
     {
       icon: <Zap className="h-6 w-6" />,
       title: "One-Click Summarization",
-      description: "Instantly generate concise summaries of any page content with AI-powered analysis."
+      description:
+        "Instantly generate concise summaries of any page content with AI-powered analysis.",
     },
     {
       icon: <Target className="h-6 w-6" />,
       title: "Flexible Injection",
-      description: "Choose between fixed overlay or inject into specific DOM elements for seamless integration."
+      description:
+        "Choose between fixed overlay or inject into specific DOM elements for seamless integration.",
     },
     {
       icon: <Shield className="h-6 w-6" />,
       title: "Shadow DOM Isolation",
-      description: "Complete style isolation prevents conflicts with your existing website design and CSS."
+      description:
+        "Complete style isolation prevents conflicts with your existing website design and CSS.",
     },
     {
       icon: <Code className="h-6 w-6" />,
       title: "Easy Integration",
-      description: "Single script tag implementation with no external dependencies or complex setup required."
+      description:
+        "Single script tag implementation with no external dependencies or complex setup required.",
     },
     {
       icon: <Palette className="h-6 w-6" />,
       title: "Customizable Branding",
-      description: "Configure advertiser name, logo, positioning, and theme to match your brand identity."
-    }
+      description:
+        "Configure advertiser name, logo, positioning, and theme to match your brand identity.",
+    },
   ];
 
   return (
@@ -111,7 +121,9 @@ export function LandingPage() {
               alt="Websyte AI"
               className="w-8 h-8"
             />
-            <span className="text-xl font-bold text-foreground">websyte.ai</span>
+            <span className="text-xl font-bold text-foreground">
+              websyte.ai
+            </span>
           </div>
         </div>
       </header>
@@ -124,37 +136,38 @@ export function LandingPage() {
               <ArrowUp className="h-3 w-3 animate-bounce" />
               Try it above!
             </Badge>
-            <Badge variant="outline">
-              Zero Setup Conflicts Guaranteed
-            </Badge>
+            <Badge variant="outline">Zero Setup Conflicts Guaranteed</Badge>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
             Turn Every Page Into an Interactive Conversation
           </h1>
           <p className="text-xl text-muted-foreground mb-4 max-w-3xl mx-auto">
-            Your readers get instant answers, you get better engagement, all with one line of code that won't break your design.
+            Your readers get instant answers, you get better engagement, all
+            with one line of code that won't break your design.
           </p>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto font-medium">
-            🎉 <span className="text-primary">Completely free</span> — No credit card required, no hidden fees
+            🎉 <span className="text-primary">Completely free</span> — No credit
+            card required, no hidden fees
           </p>
           <div className="flex justify-center mb-12">
-            <button 
+            <button
               onClick={() => {
-                const getStartedSection = document.getElementById('get-started');
-                getStartedSection?.scrollIntoView({ behavior: 'smooth' });
+                const getStartedSection =
+                  document.getElementById("get-started");
+                getStartedSection?.scrollIntoView({ behavior: "smooth" });
               }}
               className="px-6 py-3 rounded-md border border-black bg-black text-white text-base font-medium hover:shadow-[4px_4px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
             >
               Increase My Website's Engagement
             </button>
           </div>
-          
+
           {/* Video Demo in Hero */}
           <div className="max-w-4xl mx-auto">
             <Card className="overflow-hidden">
               <CardContent className="p-0">
                 <div className="relative">
-                  <video 
+                  <video
                     className="w-full h-full object-cover"
                     controls
                     preload="metadata"
@@ -165,7 +178,7 @@ export function LandingPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             {/* Video highlights below hero video */}
             <div className="grid md:grid-cols-3 gap-6 mt-8">
               <div className="text-center space-y-2">
@@ -208,10 +221,11 @@ export function LandingPage() {
               Why Your Visitors Will Actually Stay and Engage
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Stop watching analytics show high bounce rates. Give visitors the smart, instant help they're desperately looking for.
+              Stop watching analytics show high bounce rates. Give visitors the
+              smart, instant help they're desperately looking for.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <Card key={index} className="h-full">
@@ -245,10 +259,14 @@ export function LandingPage() {
               Copy this one line of code and paste it anywhere on your website
             </p>
             <p className="text-base text-muted-foreground">
-              ✨ <span className="font-semibold text-primary">Free to install</span> instantly — no signup required
+              ✨{" "}
+              <span className="font-semibold text-primary">
+                Free to install
+              </span>{" "}
+              instantly — no signup required
             </p>
           </div>
-          
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -266,10 +284,12 @@ export function LandingPage() {
                     {`<script src="https://websyte.ai/dist/widget.js" async></script>`}
                   </code>
                 </div>
-                <button 
+                <button
                   className="absolute top-2 right-2 px-3 py-2 rounded-md border border-black bg-white text-black text-sm hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
                   onClick={async () => {
-                    await navigator.clipboard.writeText(`<script src="https://websyte.ai/dist/widget.js" async></script>`);
+                    await navigator.clipboard.writeText(
+                      `<script src="https://websyte.ai/dist/widget.js" async></script>`
+                    );
                   }}
                 >
                   <Copy className="h-4 w-4" />
@@ -291,7 +311,7 @@ export function LandingPage() {
               Enterprise-grade infrastructure with modern web standards.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             <Card>
               <CardHeader className="text-center">
@@ -307,7 +327,7 @@ export function LandingPage() {
                 <div className="text-sm text-muted-foreground">Load time</div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="text-center">
                 <div className="mx-auto p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full w-fit mb-4">
@@ -316,13 +336,21 @@ export function LandingPage() {
                 <CardTitle>Secure & Reliable</CardTitle>
               </CardHeader>
               <CardContent className="text-center space-y-2">
-                <div className="text-sm text-muted-foreground">Cloudflare Workers</div>
-                <div className="text-sm text-muted-foreground">CORS Protection</div>
-                <div className="text-sm text-muted-foreground">API Key Security</div>
-                <div className="text-sm text-muted-foreground">Rate Limiting</div>
+                <div className="text-sm text-muted-foreground">
+                  Cloudflare Workers
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  CORS Protection
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  API Key Security
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Rate Limiting
+                </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="text-center">
                 <div className="mx-auto p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full w-fit mb-4">
@@ -333,8 +361,12 @@ export function LandingPage() {
               <CardContent className="text-center space-y-2">
                 <div className="text-sm text-muted-foreground">Any Website</div>
                 <div className="text-sm text-muted-foreground">All CMSs</div>
-                <div className="text-sm text-muted-foreground">Mobile Responsive</div>
-                <div className="text-sm text-muted-foreground">Cross-Browser</div>
+                <div className="text-sm text-muted-foreground">
+                  Mobile Responsive
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Cross-Browser
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -354,7 +386,9 @@ export function LandingPage() {
           </div>
           <Separator className="my-8" />
           <div className="text-center text-muted-foreground">
-            <p>Powered by OpenAI • Hosted on Cloudflare Workers • MIT License</p>
+            <p>
+              Powered by OpenAI • Hosted on Cloudflare Workers • MIT License
+            </p>
           </div>
         </div>
       </footer>
