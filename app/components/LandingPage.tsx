@@ -17,7 +17,8 @@ import {
   MessageCircle,
   FileText,
   Headphones,
-  Globe
+  Globe,
+  ArrowUp
 } from "lucide-react";
 
 interface EmbedConfig {
@@ -118,14 +119,23 @@ export function LandingPage() {
       {/* Hero Section */}
       <section className="relative py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <Badge variant="secondary" className="mb-4">
-            Zero Setup Conflicts Guaranteed
-          </Badge>
+          <div className="flex flex-wrap justify-center gap-2 mb-4">
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <ArrowUp className="h-3 w-3 animate-bounce" />
+              Try it above!
+            </Badge>
+            <Badge variant="outline">
+              Zero Setup Conflicts Guaranteed
+            </Badge>
+          </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
             Turn Every Page Into an Interactive Conversation
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground mb-4 max-w-3xl mx-auto">
             Your readers get instant answers, you get better engagement, all with one line of code that won't break your design.
+          </p>
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto font-medium">
+            🎉 <span className="text-primary">Completely free</span> — No credit card required, no hidden fees
           </p>
           <div className="flex justify-center mb-12">
             <button 
@@ -143,7 +153,7 @@ export function LandingPage() {
           <div className="max-w-4xl mx-auto">
             <Card className="overflow-hidden">
               <CardContent className="p-0">
-                <div className="relative aspect-video">
+                <div className="relative">
                   <video 
                     className="w-full h-full object-cover"
                     controls
@@ -231,8 +241,11 @@ export function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Ready to Get Started? It's This Simple
             </h2>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-muted-foreground mb-2">
               Copy this one line of code and paste it anywhere on your website
+            </p>
+            <p className="text-base text-muted-foreground">
+              ✨ <span className="font-semibold text-primary">Free to install</span> instantly — no signup required
             </p>
           </div>
           
