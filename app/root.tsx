@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -25,6 +26,9 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+
   return (
     <html lang="en">
       <head>
@@ -42,10 +46,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
-        <script
-          src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js"
-          data-base-url="https://websyte-ai-chat-widget.clementineso.workers.dev"
-        ></script>
+        {isHomePage && (
+          <script
+            src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js"
+            data-base-url="https://websyte-ai-chat-widget.clementineso.workers.dev"
+          ></script>
+        )}
       </body>
     </html>
   );

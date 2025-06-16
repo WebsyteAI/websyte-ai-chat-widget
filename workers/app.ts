@@ -6,6 +6,7 @@ import { ChatService } from './services/chat';
 import { SummariesService } from './services/summaries';
 import { RecommendationsService } from './services/recommendations';
 import { SelectorAnalysisService } from './services/selector-analysis';
+import { UICacheService } from './services/ui-cache';
 import type { Env } from './types';
 
 declare module "react-router" {
@@ -45,10 +46,11 @@ let servicesCache: {
 const getServices = (env: Env) => {
   if (!servicesCache) {
     const openai = new OpenAIService(env.OPENAI_API_KEY);
+    const uiCache = new UICacheService(env.WIDGET_CACHE);
     servicesCache = {
       chat: new ChatService(openai),
-      summaries: new SummariesService(openai),
-      recommendations: new RecommendationsService(openai),
+      summaries: new SummariesService(openai, uiCache),
+      recommendations: new RecommendationsService(openai, uiCache),
       selectorAnalysis: new SelectorAnalysisService(openai),
     };
   }

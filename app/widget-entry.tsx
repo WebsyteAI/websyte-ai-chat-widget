@@ -83,7 +83,7 @@ declare global {
   
   // Default configuration
   const defaultConfig = {
-    baseUrl: 'https://websyte.ai',
+    baseUrl: '',
     position: 'bottom-center',
     theme: 'default',
     advertiserName: 'Websyte',

@@ -2,9 +2,10 @@ import type { Context } from 'hono';
 import { OpenAIService } from './openai';
 import type { SummariesRequest, SummariesResponse, Env } from '../types';
 import { ServiceValidation, ErrorHandler } from './common';
+import { UICacheService } from './ui-cache';
 
 export class SummariesService {
-  constructor(private openai: OpenAIService) {}
+  constructor(private openai: OpenAIService, private cache?: UICacheService) {}
 
   async handleSummaries(c: Context<{ Bindings: Env }>): Promise<Response> {
     const methodError = ServiceValidation.validatePostMethod(c);
@@ -18,12 +19,25 @@ export class SummariesService {
         return c.json({ error: "Invalid content" }, 400);
       }
 
+      // Check cache first if URL is provided and cache is available
+      if (url && this.cache) {
+        const cached = await this.cache.getSummaries(url);
+        if (cached) {
+          return c.json(cached);
+        }
+      }
+
       const summaries = await this.openai.generateBatchSummaries(content, title, url, c.req.raw.signal);
 
       const response: SummariesResponse = {
         short: summaries.short,
         medium: summaries.medium
       };
+
+      // Cache the result if URL is provided and cache is available
+      if (url && this.cache) {
+        await this.cache.setSummaries(url, response);
+      }
 
       return c.json(response);
 

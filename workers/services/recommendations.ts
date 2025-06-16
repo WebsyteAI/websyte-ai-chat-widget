@@ -2,11 +2,12 @@ import type { Context } from 'hono';
 import { OpenAIService } from './openai';
 import type { RecommendationsRequest, Env } from '../types';
 import { ServiceValidation, ErrorHandler, FallbackResponses } from './common';
+import { UICacheService } from './ui-cache';
 
 type AppContext = Context<{ Bindings: Env; Variables: any }>;
 
 export class RecommendationsService {
-  constructor(private openai: OpenAIService) {}
+  constructor(private openai: OpenAIService, private cache?: UICacheService) {}
 
   async handleRecommendations(c: AppContext): Promise<Response> {
     const methodError = ServiceValidation.validatePostMethod(c);
@@ -20,12 +21,25 @@ export class RecommendationsService {
         return c.json({ error: "Content or title required" }, 400);
       }
 
+      // Check cache first if URL is provided and cache is available
+      if (url && this.cache) {
+        const cached = await this.cache.getRecommendations(url);
+        if (cached) {
+          return c.json(cached);
+        }
+      }
+
       const result = await this.openai.generateRecommendations(
         content, 
         title, 
         url, 
         c.req.raw.signal
       );
+
+      // Cache the result if URL is provided and cache is available
+      if (url && this.cache) {
+        await this.cache.setRecommendations(url, result);
+      }
 
       return c.json(result);
 

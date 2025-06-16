@@ -9,7 +9,14 @@
   "main": "./workers/app.ts",
   "observability": {
     "enabled": true
-  }
+  },
+  "kv_namespaces": [
+    {
+      "binding": "WIDGET_CACHE",
+      "id": "widget_cache",
+      "preview_id": "widget_cache_preview"
+    }
+  ]
   /**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
