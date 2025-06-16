@@ -41,8 +41,8 @@ export function ActionBar({
   dropdownRef,
 }: ActionBarProps) {
   return (
-    <>
-      {/* Action Bar Content */}
+    <div className="flex items-center justify-between w-full sm:justify-start sm:gap-4">
+      {/* Logo and AI text */}
       <div className="flex items-center gap-1 whitespace-nowrap overflow-hidden flex-shrink-0">
         <a
           href={advertiserUrl}
@@ -53,30 +53,31 @@ export function ActionBar({
           <img
             src={advertiserLogo || `${baseUrl}/websyte-ai-logo.svg`}
             alt={advertiserName}
-            className="w-8 h-8 rounded flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            className="w-6 h-6 sm:w-8 sm:h-8 rounded flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
           />
         </a>
-        <span className="font-bold text-gray-800 text-base">AI</span>
+        <span className="font-bold text-gray-800 text-sm sm:text-base">AI</span>
       </div>
 
-      <div className="flex items-center gap-2">
+      {/* Action Buttons */}
+      <div className="flex flex-1">
         {/* Summarization Dropdown */}
-        <div className="relative" ref={dropdownRef}>
+        <div className="flex-1 relative" ref={dropdownRef}>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onToggleSummaryDropdown();
             }}
             disabled={isLoadingSummaries || isTransitioning}
-            className="action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="action-button flex items-center justify-center gap-1 sm:gap-2 px-1 sm:px-3 py-1 sm:py-2 hover:bg-gray-100 rounded-lg transition-colors group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs sm:text-base w-full"
             title="Content display options"
           >
             <FileText
               size={18}
               className="text-gray-600 group-hover:text-gray-800"
             />
-            <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">
-              Summarize Content
+            <span className="hidden sm:inline text-sm text-gray-600 group-hover:text-gray-800 font-medium">
+              Summarize
             </span>
             <ChevronDown
               size={16}
@@ -140,22 +141,22 @@ export function ActionBar({
         <button
           onClick={onStartAudio}
           disabled={isTransitioning}
-          className="action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer disabled:opacity-50"
+          className="action-button flex items-center justify-center gap-1 sm:gap-2 px-1 sm:px-3 py-1 sm:py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer disabled:opacity-50 text-xs sm:text-base flex-1"
           title="Audio Version"
         >
           <Headphones
             size={18}
             className="text-gray-600 group-hover:text-gray-800"
           />
-          <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">
-            Audio Version
+          <span className="hidden sm:inline text-sm text-gray-600 group-hover:text-gray-800 font-medium">
+            Listen
           </span>
         </button>
 
         <button
           onClick={onToggleChat}
           disabled={isTransitioning}
-          className={`action-button flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer disabled:opacity-50 ${
+          className={`action-button flex items-center justify-center gap-1 sm:gap-2 px-1 sm:px-3 py-1 sm:py-2 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer disabled:opacity-50 text-xs sm:text-base flex-1 ${
             currentView === "chat" ? "bg-gray-100" : ""
           }`}
           title="Ask Questions"
@@ -164,11 +165,11 @@ export function ActionBar({
             size={18}
             className="text-gray-600 group-hover:text-gray-800"
           />
-          <span className="text-base text-gray-600 group-hover:text-gray-800 font-medium">
-            Ask Questions
+          <span className="hidden sm:inline text-sm text-gray-600 group-hover:text-gray-800 font-medium">
+            Ask
           </span>
         </button>
       </div>
-    </>
+    </div>
   );
 }

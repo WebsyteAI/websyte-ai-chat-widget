@@ -61,8 +61,10 @@ export function ChatPanel({
   }, [messages]);
 
   return (
-    <div className={`fixed top-4 right-4 bottom-4 w-[28rem] min-w-[400px] bg-white border border-gray-200 rounded-lg shadow-xl flex flex-col transition-all duration-300 ease-out transform z-40 ${
-      currentView === "chat" ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+    <div className={`fixed left-4 right-4 top-24 bottom-4 sm:top-4 sm:right-4 sm:left-auto sm:bottom-4 w-auto sm:w-[28rem] sm:min-w-[400px] sm:max-w-[28rem] bg-white border border-gray-200 rounded-lg shadow-xl flex flex-col transition-all duration-300 ease-out transform z-40 ${
+      currentView === "chat" 
+        ? 'translate-y-0 sm:translate-y-0 sm:translate-x-0 opacity-100' 
+        : '-translate-y-full sm:translate-y-0 sm:translate-x-full opacity-0'
     }`}>
       <div className="flex items-center justify-end p-4 rounded-t-lg">
         <button
