@@ -147,6 +147,27 @@ export class UICacheService {
     }
   }
 
+  async initializeCacheForUrl(url: string): Promise<void> {
+    try {
+      // Check if cache key already exists
+      const existing = await this.get(url);
+      
+      if (!existing) {
+        // Initialize with default values to track this URL
+        const defaultData: UICacheData = {
+          timestamp: Date.now()
+        };
+        await this.set(url, defaultData);
+        console.log(`UICacheService: Created new cache entry for URL: ${url}`);
+      } else {
+        console.log(`UICacheService: Cache entry already exists for URL: ${url}`);
+      }
+
+    } catch (error) {
+      console.error('UICacheService initializeCacheForUrl error:', error);
+    }
+  }
+
   async clearAll(): Promise<void> {
     try {
       const list = await this.kv.list({ prefix: 'ui:' });

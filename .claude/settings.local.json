@@ -45,7 +45,8 @@
       "Bash(pnpm ls:*)",
       "Bash(pnpm why:*)",
       "Bash(pnpm typecheck:*)",
-      "Bash(pnpm tsc:*)"
+      "Bash(pnpm tsc:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }

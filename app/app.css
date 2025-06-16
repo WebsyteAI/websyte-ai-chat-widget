@@ -121,10 +121,14 @@
 
 html,
 body {
-  @apply bg-white dark:bg-gray-950;
-
+  @apply bg-background text-foreground;
+  
+  /* Force light mode for landing page to prevent mobile dark mode issues */
   @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
+    color-scheme: light;
+    --color-background: 0 0% 100%;
+    --color-foreground: 240 10% 3.9%;
+    --color-muted-foreground: 240 3.8% 46.1%;
   }
 }
 

@@ -6,6 +6,8 @@ import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useState } from 'react';
+import { UICacheService } from '../../workers/services/ui-cache';
+import { CacheAdminService } from '../../workers/services/cache-admin';
 
 interface CacheStats {
   totalCached: number;
@@ -27,50 +29,55 @@ interface CacheList {
   urls: CacheData[];
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const baseUrl = new URL(request.url).origin;
-  
+export async function loader({ request, context }: LoaderFunctionArgs) {
   try {
-    const [statsResponse, listResponse] = await Promise.all([
-      fetch(`${baseUrl}/api/admin/cache/stats`, {
-        headers: { 'Content-Type': 'application/json' }
-      }),
-      fetch(`${baseUrl}/api/admin/cache/list`, {
-        headers: { 'Content-Type': 'application/json' }
-      })
-    ]);
+    // Access the cache service directly from context instead of making HTTP requests
+    const env = context.cloudflare.env;
     
-    if (!statsResponse.ok || !listResponse.ok) {
-      throw new Error('Failed to fetch cache data');
-    }
+    const uiCache = new UICacheService(env.WIDGET_CACHE);
+    const cacheAdmin = new CacheAdminService(uiCache);
     
-    const stats: CacheStats = await statsResponse.json();
-    const list: CacheList = await listResponse.json();
+    // Get stats and list directly from the services
+    const stats = await uiCache.getCacheStats();
+    const cachedUrls = await uiCache.listCachedUrls();
     
-    return Response.json({ stats, list });
+    const urlData = await Promise.all(
+      cachedUrls.map(async (url) => ({
+        url,
+        enabled: await uiCache.getCacheEnabled(url),
+        data: await uiCache.get(url)
+      }))
+    );
+
+    const response = {
+      stats: {
+        totalCached: stats.totalCached,
+        enabledUrls: stats.enabledUrls,
+        disabledUrls: stats.disabledUrls
+      },
+      list: { urls: urlData }
+    };
+    
+    return Response.json(response);
   } catch (error) {
+    console.error('Admin cache loader error:', error);
     throw new Response('Failed to load cache data', { status: 500 });
   }
 }
 
-export async function action({ request }: ActionFunctionArgs) {
-  const baseUrl = new URL(request.url).origin;
+export async function action({ request, context }: ActionFunctionArgs) {
   const formData = await request.formData();
   const action = formData.get('action');
 
   try {
     if (action === 'clearAll') {
-      const response = await fetch(`${baseUrl}/api/admin/cache/all`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      // Access the cache service directly from context instead of making HTTP requests
+      const env = context.cloudflare.env;
       
-      if (!response.ok) {
-        throw new Error('Failed to clear all cache');
-      }
+      const uiCache = new UICacheService(env.WIDGET_CACHE);
+      await uiCache.clearAll();
       
-      const result = await response.json();
-      return Response.json({ success: true, message: result.message });
+      return Response.json({ success: true, message: 'All cache cleared successfully' });
     }
     
     return new Response(JSON.stringify({ error: 'Invalid action' }), { 
@@ -78,6 +85,7 @@ export async function action({ request }: ActionFunctionArgs) {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
+    console.error('Admin cache action error:', error);
     return new Response(JSON.stringify({ error: 'Operation failed' }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }
@@ -117,8 +125,8 @@ function CacheUrlCard({ urlData }: { urlData: CacheData }) {
 }
 
 export default function CacheAdminPage() {
-  const { stats, list } = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
+  const { stats, list } = useLoaderData<typeof loader>() as { stats: CacheStats; list: CacheList };
+  const actionData = useActionData<typeof action>() as { success?: boolean; message?: string; error?: string } | undefined;
   const navigation = useNavigation();
   const isSubmitting = navigation.state === 'submitting';
   

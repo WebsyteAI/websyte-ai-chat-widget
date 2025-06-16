@@ -48,8 +48,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Scripts />
         {isHomePage && (
           <script
-            src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js"
-            data-base-url="https://websyte-ai-chat-widget.clementineso.workers.dev"
+            src="/dist/widget.js"
           ></script>
         )}
       </body>

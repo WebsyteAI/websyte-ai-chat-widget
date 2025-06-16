@@ -117,11 +117,31 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
   useEffect(() => {
     // Warm cache, capture original content, and load all data in parallel
     const loadInitialData = async () => {
+      console.log('ChatWidget: loadInitialData started');
       setIsLoadingRecommendations(true);
       
       try {
         // Warm the cache first to ensure subsequent calls are fast
         await ContentExtractor.warmCache();
+        
+        // Initialize cache key for current URL if it doesn't exist
+        const currentUrl = window.location.href;
+        console.log(`ChatWidget: About to initialize cache for URL: ${currentUrl}`);
+        console.log(`ChatWidget: Using baseUrl: ${baseUrl}`);
+        try {
+          const response = await fetch(`${baseUrl}/api/cache/init`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: currentUrl }),
+          });
+          console.log(`ChatWidget: Cache init response status: ${response.status}`);
+          const result = await response.json();
+          console.log(`ChatWidget: Cache init result:`, result);
+        } catch (cacheError) {
+          console.error('ChatWidget: Failed to initialize cache:', cacheError);
+        }
         
         const pageContent = await extractPageContent();
         

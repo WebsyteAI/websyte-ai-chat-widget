@@ -47,6 +47,11 @@ export class UmamiTracking {
       return;
     }
 
+    // Skip tracking on localhost to avoid spamming logs
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return;
+    }
+
     try {
       const payload = this.createPayload(eventName, eventData);
       

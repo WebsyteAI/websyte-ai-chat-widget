@@ -105,6 +105,10 @@ app.delete('/api/admin/cache/all', async (c) => {
   return c.get('services').cacheAdmin.handleClearAll(c);
 });
 
+app.post('/api/cache/init', async (c) => {
+  return c.get('services').cacheAdmin.handleInitCache(c);
+});
+
 // Health check endpoint
 app.get('/api/health', (c) => {
   return c.json({ status: 'healthy', timestamp: new Date().toISOString() });
