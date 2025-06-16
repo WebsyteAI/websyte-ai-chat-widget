@@ -126,28 +126,4 @@ export class CacheAdminService {
     }
   }
 
-  async handleInitCache(c: Context): Promise<Response> {
-    try {
-      const body = await c.req.json();
-      const { url } = body;
-      
-      if (!url) {
-        return c.json({ error: "URL is required" }, 400);
-      }
-
-      await this.cache.initializeCacheForUrl(url);
-
-      return c.json({ 
-        url,
-        message: `Cache initialized for ${url}`
-      });
-    } catch (error) {
-      return ErrorHandler.handleGeneralError(
-        c,
-        error,
-        "Cache init error:",
-        { error: "Failed to initialize cache" }
-      );
-    }
-  }
 }

@@ -10,11 +10,11 @@ export class UICacheService {
   constructor(private kv: KVNamespace) {}
 
   private generateCacheKey(url: string): string {
-    return `ui:${url}`;
+    return `${url}:data`;
   }
 
   private generateCacheEnabledKey(url: string): string {
-    return `cache_enabled:${url}`;
+    return `${url}:enabled`;
   }
 
   async get(url: string): Promise<UICacheData | null> {
@@ -113,8 +113,11 @@ export class UICacheService {
 
   async listCachedUrls(): Promise<string[]> {
     try {
-      const list = await this.kv.list({ prefix: 'ui:' });
-      return list.keys.map(key => key.name.replace('ui:', ''));
+      const list = await this.kv.list();
+      const dataKeys = list.keys
+        .filter(key => key.name.endsWith(':data'))
+        .map(key => key.name.replace(':data', ''));
+      return [...new Set(dataKeys)];
     } catch (error) {
       console.error('UICacheService listCachedUrls error:', error);
       return [];
@@ -147,36 +150,15 @@ export class UICacheService {
     }
   }
 
-  async initializeCacheForUrl(url: string): Promise<void> {
-    try {
-      // Check if cache key already exists
-      const existing = await this.get(url);
-      
-      if (!existing) {
-        // Initialize with default values to track this URL
-        const defaultData: UICacheData = {
-          timestamp: Date.now()
-        };
-        await this.set(url, defaultData);
-        console.log(`UICacheService: Created new cache entry for URL: ${url}`);
-      } else {
-        console.log(`UICacheService: Cache entry already exists for URL: ${url}`);
-      }
-
-    } catch (error) {
-      console.error('UICacheService initializeCacheForUrl error:', error);
-    }
-  }
 
   async clearAll(): Promise<void> {
     try {
-      const list = await this.kv.list({ prefix: 'ui:' });
-      const cacheEnabledList = await this.kv.list({ prefix: 'cache_enabled:' });
+      const list = await this.kv.list();
+      const cacheKeys = list.keys
+        .filter(key => key.name.endsWith(':data') || key.name.endsWith(':enabled'))
+        .map(key => key.name);
       
-      const deletePromises = [
-        ...list.keys.map(key => this.kv.delete(key.name)),
-        ...cacheEnabledList.keys.map(key => this.kv.delete(key.name))
-      ];
+      const deletePromises = cacheKeys.map(key => this.kv.delete(key));
       
       await Promise.all(deletePromises);
       console.log('UICacheService: All cache cleared');

@@ -128,20 +128,6 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         const currentUrl = window.location.href;
         console.log(`ChatWidget: About to initialize cache for URL: ${currentUrl}`);
         console.log(`ChatWidget: Using baseUrl: ${baseUrl}`);
-        try {
-          const response = await fetch(`${baseUrl}/api/cache/init`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ url: currentUrl }),
-          });
-          console.log(`ChatWidget: Cache init response status: ${response.status}`);
-          const result = await response.json();
-          console.log(`ChatWidget: Cache init result:`, result);
-        } catch (cacheError) {
-          console.error('ChatWidget: Failed to initialize cache:', cacheError);
-        }
         
         const pageContent = await extractPageContent();
         

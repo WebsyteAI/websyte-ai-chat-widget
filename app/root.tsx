@@ -28,6 +28,11 @@ export const links: Route.LinksFunction = () => [
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+  
+  // Use environment variable or default to production
+  const isDev = import.meta.env.DEV;
+  const baseUrl = isDev ? "" : "https://websyte-ai-chat-widget.clementineso.workers.dev";
+  const widgetSrc = isDev ? "/dist/widget.js" : "https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js";
 
   return (
     <html lang="en">
@@ -48,7 +53,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Scripts />
         {isHomePage && (
           <script
-            src="/dist/widget.js"
+            src={widgetSrc}
+            data-base-url={baseUrl}
           ></script>
         )}
       </body>
