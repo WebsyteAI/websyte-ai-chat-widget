@@ -523,6 +523,64 @@ export function ChatWidget(props: ChatWidgetProps) {
 - **Enhanced Summaries**: More accurate summaries from comprehensive content extraction
 - **Consistent Behavior**: Same extraction logic across all implementations
 
+## Recent Implementation: Per-URL Cache Management System ✅
+
+### What Was Completed
+- **Admin Interface**: Created comprehensive cache management UI with statistics dashboard and URL-specific controls
+- **Per-URL Cache Control**: Implemented granular caching controls where each URL can be individually enabled/disabled (defaults to disabled)
+- **API Endpoints**: Built complete REST API for cache management including stats, listing, toggling, and clearing operations
+- **KV Storage Integration**: Enhanced KV caching service with management capabilities and cache statistics
+- **Default Disabled Behavior**: Caching is disabled by default for all URLs, requiring explicit opt-in per URL
+
+### Key Technical Achievements
+- **Granular Control**: Each URL has independent cache enable/disable state stored in KV with key pattern `cache_enabled:${url}`
+- **Admin Dashboard**: Full-featured UI at `/admin/cache` with search, filtering, statistics, and bulk operations
+- **URL Detail Pages**: Individual URL management at `/admin/cache/:url` with cached data display and controls
+- **Service Integration**: Updated SummariesService and RecommendationsService to check cache enabled state before operations
+- **React Router v7**: Proper routing configuration with Response.json() for compatibility
+
+### Technical Implementation Details
+- **Cache Admin Service**: `workers/services/cache-admin.ts` provides API endpoints for cache management operations
+- **Enhanced UICacheService**: `workers/services/ui-cache.ts` extended with listCachedUrls, getCacheStats, and setCacheEnabled methods
+- **Admin UI Components**: `app/routes/admin.cache._index.tsx` and `app/routes/admin.cache.$url.tsx` with shadcn/ui components
+- **Service Logic**: Services check `await this.cache.getCacheEnabled(url)` before performing cache operations
+- **API Routes**: RESTful endpoints for stats, listing, toggling, clearing specific URLs, and bulk operations
+
+### Cache Management Features
+**Dashboard (/admin/cache):**
+- Statistics overview (total cached, enabled count, disabled count)
+- Searchable and filterable URL list with tabbed views (all/enabled/disabled)
+- Bulk operations (clear all cache)
+- URL cards showing status, last updated, and data types available
+
+**URL Detail Pages (/admin/cache/:url):**
+- Toggle cache enabled/disabled for specific URL
+- Clear cache data for specific URL
+- View cached summaries and recommendations data
+- Real-time feedback for all operations
+
+### API Endpoints Implemented
+```
+GET /api/admin/cache/stats         - Get cache statistics
+GET /api/admin/cache/list          - List all cached URLs with data
+POST /api/admin/cache/toggle/:url  - Toggle cache enabled/disabled
+DELETE /api/admin/cache/:url       - Clear cache for specific URL
+DELETE /api/admin/cache/all        - Clear all cache data
+```
+
+### User Experience Benefits
+- **Zero Performance Impact**: Caching disabled by default ensures no changes to existing behavior
+- **Selective Optimization**: Enable caching only for high-traffic URLs that benefit from it
+- **Complete Control**: Granular management with statistics and monitoring capabilities
+- **Visual Feedback**: Clear status indicators and real-time operation feedback
+- **Data Transparency**: View actual cached data content for debugging and verification
+
+### Security Considerations
+- **No Authentication**: Admin routes currently unprotected (should add authentication for production)
+- **URL Encoding**: Proper URL encoding/decoding for special characters in URLs
+- **Error Handling**: Comprehensive error handling with graceful fallbacks
+- **Logging**: All cache operations logged for debugging and monitoring
+
 ## Recent Implementation: Smart Selector Generation with Validation Loop ✅
 
 ### What Was Completed

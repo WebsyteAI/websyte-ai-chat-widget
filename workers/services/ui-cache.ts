@@ -110,4 +110,57 @@ export class UICacheService {
       console.error('UICacheService setCacheEnabled error:', error);
     }
   }
+
+  async listCachedUrls(): Promise<string[]> {
+    try {
+      const list = await this.kv.list({ prefix: 'ui:' });
+      return list.keys.map(key => key.name.replace('ui:', ''));
+    } catch (error) {
+      console.error('UICacheService listCachedUrls error:', error);
+      return [];
+    }
+  }
+
+  async getCacheStats(): Promise<{ totalCached: number; enabledUrls: string[]; disabledUrls: string[] }> {
+    try {
+      const cachedUrls = await this.listCachedUrls();
+      const enabledUrls: string[] = [];
+      const disabledUrls: string[] = [];
+
+      for (const url of cachedUrls) {
+        const isEnabled = await this.getCacheEnabled(url);
+        if (isEnabled) {
+          enabledUrls.push(url);
+        } else {
+          disabledUrls.push(url);
+        }
+      }
+
+      return {
+        totalCached: cachedUrls.length,
+        enabledUrls,
+        disabledUrls
+      };
+    } catch (error) {
+      console.error('UICacheService getCacheStats error:', error);
+      return { totalCached: 0, enabledUrls: [], disabledUrls: [] };
+    }
+  }
+
+  async clearAll(): Promise<void> {
+    try {
+      const list = await this.kv.list({ prefix: 'ui:' });
+      const cacheEnabledList = await this.kv.list({ prefix: 'cache_enabled:' });
+      
+      const deletePromises = [
+        ...list.keys.map(key => this.kv.delete(key.name)),
+        ...cacheEnabledList.keys.map(key => this.kv.delete(key.name))
+      ];
+      
+      await Promise.all(deletePromises);
+      console.log('UICacheService: All cache cleared');
+    } catch (error) {
+      console.error('UICacheService clearAll error:', error);
+    }
+  }
 }
