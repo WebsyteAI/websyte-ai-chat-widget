@@ -5,6 +5,55 @@ This is a React-based AI chat widget that can be embedded into websites. It prov
 
 ## Recent Updates
 
+### Cache Initialization Fix (2025-01-16)
+Fixed production caching issue where initial URLs weren't being stored in cache when the widget loaded:
+
+#### Problem
+- URLs were not appearing in cache admin panel after widget loads
+- Cache service only stored data when caching was explicitly enabled
+- New URLs defaulted to caching disabled, preventing any data storage
+- Admin panel remained empty until caching was manually enabled per URL
+
+#### Root Cause
+- `getCacheEnabled()` returned `false` for new URLs (no `:enabled` key existed)
+- Summaries and recommendations services only stored data if `getCacheEnabled()` was `true`
+- No cache entries created for disabled URLs, making them invisible in listings
+
+#### Solution Implemented
+**UICacheService** (`workers/services/ui-cache.ts`):
+- Added `ensureUrlTracked(url)` method to guarantee URL visibility
+- Creates `:enabled` key (defaulting to `false`) and `:data` key for new URLs
+- Ensures all accessed URLs appear in cache admin panel
+
+**Summaries Service** (`workers/services/summaries.ts`):
+- Always calls `ensureUrlTracked(url)` when URL is accessed
+- **Always stores data** in cache when new summaries are generated (removed cache enabled check)
+- Still only serves from cache when caching is enabled for the URL
+
+**Recommendations Service** (`workers/services/recommendations.ts`):
+- Always calls `ensureUrlTracked(url)` when URL is accessed  
+- **Always stores data** in cache when new recommendations are generated (removed cache enabled check)
+- Still only serves from cache when caching is enabled for the URL
+
+#### Cache Behavior After Fix
+- **URL Tracking**: All accessed URLs appear in cache admin panel immediately
+- **Data Storage**: All generated summaries/recommendations are stored regardless of enabled status
+- **Cache Serving**: Data is only served from cache when caching is enabled for the URL
+- **Admin Control**: URLs default to caching disabled but can be enabled via admin panel
+
+#### Key Changes
+```typescript
+// Before: Only stored if caching enabled
+if (url && this.cache && await this.cache.getCacheEnabled(url)) {
+  await this.cache.setSummaries(url, response);
+}
+
+// After: Always store for tracking
+if (url && this.cache) {
+  await this.cache.setSummaries(url, response);
+}
+```
+
 ### Responsive Design Implementation (2025-01-16)
 Implemented comprehensive mobile responsiveness across the chat widget components:
 

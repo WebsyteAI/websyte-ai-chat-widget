@@ -39,8 +39,8 @@ export class SummariesService {
         medium: summaries.medium
       };
 
-      // Cache the result if URL is provided, cache is available, and caching is enabled for this URL
-      if (url && this.cache && await this.cache.getCacheEnabled(url)) {
+      // Always cache the result if URL is provided and cache is available (for tracking purposes)
+      if (url && this.cache) {
         await this.cache.setSummaries(url, response);
       }
 
