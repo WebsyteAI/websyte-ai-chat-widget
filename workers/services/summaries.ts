@@ -19,6 +19,11 @@ export class SummariesService {
         return c.json({ error: "Invalid content" }, 400);
       }
 
+      // Ensure URL is tracked in cache admin panel regardless of caching status
+      if (url && this.cache) {
+        await this.cache.ensureUrlTracked(url);
+      }
+
       // Check cache first if URL is provided, cache is available, and caching is enabled for this URL
       if (url && this.cache && await this.cache.getCacheEnabled(url)) {
         const cached = await this.cache.getSummaries(url);

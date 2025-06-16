@@ -111,6 +111,33 @@ export class UICacheService {
     }
   }
 
+  async ensureUrlTracked(url: string): Promise<void> {
+    try {
+      // Check if URL already has an enabled setting
+      const enabledKey = this.generateCacheEnabledKey(url);
+      const enabledValue = await this.kv.get(enabledKey);
+      
+      // If no enabled setting exists, set default to false (disabled but tracked)
+      if (enabledValue === null) {
+        await this.kv.put(enabledKey, 'false');
+        console.log(`UICacheService: URL tracked with caching disabled: ${url}`);
+      }
+      
+      // Check if URL already has a data entry
+      const dataKey = this.generateCacheKey(url);
+      const dataValue = await this.kv.get(dataKey);
+      
+      // If no data entry exists, create an empty one to make the URL visible in listings
+      if (dataValue === null) {
+        const initialData: UICacheData = { timestamp: Date.now() };
+        await this.kv.put(dataKey, JSON.stringify(initialData));
+        console.log(`UICacheService: Initial data entry created for URL: ${url}`);
+      }
+    } catch (error) {
+      console.error('UICacheService ensureUrlTracked error:', error);
+    }
+  }
+
   async listCachedUrls(): Promise<string[]> {
     try {
       const list = await this.kv.list();
