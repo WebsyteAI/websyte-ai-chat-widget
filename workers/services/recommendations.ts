@@ -21,8 +21,8 @@ export class RecommendationsService {
         return c.json({ error: "Content or title required" }, 400);
       }
 
-      // Check cache first if URL is provided and cache is available
-      if (url && this.cache) {
+      // Check cache first if URL is provided, cache is available, and caching is enabled for this URL
+      if (url && this.cache && await this.cache.getCacheEnabled(url)) {
         const cached = await this.cache.getRecommendations(url);
         if (cached) {
           return c.json(cached);
@@ -36,8 +36,8 @@ export class RecommendationsService {
         c.req.raw.signal
       );
 
-      // Cache the result if URL is provided and cache is available
-      if (url && this.cache) {
+      // Cache the result if URL is provided, cache is available, and caching is enabled for this URL
+      if (url && this.cache && await this.cache.getCacheEnabled(url)) {
         await this.cache.setRecommendations(url, result);
       }
 

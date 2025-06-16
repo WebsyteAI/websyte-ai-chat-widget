@@ -19,8 +19,8 @@ export class SummariesService {
         return c.json({ error: "Invalid content" }, 400);
       }
 
-      // Check cache first if URL is provided and cache is available
-      if (url && this.cache) {
+      // Check cache first if URL is provided, cache is available, and caching is enabled for this URL
+      if (url && this.cache && await this.cache.getCacheEnabled(url)) {
         const cached = await this.cache.getSummaries(url);
         if (cached) {
           return c.json(cached);
@@ -34,8 +34,8 @@ export class SummariesService {
         medium: summaries.medium
       };
 
-      // Cache the result if URL is provided and cache is available
-      if (url && this.cache) {
+      // Cache the result if URL is provided, cache is available, and caching is enabled for this URL
+      if (url && this.cache && await this.cache.getCacheEnabled(url)) {
         await this.cache.setSummaries(url, response);
       }
 

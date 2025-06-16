@@ -13,6 +13,10 @@ export class UICacheService {
     return `ui:${url}`;
   }
 
+  private generateCacheEnabledKey(url: string): string {
+    return `cache_enabled:${url}`;
+  }
+
   async get(url: string): Promise<UICacheData | null> {
     try {
       const key = this.generateCacheKey(url);
@@ -83,6 +87,27 @@ export class UICacheService {
       await this.kv.delete(key);
     } catch (error) {
       console.error('UICacheService clear error:', error);
+    }
+  }
+
+  async getCacheEnabled(url: string): Promise<boolean> {
+    try {
+      const key = this.generateCacheEnabledKey(url);
+      const value = await this.kv.get(key);
+      return value === 'true';
+    } catch (error) {
+      console.error('UICacheService getCacheEnabled error:', error);
+      return false;
+    }
+  }
+
+  async setCacheEnabled(url: string, enabled: boolean): Promise<void> {
+    try {
+      const key = this.generateCacheEnabledKey(url);
+      await this.kv.put(key, enabled.toString());
+      console.log(`UICacheService: Cache ${enabled ? 'enabled' : 'disabled'} for URL: ${url}`);
+    } catch (error) {
+      console.error('UICacheService setCacheEnabled error:', error);
     }
   }
 }
