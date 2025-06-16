@@ -284,6 +284,10 @@ body {
   color: rgb(31 41 55) !important;
 }
 
+.prose h1 {
+  font-weight: bold;
+}
+
 /* Explicit component styles to prevent parent overrides */
 :host .flex {
   display: flex !important;
@@ -419,6 +423,8 @@ body {
   vertical-align: middle !important;
   box-sizing: border-box !important;
 }
+
+
 
 @theme inline {
   --animate-marquee: marquee var(--duration) infinite linear;

@@ -518,11 +518,17 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
             <div className={`w-full ${contentFadeClass}`}>
               {currentContentMode !== "original" && summaries && !mainContentElement ? (
                 // Show summary content only if no content-selector is available
-                <div className="text-sm text-gray-700 px-2 py-1">
+                <div className="px-2 py-1">
                   {currentContentMode === "short" && summaries.short ? (
-                    <div dangerouslySetInnerHTML={{ __html: summaries.short }} />
+                    <div 
+                      className="prose prose-sm max-w-none text-gray-700 prose-headings:text-gray-800 prose-headings:font-semibold prose-p:mb-2 prose-ul:mb-2 prose-ol:mb-2 prose-li:mb-1" 
+                      dangerouslySetInnerHTML={{ __html: summaries.short }} 
+                    />
                   ) : currentContentMode === "medium" && summaries.medium ? (
-                    <div dangerouslySetInnerHTML={{ __html: summaries.medium }} />
+                    <div 
+                      className="prose prose-sm max-w-none text-gray-700 prose-headings:text-gray-800 prose-headings:font-semibold prose-p:mb-2 prose-ul:mb-2 prose-ol:mb-2 prose-li:mb-1" 
+                      dangerouslySetInnerHTML={{ __html: summaries.medium }} 
+                    />
                   ) : null}
                 </div>
               ) : (
