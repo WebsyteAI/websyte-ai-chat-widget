@@ -64,5 +64,5 @@ export interface OpenAIResponse {
 
 export interface Env {
   OPENAI_API_KEY: string;
-  WIDGET_CACHE: KVNamespace;
+  DATABASE_URL: string;
 }

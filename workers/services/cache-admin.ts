@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import type { Env } from '../types';
-import { UICacheService } from './ui-cache';
+import { DatabaseService } from './database';
 import { ServiceValidation, ErrorHandler } from './common';
 
 export interface CacheStatsResponse {
@@ -18,11 +18,11 @@ export interface CacheListResponse {
 }
 
 export class CacheAdminService {
-  constructor(private cache: UICacheService) {}
+  constructor(private database: DatabaseService) {}
 
   async handleGetStats(c: Context<{ Bindings: Env }>): Promise<Response> {
     try {
-      const stats = await this.cache.getCacheStats();
+      const stats = await this.database.getCacheStats();
       const response: CacheStatsResponse = {
         totalCached: stats.totalCached,
         enabledUrls: stats.enabledUrls,
@@ -41,12 +41,12 @@ export class CacheAdminService {
 
   async handleGetList(c: Context<{ Bindings: Env }>): Promise<Response> {
     try {
-      const urls = await this.cache.listCachedUrls();
+      const urls = await this.database.listCachedUrls();
       const urlData = await Promise.all(
         urls.map(async (url) => ({
           url,
-          enabled: await this.cache.getCacheEnabled(url),
-          data: await this.cache.get(url)
+          enabled: await this.database.getCacheEnabled(url),
+          data: await this.database.get(url)
         }))
       );
 
@@ -70,8 +70,8 @@ export class CacheAdminService {
       }
 
       const decodedUrl = decodeURIComponent(url);
-      const currentState = await this.cache.getCacheEnabled(decodedUrl);
-      await this.cache.setCacheEnabled(decodedUrl, !currentState);
+      const currentState = await this.database.getCacheEnabled(decodedUrl);
+      await this.database.setCacheEnabled(decodedUrl, !currentState);
 
       return c.json({ 
         url: decodedUrl, 
@@ -96,7 +96,7 @@ export class CacheAdminService {
       }
 
       const decodedUrl = decodeURIComponent(url);
-      await this.cache.clear(decodedUrl);
+      await this.database.clear(decodedUrl);
 
       return c.json({ 
         url: decodedUrl,
@@ -114,7 +114,7 @@ export class CacheAdminService {
 
   async handleClearAll(c: Context<{ Bindings: Env }>): Promise<Response> {
     try {
-      await this.cache.clearAll();
+      await this.database.clearAll();
       return c.json({ message: "All cache cleared successfully" });
     } catch (error) {
       return ErrorHandler.handleGeneralError(

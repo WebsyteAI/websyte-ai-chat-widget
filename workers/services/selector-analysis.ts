@@ -2,11 +2,12 @@ import type { Context } from 'hono';
 import type { SelectorAnalysisRequest, SelectorAnalysisResponse, Env } from '../types';
 import { ServiceValidation, ErrorHandler } from './common';
 import { OpenAIService } from './openai';
+import { DatabaseService } from './database';
 
 type AppContext = Context<{ Bindings: Env; Variables: any }>;
 
 export class SelectorAnalysisService {
-  constructor(private openaiService: OpenAIService) {}
+  constructor(private openaiService: OpenAIService, private database?: DatabaseService) {}
 
   async handle(c: AppContext): Promise<Response> {
     try {
@@ -25,6 +26,11 @@ export class SelectorAnalysisService {
       const html = request.html.slice(0, 10000);
       const title = request.title || '';
       const url = request.url || '';
+
+      // Ensure URL is tracked in database regardless of caching status
+      if (url && this.database) {
+        await this.database.ensureUrlTracked(url);
+      }
 
       console.log(`Analyzing HTML structure for selector generation`);
 

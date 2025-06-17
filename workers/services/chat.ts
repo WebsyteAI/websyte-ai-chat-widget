@@ -1,12 +1,13 @@
 import type { Context } from 'hono';
 import { OpenAIService } from './openai';
+import { DatabaseService } from './database';
 import type { ChatRequest, ChatMessage, Env } from '../types';
 import { ServiceValidation, ErrorHandler } from './common';
 
 type AppContext = Context<{ Bindings: Env; Variables: any }>;
 
 export class ChatService {
-  constructor(private openai: OpenAIService) {}
+  constructor(private openai: OpenAIService, private database?: DatabaseService) {}
 
   async handleChat(c: AppContext): Promise<Response> {
     const methodError = ServiceValidation.validatePostMethod(c);
@@ -22,6 +23,11 @@ export class ChatService {
 
       if (!context) {
         return c.json({ error: "Content context is required" }, 400);
+      }
+
+      // Ensure URL is tracked in database regardless of caching status
+      if (context.url && this.database) {
+        await this.database.ensureUrlTracked(context.url);
       }
 
       const messages: ChatMessage[] = [

@@ -10,13 +10,6 @@
   "observability": {
     "enabled": true
   },
-  "kv_namespaces": [
-    {
-      "binding": "WIDGET_CACHE",
-      "id": "75e41fb84d24409eb2456b8632515812",
-      "preview_id": "a12e62925b81453ea32518051452dc37"
-    }
-  ]
   /**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
@@ -32,7 +25,9 @@
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
-  // "vars": { "MY_VARIABLE": "production_value" },
+  "vars": { 
+    "DATABASE_URL": "$DATABASE_URL"
+  },
   /**
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/

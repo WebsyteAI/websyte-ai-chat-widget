@@ -6,7 +6,7 @@ import { ChatService } from './services/chat';
 import { SummariesService } from './services/summaries';
 import { RecommendationsService } from './services/recommendations';
 import { SelectorAnalysisService } from './services/selector-analysis';
-import { UICacheService } from './services/ui-cache';
+import { DatabaseService } from './services/database';
 import { CacheAdminService } from './services/cache-admin';
 import type { Env } from './types';
 
@@ -49,13 +49,13 @@ let servicesCache: {
 const getServices = (env: Env) => {
   if (!servicesCache) {
     const openai = new OpenAIService(env.OPENAI_API_KEY);
-    const uiCache = new UICacheService(env.WIDGET_CACHE);
+    const database = new DatabaseService(env.DATABASE_URL);
     servicesCache = {
-      chat: new ChatService(openai),
-      summaries: new SummariesService(openai, uiCache),
-      recommendations: new RecommendationsService(openai, uiCache),
-      selectorAnalysis: new SelectorAnalysisService(openai),
-      cacheAdmin: new CacheAdminService(uiCache),
+      chat: new ChatService(openai, database),
+      summaries: new SummariesService(openai, database),
+      recommendations: new RecommendationsService(openai, database),
+      selectorAnalysis: new SelectorAnalysisService(openai, database),
+      cacheAdmin: new CacheAdminService(database),
     };
   }
   return servicesCache;

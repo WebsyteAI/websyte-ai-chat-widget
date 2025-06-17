@@ -2,10 +2,10 @@ import type { Context } from 'hono';
 import { OpenAIService } from './openai';
 import type { SummariesRequest, SummariesResponse, Env } from '../types';
 import { ServiceValidation, ErrorHandler } from './common';
-import { UICacheService } from './ui-cache';
+import { DatabaseService } from './database';
 
 export class SummariesService {
-  constructor(private openai: OpenAIService, private cache?: UICacheService) {}
+  constructor(private openai: OpenAIService, private database?: DatabaseService) {}
 
   async handleSummaries(c: Context<{ Bindings: Env }>): Promise<Response> {
     const methodError = ServiceValidation.validatePostMethod(c);
@@ -19,14 +19,14 @@ export class SummariesService {
         return c.json({ error: "Invalid content" }, 400);
       }
 
-      // Ensure URL is tracked in cache admin panel regardless of caching status
-      if (url && this.cache) {
-        await this.cache.ensureUrlTracked(url);
+      // Ensure URL is tracked in database regardless of caching status
+      if (url && this.database) {
+        await this.database.ensureUrlTracked(url);
       }
 
-      // Check cache first if URL is provided, cache is available, and caching is enabled for this URL
-      if (url && this.cache && await this.cache.getCacheEnabled(url)) {
-        const cached = await this.cache.getSummaries(url);
+      // Check cache first if URL is provided, database is available, and caching is enabled for this URL
+      if (url && this.database && await this.database.getCacheEnabled(url)) {
+        const cached = await this.database.getSummaries(url);
         if (cached) {
           return c.json(cached);
         }
@@ -39,9 +39,9 @@ export class SummariesService {
         medium: summaries.medium
       };
 
-      // Always cache the result if URL is provided and cache is available (for tracking purposes)
-      if (url && this.cache) {
-        await this.cache.setSummaries(url, response);
+      // Always store the result if URL is provided and database is available (for tracking purposes)
+      if (url && this.database) {
+        await this.database.setSummaries(url, response);
       }
 
       return c.json(response);

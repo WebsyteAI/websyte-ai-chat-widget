@@ -6,7 +6,7 @@ import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useState } from 'react';
-import { UICacheService } from '../../workers/services/ui-cache';
+import { DatabaseService } from '../../workers/services/database';
 import { CacheAdminService } from '../../workers/services/cache-admin';
 
 interface CacheStats {
@@ -34,18 +34,18 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     // Access the cache service directly from context instead of making HTTP requests
     const env = context.cloudflare.env;
     
-    const uiCache = new UICacheService(env.WIDGET_CACHE);
-    const cacheAdmin = new CacheAdminService(uiCache);
+    const database = new DatabaseService(env.DATABASE_URL);
+    const cacheAdmin = new CacheAdminService(database);
     
     // Get stats and list directly from the services
-    const stats = await uiCache.getCacheStats();
-    const cachedUrls = await uiCache.listCachedUrls();
+    const stats = await database.getCacheStats();
+    const cachedUrls = await database.listCachedUrls();
     
     const urlData = await Promise.all(
       cachedUrls.map(async (url) => ({
         url,
-        enabled: await uiCache.getCacheEnabled(url),
-        data: await uiCache.get(url)
+        enabled: await database.getCacheEnabled(url),
+        data: await database.get(url)
       }))
     );
 
@@ -74,8 +74,8 @@ export async function action({ request, context }: ActionFunctionArgs) {
       // Access the cache service directly from context instead of making HTTP requests
       const env = context.cloudflare.env;
       
-      const uiCache = new UICacheService(env.WIDGET_CACHE);
-      await uiCache.clearAll();
+      const database = new DatabaseService(env.DATABASE_URL);
+      await database.clearAll();
       
       return Response.json({ success: true, message: 'All cache cleared successfully' });
     }
