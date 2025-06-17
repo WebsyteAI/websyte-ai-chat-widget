@@ -10,6 +10,30 @@ This is a React-based AI chat widget that can be embedded into websites. It prov
 
 ## Recent Updates
 
+### Database Schema Optimization (2025-01-17)
+Removed redundant "recommendations" key from database storage structure to optimize data storage:
+
+#### What Changed
+- **Database Schema**: Updated `recommendations` column to store recommendation arrays directly instead of nested wrapper objects
+- **Storage Optimization**: Eliminated redundant structure where `{recommendations: [...], placeholder: "..."}` was stored in a column already named "recommendations"
+- **API Compatibility**: Maintained full backward compatibility - API responses still include both recommendations array and placeholder string
+- **Error Handling**: Fixed abort error status codes (400 → 499) to match test expectations
+
+#### Technical Details
+**Before**: Database stored `{recommendations: Array<{title, description}>, placeholder: string}` in `recommendations` column
+**After**: Database stores `Array<{title, description}>` directly in `recommendations` column, with placeholder generated at API response level
+
+#### Files Modified
+- `workers/db/schema.ts` - Updated recommendations column type definition
+- `workers/services/database.ts` - Modified setRecommendations/getRecommendations methods
+- `workers/services/common.ts` - Fixed error handler status codes
+
+#### Impact
+- **Reduced Data Redundancy**: Cleaner database storage without nested wrapper objects
+- **Maintained Compatibility**: All existing API consumers continue to work unchanged
+- **Improved Efficiency**: Simplified data structure reduces storage overhead
+- **No Breaking Changes**: Frontend and API contracts remain identical
+
 ### Admin UI Removal (2025-01-17)
 Removed all admin UI components and related functionality from the codebase to simplify the architecture:
 
