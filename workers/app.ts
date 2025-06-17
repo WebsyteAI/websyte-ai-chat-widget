@@ -7,7 +7,6 @@ import { SummariesService } from './services/summaries';
 import { RecommendationsService } from './services/recommendations';
 import { SelectorAnalysisService } from './services/selector-analysis';
 import { DatabaseService } from './services/database';
-import { CacheAdminService } from './services/cache-admin';
 import type { Env } from './types';
 
 declare module "react-router" {
@@ -27,7 +26,6 @@ type AppType = {
       summaries: SummariesService;
       recommendations: RecommendationsService;
       selectorAnalysis: SelectorAnalysisService;
-      cacheAdmin: CacheAdminService;
     };
   };
 };
@@ -43,7 +41,6 @@ let servicesCache: {
   summaries: SummariesService;
   recommendations: RecommendationsService;
   selectorAnalysis: SelectorAnalysisService;
-  cacheAdmin: CacheAdminService;
 } | null = null;
 
 const getServices = (env: Env) => {
@@ -55,7 +52,6 @@ const getServices = (env: Env) => {
       summaries: new SummariesService(openai, database),
       recommendations: new RecommendationsService(openai, database),
       selectorAnalysis: new SelectorAnalysisService(openai, database),
-      cacheAdmin: new CacheAdminService(database),
     };
   }
   return servicesCache;
@@ -82,27 +78,6 @@ app.post('/api/summaries', async (c) => {
 
 app.post('/api/analyze-selector', async (c) => {
   return c.get('services').selectorAnalysis.handle(c);
-});
-
-// Cache Admin API Routes
-app.get('/api/admin/cache/stats', async (c) => {
-  return c.get('services').cacheAdmin.handleGetStats(c);
-});
-
-app.get('/api/admin/cache/list', async (c) => {
-  return c.get('services').cacheAdmin.handleGetList(c);
-});
-
-app.post('/api/admin/cache/toggle/:url', async (c) => {
-  return c.get('services').cacheAdmin.handleToggleUrl(c);
-});
-
-app.delete('/api/admin/cache/:url', async (c) => {
-  return c.get('services').cacheAdmin.handleClearUrl(c);
-});
-
-app.delete('/api/admin/cache/all', async (c) => {
-  return c.get('services').cacheAdmin.handleClearAll(c);
 });
 
 

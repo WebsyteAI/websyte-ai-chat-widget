@@ -51,7 +51,9 @@
       "Bash(npx drizzle-kit:*)",
       "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_xb5jCJX8Aeoc@ep-winter-frost-aa8xm62q-pooler.westus3.azure.neon.tech/websyteai?sslmode=require\" npx drizzle-kit push)",
       "Bash(npm run type-check:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(echo:*)",
+      "Bash(test:*)"
     ],
     "deny": []
   },
