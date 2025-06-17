@@ -40,9 +40,14 @@ export class DatabaseService {
       const widget = result[0];
       console.log(`DatabaseService: Cache found for URL: ${url}`);
       
+      const recommendations = widget.recommendations ? {
+        recommendations: widget.recommendations,
+        placeholder: "Ask me about this content"
+      } : undefined;
+
       return {
         summaries: widget.summaries || undefined,
-        recommendations: widget.recommendations || undefined,
+        recommendations,
         timestamp: Date.now()
       };
     } catch (error) {
@@ -90,7 +95,7 @@ export class DatabaseService {
         .insert(widgetsTable)
         .values({
           url,
-          recommendations,
+          recommendations: recommendations.recommendations,
           cacheEnabled: false,
           createdAt: now,
           updatedAt: now
@@ -98,7 +103,7 @@ export class DatabaseService {
         .onConflictDoUpdate({
           target: widgetsTable.url,
           set: {
-            recommendations,
+            recommendations: recommendations.recommendations,
             updatedAt: now
           }
         });
@@ -143,8 +148,13 @@ export class DatabaseService {
         return null;
       }
 
-      console.log(`DatabaseService: Found recommendations:`, result[0].recommendations);
-      return result[0].recommendations;
+      const response: RecommendationsResponse = {
+        recommendations: result[0].recommendations,
+        placeholder: "Ask me about this content"
+      };
+
+      console.log(`DatabaseService: Found recommendations:`, response);
+      return response;
     } catch (error) {
       console.error('DatabaseService getRecommendations error:', error);
       return null;

@@ -13,13 +13,10 @@ export const widgets = pgTable('widgets', {
     short: string;
     medium: string;
   } | null>(),
-  recommendations: json('recommendations').$type<{
-    recommendations: Array<{
-      title: string;
-      description: string;
-    }>;
-    placeholder: string;
-  } | null>(),
+  recommendations: json('recommendations').$type<Array<{
+    title: string;
+    description: string;
+  }> | null>(),
   cacheEnabled: boolean('cache_enabled').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

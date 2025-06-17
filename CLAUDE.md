@@ -3,56 +3,43 @@
 ## Project Overview
 This is a React-based AI chat widget that can be embedded into websites. It provides content summarization, audio playback, and interactive chat functionality.
 
+## Development Notes
+
+### Package Management
+- Always use pnpm for package management and scripts
+
 ## Recent Updates
 
-### Cache Initialization Fix (2025-01-16)
-Fixed production caching issue where initial URLs weren't being stored in cache when the widget loaded:
+### Admin UI Removal (2025-01-17)
+Removed all admin UI components and related functionality from the codebase to simplify the architecture:
 
-#### Problem
-- URLs were not appearing in cache admin panel after widget loads
-- Cache service only stored data when caching was explicitly enabled
-- New URLs defaulted to caching disabled, preventing any data storage
-- Admin panel remained empty until caching was manually enabled per URL
+#### What Was Removed
+- **Admin Routes**: All `/admin/cache/*` routes and route files
+- **Admin Components**: Cache management UI components  
+- **Admin API Endpoints**: `/api/admin/cache/*` API routes
+- **Admin Services**: `CacheAdminService` and related functionality
+- **Build Artifacts**: Admin-related compiled assets
 
-#### Root Cause
-- `getCacheEnabled()` returned `false` for new URLs (no `:enabled` key existed)
-- Summaries and recommendations services only stored data if `getCacheEnabled()` was `true`
-- No cache entries created for disabled URLs, making them invisible in listings
+#### Files Removed
+- `app/routes/admin.cache.$url.tsx` - Admin cache detail page
+- Admin route configurations from `app/routes.ts`
+- Admin API endpoints from `workers/app.ts`
+- `CacheAdminService` imports and references
 
-#### Solution Implemented
-**UICacheService** (`workers/services/ui-cache.ts`):
-- Added `ensureUrlTracked(url)` method to guarantee URL visibility
-- Creates `:enabled` key (defaulting to `false`) and `:data` key for new URLs
-- Ensures all accessed URLs appear in cache admin panel
+#### Impact
+- Simplified codebase architecture
+- Removed unused admin functionality
+- Cache data is still stored and managed automatically
+- No user-facing functionality affected
 
-**Summaries Service** (`workers/services/summaries.ts`):
-- Always calls `ensureUrlTracked(url)` when URL is accessed
-- **Always stores data** in cache when new summaries are generated (removed cache enabled check)
-- Still only serves from cache when caching is enabled for the URL
+### Cache System Simplification (2025-01-17)
+With admin UI removed, cache system now operates automatically:
 
-**Recommendations Service** (`workers/services/recommendations.ts`):
-- Always calls `ensureUrlTracked(url)` when URL is accessed  
-- **Always stores data** in cache when new recommendations are generated (removed cache enabled check)
-- Still only serves from cache when caching is enabled for the URL
-
-#### Cache Behavior After Fix
-- **URL Tracking**: All accessed URLs appear in cache admin panel immediately
-- **Data Storage**: All generated summaries/recommendations are stored regardless of enabled status
-- **Cache Serving**: Data is only served from cache when caching is enabled for the URL
-- **Admin Control**: URLs default to caching disabled but can be enabled via admin panel
-
-#### Key Changes
-```typescript
-// Before: Only stored if caching enabled
-if (url && this.cache && await this.cache.getCacheEnabled(url)) {
-  await this.cache.setSummaries(url, response);
-}
-
-// After: Always store for tracking
-if (url && this.cache) {
-  await this.cache.setSummaries(url, response);
-}
-```
+**Cache Behavior**:
+- **Data Storage**: All generated summaries/recommendations are stored automatically
+- **Cache Serving**: Data is served from cache when available
+- **URL Tracking**: URLs are tracked automatically when accessed
+- **No Manual Control**: Cache operates transparently without admin interface
 
 ### Responsive Design Implementation (2025-01-16)
 Implemented comprehensive mobile responsiveness across the chat widget components:
