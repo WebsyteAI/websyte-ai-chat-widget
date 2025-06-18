@@ -26,6 +26,7 @@ describe('AuthService', () => {
       DATABASE_URL: 'test-db-url',
       BETTER_AUTH_URL: 'http://localhost:3000',
       BETTER_AUTH_SECRET: 'test-secret',
+      WIDGET_FILES: {} as R2Bucket,
     };
 
     authService = new AuthService(mockEnv);

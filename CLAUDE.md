@@ -10,6 +10,154 @@ This is a React-based AI chat widget that can be embedded into websites. It prov
 
 ## Recent Updates
 
+### Custom Widget System with Vector Search Implementation (2025-01-18)
+Implemented a comprehensive custom widget system with vector search, file management, and user authentication:
+
+#### Widget System Features
+- **User-Scoped Widgets**: All widgets are associated with authenticated users for complete isolation and security
+- **File Upload & Storage**: Support for TXT, PDF, DOC, DOCX, MD files stored in Cloudflare R2 with metadata tracking
+- **Vector Search**: Content chunking and OpenAI embeddings for semantic search across widget content
+- **Content Processing**: Automatic embedding generation for both text content and uploaded files
+- **Responsive Dashboard**: Mobile-first UI with intuitive widget management interface
+
+#### Database Schema Extensions
+- **`widget` table**: Replaces legacy `widgets` with user association, name, description, and optional URL
+- **`widget_embedding` table**: Stores vector embeddings with pgvector support and HNSW indexing
+- **`widget_file` table**: Tracks uploaded files in R2 with metadata (filename, type, size)
+- **Migration Strategy**: Preserves existing legacy widgets table during transition
+
+#### API Endpoints Added
+**Widget Management**:
+- **`GET /api/widgets`** - List user's widgets with pagination
+- **`POST /api/widgets`** - Create new widget with files and content
+- **`GET /api/widgets/:id`** - Get widget details with files and embedding count
+- **`PUT /api/widgets/:id`** - Update widget metadata and content
+- **`DELETE /api/widgets/:id`** - Delete widget (cleans up R2 files & embeddings)
+
+**Vector Search**:
+- **`POST /api/widgets/:id/search`** - Search within specific widget content
+- **`POST /api/widgets/search`** - Search across all user's widgets
+
+**File Management**:
+- **`POST /api/widgets/:id/files`** - Upload files to widget
+- **`GET /api/widgets/:id/files/:fileId/download`** - Download files
+- **`DELETE /api/widgets/:id/files/:fileId`** - Remove files from widget
+
+#### Backend Services Implemented
+- **VectorSearchService**: OpenAI embeddings generation, text chunking, and cosine similarity search
+- **FileStorageService**: R2 file upload/download with automatic cleanup and metadata management
+- **WidgetService**: Complete CRUD operations with integrated file and embedding management
+- **Enhanced DatabaseService**: Added `getDatabase()` method for new service integration
+
+#### Frontend Components
+- **WidgetList**: Grid view with create/edit/delete actions, file counts, and embedding statistics
+- **WidgetForm**: Create/edit form with drag-and-drop file upload and validation
+- **SearchWidget**: Vector search interface with similarity scores and result highlighting
+- **Enhanced Dashboard**: Tabbed interface (My Widgets/Search/Analytics/Settings)
+
+#### Technical Implementation
+- **Vector Embeddings**: OpenAI text-embedding-ada-002 with 1536 dimensions
+- **Search Algorithm**: Cosine similarity with HNSW indexing for performance
+- **File Processing**: Automatic content extraction and embedding generation
+- **Authentication**: All widget operations require authenticated user sessions
+- **R2 Integration**: Cloudflare R2 bucket (`WIDGET_FILES`) for scalable file storage
+
+#### Infrastructure & Configuration
+- **R2 Bucket**: Added `WIDGET_FILES` binding to wrangler.jsonc
+- **File Organization**: Hierarchical R2 storage structure for optimal organization and performance
+- **Dependencies**: Added OpenAI SDK and Radix UI components
+- **Type Safety**: Complete TypeScript definitions for all new services and APIs
+- **Database Migration**: Generated and applied schema changes with proper indexing
+
+#### R2 File Storage Structure
+Files are organized in a hierarchical structure for efficient management and retrieval:
+
+```
+websyte-ai-widget/
+└── widgets/
+    └── {widgetId}/
+        └── {year}/
+            └── {month}/
+                └── {day}/
+                    ├── document_name_2025-01-18T14-30-15.pdf
+                    ├── readme_2025-01-18T14-32-10.md
+                    └── data_2025-01-18T15-20-45.txt
+```
+
+**Benefits of this structure:**
+- **Widget Isolation**: Files are organized by widget ID for security
+- **Date Organization**: Easy browsing and cleanup by upload date
+- **Scalability**: Distributes files across many directories for performance
+- **Backup/Migration**: Easy to backup or migrate specific widget data
+- **Analytics**: Simple to analyze usage patterns by date/widget
+- **Maintenance**: Efficient cleanup of old files using date hierarchy
+
+#### Files Added/Modified
+- `workers/services/vector-search.ts` - Vector embedding and search functionality
+- `workers/services/file-storage.ts` - R2 file management service
+- `workers/services/widget.ts` - Widget CRUD operations with integrated services
+- `workers/db/schema.ts` - New widget tables with pgvector support
+- `app/components/widgets/` - Complete widget management UI components
+- `app/routes/dashboard.tsx` - Enhanced dashboard with widget management
+- `wrangler.jsonc` - R2 bucket configuration
+- Database migration files in `drizzle/`
+
+#### Key Benefits
+1. **Scalable Architecture**: Designed for high-volume file storage and fast vector search
+2. **User Isolation**: Complete separation of user data with authentication requirements
+3. **Semantic Search**: Intelligent content discovery across uploaded files and text
+4. **Mobile-Responsive**: Touch-friendly interface for all device types
+5. **Performance Optimized**: Efficient database queries with proper indexing strategies
+
+### Authentication System Implementation (2025-01-18)
+Implemented a comprehensive authentication system using a custom SimpleAuth solution compatible with Cloudflare Workers:
+
+#### Authentication Features
+- **Custom Auth Implementation**: Built SimpleAuth class using Web Crypto API instead of Better Auth (which had Cloudflare Workers compatibility issues)
+- **Database Integration**: Extended database schema with auth tables (user, session, account, verification)
+- **Session Management**: HTTP-only cookies with 7-day expiration and automatic cleanup
+- **Password Security**: SHA-256 hashing using Web Crypto API for Cloudflare Workers compatibility
+
+#### Routes Added
+- **`/login`** - Main authentication page with login/register forms
+- **`/login?mode=register`** - Login page in register mode
+- **`/register`** - Redirects to login page in register mode
+- **`/dashboard`** - Protected user dashboard requiring authentication
+
+#### API Endpoints
+- **`POST /api/auth/sign-up`** - User registration
+- **`POST /api/auth/sign-in`** - User authentication
+- **`POST /api/auth/sign-out`** - Session termination
+- **`GET /api/auth/session`** - Current session retrieval
+
+#### Frontend Components
+- **AuthContext**: React context for authentication state management
+- **LoginForm/RegisterForm**: Authentication forms with validation
+- **UserProfile**: Dropdown component with user info and navigation
+- **AuthModal**: Modal-based authentication (alternative to page-based)
+
+#### Security Features
+- **Route Protection**: Middleware for protected API endpoints
+- **Session Validation**: Automatic session expiration and cleanup
+- **CSRF Protection**: Secure cookie configuration
+- **Optional Authentication**: Backwards compatible with existing anonymous usage
+
+#### Technical Implementation
+- **SimpleAuth Class**: Custom authentication using Drizzle ORM and Neon PostgreSQL
+- **Web Crypto API**: Cryptographic operations compatible with Cloudflare Workers
+- **Environment Configuration**: Added `BETTER_AUTH_URL` and `BETTER_AUTH_SECRET` variables
+- **Cloudflare Workers Compatible**: Uses `nodejs_compat` flag for enhanced Node.js compatibility
+
+#### Files Added/Modified
+- `workers/lib/auth.ts` - Custom SimpleAuth implementation
+- `workers/services/auth.ts` - Authentication service layer
+- `workers/lib/middleware.ts` - Authentication middleware
+- `app/lib/auth/auth-context.tsx` - React authentication context
+- `app/components/auth/` - Authentication UI components
+- `app/routes/login.tsx` - Login page route
+- `app/routes/dashboard.tsx` - Protected dashboard route
+- Database schema extended with auth tables
+
 ### Database Schema Optimization (2025-01-17)
 Removed redundant "recommendations" key from database storage structure to optimize data storage:
 
@@ -98,23 +246,194 @@ Implemented comprehensive mobile responsiveness across the chat widget component
 - **Transform Conflict**: Fixed slide-in animation that included `translateX(-50%)` conflicting with centering
 - **Solution**: Applied `-translate-x-1/2` only in initial state, let animation handle centering during transition
 
+## Widget System Usage
+
+### Development Setup
+1. **Environment Variables**: Ensure `.dev.vars` includes all required variables:
+   ```
+   OPENAI_API_KEY="your-openai-api-key"
+   DATABASE_URL="postgresql://user:password@host/database"
+   BETTER_AUTH_URL="http://localhost:5173"
+   BETTER_AUTH_SECRET="your-secret-key-generate-a-secure-one-in-production"
+   ```
+
+2. **R2 Bucket Setup**: Create Cloudflare R2 bucket for file storage:
+   ```bash
+   # Create R2 bucket (via Cloudflare dashboard or CLI)
+   # Bucket name: "websyte-ai-widget"
+   ```
+
+3. **Database Migration**: Widget tables are automatically created via Drizzle migrations
+   ```bash
+   pnpm run db:generate  # Generate migration files for widget tables
+   pnpm run db:push      # Apply to database including pgvector support
+   ```
+
+### Using Widget System
+
+#### Creating Widgets
+```typescript
+// Frontend - Create widget with files
+const formData = new FormData();
+formData.append('name', 'My Knowledge Base');
+formData.append('description', 'Company documentation');
+formData.append('content', 'Text content for vector search');
+formData.append('file_0', file); // File uploads
+
+const response = await fetch('/api/widgets', {
+  method: 'POST',
+  credentials: 'include',
+  body: formData
+});
+```
+
+#### Vector Search
+```typescript
+// Search within specific widget
+const response = await fetch(`/api/widgets/${widgetId}/search`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include',
+  body: JSON.stringify({ 
+    query: 'search terms',
+    limit: 10 
+  })
+});
+
+// Search across all widgets
+const response = await fetch('/api/widgets/search', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include',
+  body: JSON.stringify({ 
+    query: 'search terms',
+    limit: 20 
+  })
+});
+```
+
+#### Backend Services
+```typescript
+// Widget service example
+import { WidgetService } from './services/widget';
+import { VectorSearchService } from './services/vector-search';
+import { FileStorageService } from './services/file-storage';
+
+const vectorSearch = new VectorSearchService(apiKey, databaseService);
+const fileStorage = new FileStorageService(r2Bucket, databaseService);
+const widgetService = new WidgetService(databaseService, vectorSearch, fileStorage);
+
+// Create widget with content processing
+const widget = await widgetService.createWidget(userId, {
+  name: 'Documentation Hub',
+  description: 'Company knowledge base',
+  content: 'Initial text content',
+  files: [uploadedFile]
+});
+```
+
+## Authentication Usage
+
+### Using Authentication in Components
+```tsx
+import { useAuth } from '@/lib/auth/auth-context';
+
+function MyComponent() {
+  const { user, isAuthenticated, signIn, signOut } = useAuth();
+  
+  if (isAuthenticated) {
+    return <div>Welcome, {user?.name}!</div>;
+  }
+  
+  return <LoginForm />;
+}
+```
+
+### Protecting Routes
+- **Page-level protection**: Use `useAuth()` hook in route components
+- **API-level protection**: Authentication middleware automatically applied to API routes
+- **Optional authentication**: Existing routes remain accessible to anonymous users
+
+### Authentication Flow
+1. **Registration**: `/login?mode=register` → Creates user account → Auto sign-in
+2. **Login**: `/login` → Validates credentials → Sets session cookie
+3. **Session Management**: Automatic session validation on page load
+4. **Logout**: Clears session cookie and redirects to home page
+
 ## Component Architecture
 
-### Core Components
+### Core Chat Widget Components
 - **ChatWidget**: Main container component managing state and layout
 - **ActionBar**: Responsive button bar with logo and action buttons
 - **ChatPanel**: Sliding chat interface with message history
 - **AudioPlayer**: Audio playback controls with progress tracking
 - **MessageInput**: Text input with send/cancel functionality
 
+### Widget Management Components
+- **WidgetList**: Grid view displaying user's widgets with actions
+  - File count and embedding statistics
+  - Create/edit/delete functionality
+  - Responsive card layout with metadata
+- **WidgetForm**: Create/edit form with comprehensive validation
+  - Drag-and-drop file upload interface
+  - Text content input for vector processing
+  - Support for TXT, PDF, DOC, DOCX, MD files
+- **SearchWidget**: Vector search interface across widgets
+  - Similarity score display
+  - Result highlighting and metadata
+  - Cross-widget and widget-specific search modes
+
+### Dashboard Components
+- **Enhanced Dashboard**: Tabbed interface with four main sections:
+  - **My Widgets**: Widget management and creation
+  - **Search**: Cross-widget vector search functionality
+  - **Analytics**: Usage statistics and performance metrics
+  - **Settings**: User profile and preferences management
+
+### Authentication Components
+- **AuthContext**: React context for authentication state management
+- **LoginForm/RegisterForm**: Authentication forms with validation
+- **UserProfile**: Dropdown component with user info and navigation
+- **AuthModal**: Modal-based authentication (alternative to page-based)
+
 ### Key Features
 - **Content Summarization**: Three modes (Original, Short, Medium)
 - **Audio Playback**: Text-to-speech with speed controls
 - **Interactive Chat**: Q&A interface with message history
+- **Vector Search**: Semantic content discovery across uploaded files
+- **File Management**: Upload, download, and delete files with metadata
+- **User Authentication**: Secure user sessions with route protection
 - **Responsive Design**: Mobile-first approach with desktop enhancements
 - **Smart Animations**: Smooth transitions between modes without conflicts
 
 ## Development Notes
+
+### Widget Development Best Practices
+
+#### Vector Search Optimization
+1. **Text Chunking**: Keep chunks between 500-1500 characters for optimal embedding quality
+2. **Overlap Strategy**: Use 100-200 character overlap between chunks to maintain context
+3. **Similarity Thresholds**: Default threshold of 0.7 for relevance, adjust based on use case
+4. **Embedding Dimensions**: Using OpenAI text-embedding-ada-002 (1536 dimensions) for consistency
+
+#### File Processing Guidelines
+1. **Supported Formats**: TXT, PDF, DOC, DOCX, MD files for optimal content extraction
+2. **File Size Limits**: Recommend max 10MB per file for performance
+3. **Content Extraction**: Plain text extraction for embedding generation
+4. **Metadata Tracking**: Store original filename, type, size for user reference
+5. **File Organization**: R2 storage uses hierarchical structure: `widgets/{widgetId}/{year}/{month}/{day}/{filename}_{timestamp}.ext`
+
+#### Database Performance
+1. **Vector Indexing**: HNSW index with cosine similarity for fast search
+2. **Query Optimization**: Use pagination for widget lists, limit search results
+3. **Cleanup Strategy**: Automatic cascade deletion for embeddings and files
+4. **Index Maintenance**: Regular VACUUM and ANALYZE for vector performance
+
+#### Authentication & Security
+1. **Route Protection**: All widget endpoints require authentication
+2. **User Isolation**: Widgets are completely isolated by user ID
+3. **File Access**: Secure R2 URLs with user verification
+4. **Input Validation**: Sanitize all user inputs before processing
 
 ### Responsive Design Principles
 1. **Mobile-First**: Start with mobile constraints, enhance for desktop
@@ -134,21 +453,88 @@ Implemented comprehensive mobile responsiveness across the chat widget component
 - **Width Overflow**: Use `max-width` with viewport calculations for mobile safety
 - **Button Distribution**: Use `flex-1` on buttons and `flex` container for equal spacing
 - **Text Overflow**: Hide text on mobile, show on desktop for better UX
+- **Vector Search Latency**: Implement caching for frequently searched terms
+- **R2 Upload Errors**: Handle network timeouts with retry mechanisms
+- **Embedding Generation**: Queue large files for background processing
 
 ## Testing
+
+### UI Component Testing
 - Test on multiple screen sizes (mobile, tablet, desktop)
 - Verify button equal distribution and centering
 - Check animation smoothness without layout conflicts
 - Validate text visibility across breakpoints
 
+### Widget System Testing
+- **Authentication**: Verify all widget routes require login
+- **File Upload**: Test drag-and-drop and click upload flows
+- **Vector Search**: Validate search results and similarity scores
+- **CRUD Operations**: Test create, read, update, delete widget flows
+- **Error Handling**: Test network failures, large files, invalid formats
+- **Performance**: Test with multiple files and large content chunks
+- **R2 Integration**: Verify file upload, download, and deletion
+- **Database**: Test migration and vector index performance
+
 ## Build Commands
 ```bash
 # Development
-npm run dev
+pnpm dev                    # Start development server with auth support
 
-# Build
-npm run build
+# Database
+pnpm run db:generate        # Generate database migration files
+pnpm run db:push           # Apply migrations to database  
+pnpm run db:studio         # Open Drizzle Studio for database management
 
-# Test
-npm run test
+# Build & Deploy
+pnpm run build             # Build for production
+pnpm run deploy            # Deploy to Cloudflare Workers
+
+# Testing
+pnpm test                  # Run test suite including auth tests
+pnpm run test:coverage     # Run tests with coverage report
+
+# Type Checking
+pnpm typecheck            # Validate TypeScript types
 ```
+
+## Environment Configuration
+
+### Required Environment Variables
+```bash
+# OpenAI Integration
+OPENAI_API_KEY="your-openai-api-key"
+
+# Database
+DATABASE_URL="postgresql://user:password@host/database"
+
+# Authentication (added in v2025-01-18)
+BETTER_AUTH_URL="http://localhost:5173"  # Dev: localhost, Prod: your domain
+BETTER_AUTH_SECRET="your-secure-secret-key"  # Generate a secure random string
+```
+
+### Cloudflare Workers Configuration
+- **Compatibility Date**: `2025-04-04` (ensures latest features)
+- **Compatibility Flags**: `["nodejs_compat"]` (enables Node.js APIs like crypto)
+- **Main Entry**: `./workers/app.ts` (Hono application with auth and widget routes)
+- **R2 Bindings**: `WIDGET_FILES` bucket for file storage
+
+### Database Requirements
+- **PostgreSQL**: Neon PostgreSQL with pgvector extension enabled
+- **Vector Support**: Ensure pgvector extension is installed for embeddings
+- **Indexes**: HNSW indexes for efficient vector similarity search
+- **Connection**: Database must be accessible from Cloudflare Workers
+
+### Production Deployment Notes
+1. **Secrets Management**: Use `wrangler secret put` for production secrets
+   ```bash
+   wrangler secret put OPENAI_API_KEY
+   wrangler secret put DATABASE_URL
+   wrangler secret put BETTER_AUTH_SECRET
+   ```
+2. **R2 Bucket**: Create and configure `websyte-ai-widget` bucket
+3. **Domain Configuration**: Update `BETTER_AUTH_URL` to production domain
+4. **Database**: Ensure Neon PostgreSQL database is accessible from Workers
+5. **Vector Extension**: Verify pgvector extension is enabled in production
+6. **CORS**: Authentication and widget endpoints properly configured for cross-origin requests
+7. **File Size Limits**: Configure appropriate upload limits for your use case
+8. **Performance**: Monitor vector search performance and adjust indexes as needed

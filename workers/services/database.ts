@@ -22,6 +22,10 @@ export class DatabaseService {
     this.db = drizzle(sql);
   }
 
+  getDatabase() {
+    return this.db;
+  }
+
   async get(url: string): Promise<UICacheData | null> {
     try {
       console.log(`DatabaseService: Getting cache for URL: ${url}`);
