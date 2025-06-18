@@ -41,7 +41,7 @@ describe('SummariesService', () => {
 
       (mockOpenAI.generateBatchSummaries as any).mockResolvedValue(mockSummaries);
 
-      const response = await summariesService.handleSummaries(mockContext);
+      await summariesService.handleSummaries(mockContext);
 
       expect(mockContext.req.json).toHaveBeenCalled();
       expect(mockOpenAI.generateBatchSummaries).toHaveBeenCalledWith(
@@ -63,7 +63,7 @@ describe('SummariesService', () => {
         title: 'Sample Article'
       });
 
-      const response = await summariesService.handleSummaries(mockContext);
+      await summariesService.handleSummaries(mockContext);
 
       expect(mockContext.json).toHaveBeenCalledWith(
         { error: "Invalid content" },
@@ -77,7 +77,7 @@ describe('SummariesService', () => {
         title: 'Sample Article'
       });
 
-      const response = await summariesService.handleSummaries(mockContext);
+      await summariesService.handleSummaries(mockContext);
 
       expect(mockContext.json).toHaveBeenCalledWith(
         { error: "Invalid content" },
@@ -96,7 +96,7 @@ describe('SummariesService', () => {
         new Error('OpenAI API error')
       );
 
-      const response = await summariesService.handleSummaries(mockContext);
+      await summariesService.handleSummaries(mockContext);
 
       expect(mockContext.json).toHaveBeenCalledWith({
         error: "Internal server error",
@@ -116,7 +116,7 @@ describe('SummariesService', () => {
       timeoutError.name = 'AbortError';
       (mockOpenAI.generateBatchSummaries as any).mockRejectedValue(timeoutError);
 
-      const response = await summariesService.handleSummaries(mockContext);
+      await summariesService.handleSummaries(mockContext);
 
       expect(mockContext.json).toHaveBeenCalledWith({
         error: "Internal server error",
@@ -137,7 +137,7 @@ describe('SummariesService', () => {
 
       (mockOpenAI.generateBatchSummaries as any).mockResolvedValue(mockSummaries);
 
-      const response = await summariesService.handleSummaries(mockContext);
+      await summariesService.handleSummaries(mockContext);
 
       expect(mockOpenAI.generateBatchSummaries).toHaveBeenCalledWith(
         'Sample content to summarize',
@@ -151,9 +151,9 @@ describe('SummariesService', () => {
 
   describe('error handling', () => {
     it('should handle non-POST methods', async () => {
-      mockContext.req.method = 'GET';
+      (mockContext.req as any).method = 'GET';
 
-      const response = await summariesService.handleSummaries(mockContext);
+      await summariesService.handleSummaries(mockContext);
 
       expect(mockContext.json).toHaveBeenCalledWith(
         { error: "Method not allowed" },
@@ -164,7 +164,7 @@ describe('SummariesService', () => {
     it('should handle malformed JSON requests', async () => {
       mockContext.req.json = vi.fn().mockRejectedValue(new Error('Invalid JSON'));
 
-      const response = await summariesService.handleSummaries(mockContext);
+      await summariesService.handleSummaries(mockContext);
 
       expect(mockContext.json).toHaveBeenCalledWith({
         error: "Internal server error",

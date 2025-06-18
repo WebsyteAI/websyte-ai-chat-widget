@@ -65,4 +65,6 @@ export interface OpenAIResponse {
 export interface Env {
   OPENAI_API_KEY: string;
   DATABASE_URL: string;
+  BETTER_AUTH_URL: string;
+  BETTER_AUTH_SECRET: string;
 }

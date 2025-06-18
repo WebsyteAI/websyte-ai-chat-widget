@@ -7,6 +7,8 @@ import { SummariesService } from './services/summaries';
 import { RecommendationsService } from './services/recommendations';
 import { SelectorAnalysisService } from './services/selector-analysis';
 import { DatabaseService } from './services/database';
+import { AuthService } from './services/auth';
+import { optionalAuthMiddleware, type AuthContext } from './lib/middleware';
 import type { Env } from './types';
 
 declare module "react-router" {
@@ -26,7 +28,9 @@ type AppType = {
       summaries: SummariesService;
       recommendations: RecommendationsService;
       selectorAnalysis: SelectorAnalysisService;
+      auth: AuthService;
     };
+    auth?: AuthContext;
   };
 };
 
@@ -41,6 +45,7 @@ let servicesCache: {
   summaries: SummariesService;
   recommendations: RecommendationsService;
   selectorAnalysis: SelectorAnalysisService;
+  auth: AuthService;
 } | null = null;
 
 const getServices = (env: Env) => {
@@ -52,6 +57,7 @@ const getServices = (env: Env) => {
       summaries: new SummariesService(openai, database),
       recommendations: new RecommendationsService(openai, database),
       selectorAnalysis: new SelectorAnalysisService(openai, database),
+      auth: new AuthService(env),
     };
   }
   return servicesCache;
@@ -61,6 +67,17 @@ const getServices = (env: Env) => {
 app.use('/api/*', async (c, next) => {
   c.set('services', getServices(c.env));
   await next();
+});
+
+// Optional auth middleware for API routes (except auth routes)
+app.use('/api/chat', optionalAuthMiddleware);
+app.use('/api/recommendations', optionalAuthMiddleware);
+app.use('/api/summaries', optionalAuthMiddleware);
+app.use('/api/analyze-selector', optionalAuthMiddleware);
+
+// Auth Routes - Handle all Better Auth endpoints
+app.all('/api/auth/*', async (c) => {
+  return c.get('services').auth.handleAuth(c as any);
 });
 
 // API Routes

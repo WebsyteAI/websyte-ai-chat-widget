@@ -21,7 +21,7 @@ export class ErrorHandler {
     return c.json({ 
       error: "Request cancelled",
       ...customResponse
-    }, 499);
+    }, 400);
   }
 
   static handleGeneralError(

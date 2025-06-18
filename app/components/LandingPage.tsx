@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router";
+import { useAuth } from "@/lib/auth/auth-context";
+import { UserProfile } from "@/components/auth/UserProfile";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -33,6 +36,7 @@ interface EmbedConfig {
 }
 
 export function LandingPage() {
+  const { isAuthenticated, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<"basic" | "advanced">("basic");
   const [embedConfig, setEmbedConfig] = useState<EmbedConfig>({
     contentTarget: "article, main, .content",
@@ -115,15 +119,39 @@ export function LandingPage() {
       {/* Header */}
       <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <img
-              src="/websyte-ai-logo.svg"
-              alt="Websyte AI"
-              className="w-8 h-8"
-            />
-            <span className="text-xl font-bold text-foreground">
-              websyte.ai
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img
+                src="/websyte-ai-logo.svg"
+                alt="Websyte AI"
+                className="w-8 h-8"
+              />
+              <span className="text-xl font-bold text-foreground">
+                websyte.ai
+              </span>
+            </div>
+            
+            {/* Auth Section */}
+            <div className="flex items-center gap-3">
+              {!isLoading && (
+                isAuthenticated ? (
+                  <UserProfile />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Link to="/login">
+                      <Button variant="outline" size="sm">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/login?mode=register">
+                      <Button size="sm">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </div>
+                )
+              )}
+            </div>
           </div>
         </div>
       </header>
