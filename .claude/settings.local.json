@@ -55,7 +55,9 @@
       "Bash(echo:*)",
       "Bash(test:*)",
       "WebFetch(domain:hono.dev)",
-      "Bash(pnpm dev:*)"
+      "Bash(pnpm dev:*)",
+      "WebFetch(domain:www.better-auth.com)",
+      "Bash(npx @better-auth/cli generate:*)"
     ],
     "deny": []
   },

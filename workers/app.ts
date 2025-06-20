@@ -92,9 +92,22 @@ app.use('/api/analyze-selector', optionalAuthMiddleware);
 // Required auth middleware for widget routes
 app.use('/api/widgets/*', authMiddleware);
 
+// Test auth route
+app.get('/api/auth/test', async (c) => {
+  return c.json({ message: 'Auth route is working!' });
+});
+
 // Auth Routes - Handle all Better Auth endpoints
 app.all('/api/auth/*', async (c) => {
-  return c.get('services').auth.handleAuth(c as any);
+  console.log('Auth route hit:', c.req.method, c.req.path);
+  try {
+    const result = await c.get('services').auth.handleAuth(c as any);
+    console.log('Auth route result status:', result.status);
+    return result;
+  } catch (error) {
+    console.error('Auth route error:', error);
+    return c.json({ error: 'Auth endpoint error' }, 500);
+  }
 });
 
 // API Routes

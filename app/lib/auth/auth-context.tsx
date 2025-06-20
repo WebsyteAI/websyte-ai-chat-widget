@@ -1,16 +1,19 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { authClient } from './better-auth-client';
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  image?: string;
+  image?: string | null;
+  emailVerified?: boolean;
 }
 
 export interface Session {
   id: string;
   token: string;
   expiresAt: Date;
+  userId: string;
 }
 
 export interface AuthContextType {
@@ -18,8 +21,7 @@ export interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -47,19 +49,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkSession = async () => {
     try {
-      const response = await fetch('/api/auth/session', {
-        credentials: 'include',
-      });
+      const sessionData = await authClient.getSession();
       
-      if (response.ok) {
-        const data = await response.json() as { user?: User; session?: Session };
-        if (data.user && data.session) {
-          setUser(data.user);
-          setSession({
-            ...data.session,
-            expiresAt: new Date(data.session.expiresAt),
-          });
-        }
+      if (sessionData?.data?.user && sessionData?.data?.session) {
+        setUser({
+          id: sessionData.data.user.id,
+          email: sessionData.data.user.email,
+          name: sessionData.data.user.name,
+          image: sessionData.data.user.image || undefined,
+          emailVerified: sessionData.data.user.emailVerified,
+        });
+        setSession({
+          id: sessionData.data.session.id,
+          token: sessionData.data.session.token,
+          expiresAt: new Date(sessionData.data.session.expiresAt),
+          userId: sessionData.data.session.userId,
+        });
       }
     } catch (error) {
       console.error('Session check failed:', error);
@@ -68,75 +73,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+
+  const signInWithGoogle = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/sign-in', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
+      console.log('Attempting Google OAuth with Better Auth client...');
+      
+      // Use Better Auth client for social sign-in
+      const { data, error } = await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: window.location.origin + '/dashboard'
       });
 
-      if (!response.ok) {
-        const error = await response.json() as { message?: string };
-        throw new Error(error.message || 'Sign in failed');
+      if (error) {
+        throw new Error(error.message || 'Google OAuth initiation failed');
       }
 
-      const data = await response.json() as { user: User; session: Session };
-      setUser(data.user);
-      setSession({
-        ...data.session,
-        expiresAt: new Date(data.session.expiresAt),
-      });
+      // Better Auth handles the redirect automatically
+      if (data?.url) {
+        window.location.href = data.url;
+      }
     } catch (error) {
-      console.error('Sign in error:', error);
+      console.error('Google OAuth error:', error);
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/auth/sign-up', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password, name }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json() as { message?: string };
-        throw new Error(error.message || 'Sign up failed');
-      }
-
-      const data = await response.json() as { user: User; session: Session };
-      setUser(data.user);
-      setSession({
-        ...data.session,
-        expiresAt: new Date(data.session.expiresAt),
-      });
-    } catch (error) {
-      console.error('Sign up error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const signOut = async () => {
     setIsLoading(true);
     try {
-      await fetch('/api/auth/sign-out', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await authClient.signOut();
     } catch (error) {
       console.error('Sign out error:', error);
     } finally {
@@ -151,8 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     isLoading,
     isAuthenticated,
-    signIn,
-    signUp,
+    signInWithGoogle,
     signOut,
   };
 

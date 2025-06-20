@@ -81,29 +81,29 @@ export const widgets = pgTable('widgets', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Auth tables for Better Auth
-export const user = pgTable('user', {
+// Auth tables from Better Auth
+export const user = pgTable("user", {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
-  emailVerified: boolean('emailVerified').notNull().default(false),
+  emailVerified: boolean('emailVerified').default(false),
   image: text('image'),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull()
 });
 
-export const session = pgTable('session', {
+export const session = pgTable("session", {
   id: text('id').primaryKey(),
   expiresAt: timestamp('expiresAt').notNull(),
   token: text('token').notNull().unique(),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
   ipAddress: text('ipAddress'),
   userAgent: text('userAgent'),
-  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' })
 });
 
-export const account = pgTable('account', {
+export const account = pgTable("account", {
   id: text('id').primaryKey(),
   accountId: text('accountId').notNull(),
   providerId: text('providerId').notNull(),
@@ -115,17 +115,17 @@ export const account = pgTable('account', {
   refreshTokenExpiresAt: timestamp('refreshTokenExpiresAt'),
   scope: text('scope'),
   password: text('password'),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull()
 });
 
-export const verification = pgTable('verification', {
+export const verification = pgTable("verification", {
   id: text('id').primaryKey(),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
   expiresAt: timestamp('expiresAt').notNull(),
-  createdAt: timestamp('createdAt').notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+  createdAt: timestamp('createdAt').defaultNow(),
+  updatedAt: timestamp('updatedAt').defaultNow()
 });
 
 // New widget types

@@ -21,12 +21,14 @@
 		"typecheck": "npm run cf-typegen && react-router typegen && tsc -b"
 	},
 	"dependencies": {
+		"@better-auth/cli": "^1.2.9",
 		"@neondatabase/serverless": "^1.0.1",
 		"@radix-ui/react-label": "^2.1.7",
 		"@radix-ui/react-separator": "^1.1.7",
 		"@radix-ui/react-slot": "^1.2.3",
 		"@radix-ui/react-tabs": "^1.1.12",
 		"@tailwindcss/typography": "^0.5.16",
+		"better-auth": "^1.2.9",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"drizzle-orm": "^0.44.2",

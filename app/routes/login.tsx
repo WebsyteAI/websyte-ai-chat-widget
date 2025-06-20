@@ -1,26 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../lib/auth/auth-context';
-import { LoginForm } from '../components/auth/LoginForm';
-import { RegisterForm } from '../components/auth/RegisterForm';
+import { GoogleSignInButton } from '../components/auth/GoogleSignInButton';
 
 export default function LoginPage() {
-  const [searchParams] = useSearchParams();
-  const initialMode = searchParams.get('mode') === 'register' ? 'register' : 'login';
-  const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect authenticated users to home
+  // Redirect authenticated users to dashboard
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
-      navigate('/');
+      navigate('/dashboard');
     }
   }, [isAuthenticated, isLoading, navigate]);
-
-  const toggleMode = () => {
-    setMode(mode === 'login' ? 'register' : 'login');
-  };
 
   if (isLoading) {
     return (
@@ -44,20 +36,18 @@ export default function LoginPage() {
             alt="Websyte AI"
           />
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            {mode === 'login' ? 'Sign in to your account' : 'Create your account'}
+            Sign in to your account
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {mode === 'login' ? 'Welcome back!' : 'Join Websyte AI today'}
+            Welcome to Websyte AI
           </p>
         </div>
 
-        {/* Auth Form */}
+        {/* Google Sign In */}
         <div className="mt-8">
-          {mode === 'login' ? (
-            <LoginForm onToggleMode={toggleMode} />
-          ) : (
-            <RegisterForm onToggleMode={toggleMode} />
-          )}
+          <div className="space-y-4">
+            <GoogleSignInButton />
+          </div>
         </div>
 
         {/* Footer Links */}

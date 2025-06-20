@@ -67,5 +67,7 @@ export interface Env {
   DATABASE_URL: string;
   BETTER_AUTH_URL: string;
   BETTER_AUTH_SECRET: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
   WIDGET_FILES: R2Bucket;
 }
