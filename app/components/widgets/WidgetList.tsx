@@ -38,9 +38,10 @@ interface WidgetListProps {
   onCreateWidget: () => void;
   onEditWidget: (widget: Widget) => void;
   onDeleteWidget: (widget: Widget) => void;
+  refreshTrigger?: number;
 }
 
-export function WidgetList({ onCreateWidget, onEditWidget, onDeleteWidget }: WidgetListProps) {
+export function WidgetList({ onCreateWidget, onEditWidget, onDeleteWidget, refreshTrigger }: WidgetListProps) {
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +68,7 @@ export function WidgetList({ onCreateWidget, onEditWidget, onDeleteWidget }: Wid
 
   useEffect(() => {
     fetchWidgets();
-  }, []);
+  }, [refreshTrigger]);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';

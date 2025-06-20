@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingWidget, setEditingWidget] = useState<Widget | null>(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Redirect unauthenticated users to login
   useEffect(() => {
@@ -55,7 +56,7 @@ export default function DashboardPage() {
       }
 
       setShowCreateForm(false);
-      // Widget list will refresh automatically via its own useEffect
+      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Error creating widget:', error);
       alert('Failed to create widget. Please try again.');
@@ -91,7 +92,7 @@ export default function DashboardPage() {
       }
 
       setEditingWidget(null);
-      // Widget list will refresh automatically
+      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Error updating widget:', error);
       alert('Failed to update widget. Please try again.');
@@ -115,7 +116,7 @@ export default function DashboardPage() {
         throw new Error('Failed to delete widget');
       }
 
-      // Widget list will refresh automatically
+      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Error deleting widget:', error);
       alert('Failed to delete widget. Please try again.');
@@ -197,6 +198,7 @@ export default function DashboardPage() {
 
             <TabsContent value="widgets" className="space-y-6">
               <WidgetList
+                refreshTrigger={refreshTrigger}
                 onCreateWidget={() => setShowCreateForm(true)}
                 onEditWidget={setEditingWidget}
                 onDeleteWidget={handleDeleteWidget}

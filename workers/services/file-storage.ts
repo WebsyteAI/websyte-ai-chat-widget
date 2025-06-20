@@ -27,25 +27,11 @@ export class FileStorageService {
   }
 
   private generateR2Key(widgetId: number, filename: string): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19); // YYYY-MM-DDTHH-MM-SS
-    
     // Clean filename to be URL-safe
     const cleanFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
     
-    // Extract file extension
-    const lastDot = cleanFilename.lastIndexOf('.');
-    const name = lastDot > 0 ? cleanFilename.slice(0, lastDot) : cleanFilename;
-    const ext = lastDot > 0 ? cleanFilename.slice(lastDot) : '';
-    
-    // Create organized path structure
-    const datePath = `${year}/${month}/${day}`;
-    const finalFilename = `${name}_${timestamp}${ext}`;
-    
-    return `widgets/${widgetId}/${datePath}/${finalFilename}`;
+    // Simple structure: widgets/{widgetId}/{filename}
+    return `widgets/${widgetId}/${cleanFilename}`;
   }
 
   async uploadFile(upload: FileUpload): Promise<StoredFile> {
