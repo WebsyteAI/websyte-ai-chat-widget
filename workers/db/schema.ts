@@ -37,9 +37,9 @@ export const widget = pgTable('widget', {
 
 // Widget embeddings for vector search
 export const widgetEmbedding = pgTable('widget_embedding', {
-  id: serial('id').primaryKey(),
+  id: uuid('id').defaultRandom().primaryKey(),
   widgetId: uuid('widget_id').notNull().references(() => widget.id, { onDelete: 'cascade' }),
-  fileId: integer('file_id').notNull().references(() => widgetFile.id, { onDelete: 'cascade' }), // Reference to source file
+  fileId: uuid('file_id').notNull().references(() => widgetFile.id, { onDelete: 'cascade' }), // Reference to source file
   contentChunk: text('content_chunk').notNull(),
   embedding: vector('embedding', { dimensions: 1536 }), // OpenAI ada-002 dimensions
   metadata: json('metadata').$type<{
@@ -55,7 +55,7 @@ export const widgetEmbedding = pgTable('widget_embedding', {
 
 // Widget files stored in R2
 export const widgetFile = pgTable('widget_file', {
-  id: serial('id').primaryKey(),
+  id: uuid('id').defaultRandom().primaryKey(),
   widgetId: uuid('widget_id').notNull().references(() => widget.id, { onDelete: 'cascade' }),
   r2Key: text('r2_key').notNull().unique(),
   filename: text('filename').notNull(),

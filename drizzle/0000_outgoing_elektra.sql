@@ -61,9 +61,9 @@ CREATE TABLE "widget" (
 );
 --> statement-breakpoint
 CREATE TABLE "widget_embedding" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"widget_id" uuid NOT NULL,
-	"file_id" integer NOT NULL,
+	"file_id" uuid NOT NULL,
 	"content_chunk" text NOT NULL,
 	"embedding" vector(1536),
 	"metadata" json,
@@ -71,7 +71,7 @@ CREATE TABLE "widget_embedding" (
 );
 --> statement-breakpoint
 CREATE TABLE "widget_file" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"widget_id" uuid NOT NULL,
 	"r2_key" text NOT NULL,
 	"filename" text NOT NULL,

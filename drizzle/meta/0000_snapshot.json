@@ -1,5 +1,5 @@
 {
-  "id": "7890b0b9-1a1f-41ec-b483-12ca67a63829",
+  "id": "f95dc42c-54ce-457d-b1e3-d82275896f0d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -449,9 +449,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "widget_id": {
           "name": "widget_id",
@@ -461,7 +462,7 @@
         },
         "file_id": {
           "name": "file_id",
-          "type": "integer",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -579,9 +580,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "widget_id": {
           "name": "widget_id",
