@@ -8,16 +8,17 @@ import {
   integer,
   serial,
   vector,
-  real
+  real,
+  uuid
 } from 'drizzle-orm/pg-core';
 
 // New widget table - replaces old widgets table
 export const widget = pgTable('widget', {
-  id: serial('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }), // Nullable for anonymous widgets
   name: text('name').notNull(),
   description: text('description'),
-  url: text('url'), // Optional URL for website widgets
+  url: text('url').unique(), // Unique URL for website widgets
   summaries: json('summaries').$type<{
     short: string;
     medium: string;
@@ -37,24 +38,25 @@ export const widget = pgTable('widget', {
 // Widget embeddings for vector search
 export const widgetEmbedding = pgTable('widget_embedding', {
   id: serial('id').primaryKey(),
-  widgetId: integer('widget_id').notNull().references(() => widget.id, { onDelete: 'cascade' }),
+  widgetId: uuid('widget_id').notNull().references(() => widget.id, { onDelete: 'cascade' }),
+  fileId: integer('file_id').notNull().references(() => widgetFile.id, { onDelete: 'cascade' }), // Reference to source file
   contentChunk: text('content_chunk').notNull(),
   embedding: vector('embedding', { dimensions: 1536 }), // OpenAI ada-002 dimensions
   metadata: json('metadata').$type<{
     chunkIndex: number;
     source?: string;
-    fileId?: number;
   }>(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
   widgetIdIdx: index('widget_embedding_widget_id_idx').on(table.widgetId),
+  fileIdIdx: index('widget_embedding_file_id_idx').on(table.fileId),
   embeddingIdx: index('widget_embedding_vector_idx').using('hnsw', table.embedding.op('vector_cosine_ops')),
 }));
 
 // Widget files stored in R2
 export const widgetFile = pgTable('widget_file', {
   id: serial('id').primaryKey(),
-  widgetId: integer('widget_id').notNull().references(() => widget.id, { onDelete: 'cascade' }),
+  widgetId: uuid('widget_id').notNull().references(() => widget.id, { onDelete: 'cascade' }),
   r2Key: text('r2_key').notNull().unique(),
   filename: text('filename').notNull(),
   fileType: text('file_type').notNull(),
@@ -65,21 +67,6 @@ export const widgetFile = pgTable('widget_file', {
   r2KeyIdx: index('widget_file_r2_key_idx').on(table.r2Key),
 }));
 
-// Legacy widgets table - will be migrated and removed
-export const widgets = pgTable('widgets', {
-  url: text('url').primaryKey(),
-  summaries: json('summaries').$type<{
-    short: string;
-    medium: string;
-  } | null>(),
-  recommendations: json('recommendations').$type<Array<{
-    title: string;
-    description: string;
-  }> | null>(),
-  cacheEnabled: boolean('cache_enabled').default(false).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
 
 // Auth tables from Better Auth
 export const user = pgTable("user", {
@@ -136,9 +123,6 @@ export type NewWidgetEmbedding = typeof widgetEmbedding.$inferInsert;
 export type WidgetFile = typeof widgetFile.$inferSelect;
 export type NewWidgetFile = typeof widgetFile.$inferInsert;
 
-// Legacy types (will be removed after migration)
-export type LegacyWidget = typeof widgets.$inferSelect;
-export type NewLegacyWidget = typeof widgets.$inferInsert;
 
 // Auth types
 export type User = typeof user.$inferSelect;

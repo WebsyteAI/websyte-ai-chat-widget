@@ -1,8 +1,8 @@
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, isNull } from 'drizzle-orm';
 import { 
-  widgets as widgetsTable,
+  widget as widgetTable,
   type Widget,
   type NewWidget
 } from '../db/schema';
@@ -26,14 +26,16 @@ export class DatabaseService {
     return this.db;
   }
 
+
+
   async get(url: string): Promise<UICacheData | null> {
     try {
       console.log(`DatabaseService: Getting cache for URL: ${url}`);
       
       const result = await this.db
         .select()
-        .from(widgetsTable)
-        .where(eq(widgetsTable.url, url))
+        .from(widgetTable)
+        .where(eq(widgetTable.url, url))
         .limit(1);
 
       if (result.length === 0) {
@@ -66,22 +68,36 @@ export class DatabaseService {
       
       const now = new Date();
       
-      await this.db
-        .insert(widgetsTable)
-        .values({
-          url,
-          summaries,
-          cacheEnabled: false,
-          createdAt: now,
-          updatedAt: now
-        })
-        .onConflictDoUpdate({
-          target: widgetsTable.url,
-          set: {
+      // Find existing widget for this URL
+      const existingWidget = await this.db
+        .select({ id: widgetTable.id })
+        .from(widgetTable)
+        .where(eq(widgetTable.url, url))
+        .limit(1);
+
+      if (existingWidget.length > 0) {
+        // Update existing widget
+        await this.db
+          .update(widgetTable)
+          .set({
             summaries,
             updatedAt: now
-          }
-        });
+          })
+          .where(eq(widgetTable.id, existingWidget[0].id));
+      } else {
+        // Insert new widget
+        await this.db
+          .insert(widgetTable)
+          .values({
+            userId: null,
+            name: `Widget - ${url}`,
+            url,
+            summaries,
+            cacheEnabled: false,
+            createdAt: now,
+            updatedAt: now
+          });
+      }
 
       console.log(`DatabaseService: Summaries set successfully for URL: ${url}`);
     } catch (error) {
@@ -95,22 +111,36 @@ export class DatabaseService {
       
       const now = new Date();
       
-      await this.db
-        .insert(widgetsTable)
-        .values({
-          url,
-          recommendations: recommendations.recommendations,
-          cacheEnabled: false,
-          createdAt: now,
-          updatedAt: now
-        })
-        .onConflictDoUpdate({
-          target: widgetsTable.url,
-          set: {
+      // Find existing widget for this URL
+      const existingWidget = await this.db
+        .select({ id: widgetTable.id })
+        .from(widgetTable)
+        .where(eq(widgetTable.url, url))
+        .limit(1);
+
+      if (existingWidget.length > 0) {
+        // Update existing widget
+        await this.db
+          .update(widgetTable)
+          .set({
             recommendations: recommendations.recommendations,
             updatedAt: now
-          }
-        });
+          })
+          .where(eq(widgetTable.id, existingWidget[0].id));
+      } else {
+        // Insert new widget
+        await this.db
+          .insert(widgetTable)
+          .values({
+            userId: null,
+            name: `Widget - ${url}`,
+            url,
+            recommendations: recommendations.recommendations,
+            cacheEnabled: false,
+            createdAt: now,
+            updatedAt: now
+          });
+      }
 
       console.log(`DatabaseService: Recommendations set successfully for URL: ${url}`);
     } catch (error) {
@@ -121,9 +151,9 @@ export class DatabaseService {
   async getSummaries(url: string): Promise<SummariesResponse | null> {
     try {
       const result = await this.db
-        .select({ summaries: widgetsTable.summaries })
-        .from(widgetsTable)
-        .where(eq(widgetsTable.url, url))
+        .select({ summaries: widgetTable.summaries })
+        .from(widgetTable)
+        .where(eq(widgetTable.url, url))
         .limit(1);
 
       if (result.length === 0 || !result[0].summaries) {
@@ -142,9 +172,9 @@ export class DatabaseService {
       console.log(`DatabaseService: Fetching recommendations for URL: ${url}`);
       
       const result = await this.db
-        .select({ recommendations: widgetsTable.recommendations })
-        .from(widgetsTable)
-        .where(eq(widgetsTable.url, url))
+        .select({ recommendations: widgetTable.recommendations })
+        .from(widgetTable)
+        .where(eq(widgetTable.url, url))
         .limit(1);
 
       if (result.length === 0 || !result[0].recommendations) {
@@ -168,8 +198,8 @@ export class DatabaseService {
   async clear(url: string): Promise<void> {
     try {
       await this.db
-        .delete(widgetsTable)
-        .where(eq(widgetsTable.url, url));
+        .delete(widgetTable)
+        .where(eq(widgetTable.url, url));
       
       console.log(`DatabaseService: Cache cleared for URL: ${url}`);
     } catch (error) {
@@ -180,9 +210,9 @@ export class DatabaseService {
   async getCacheEnabled(url: string): Promise<boolean> {
     try {
       const result = await this.db
-        .select({ cacheEnabled: widgetsTable.cacheEnabled })
-        .from(widgetsTable)
-        .where(eq(widgetsTable.url, url))
+        .select({ cacheEnabled: widgetTable.cacheEnabled })
+        .from(widgetTable)
+        .where(eq(widgetTable.url, url))
         .limit(1);
 
       return result.length > 0 ? result[0].cacheEnabled : false;
@@ -196,21 +226,35 @@ export class DatabaseService {
     try {
       const now = new Date();
       
-      await this.db
-        .insert(widgetsTable)
-        .values({
-          url,
-          cacheEnabled: enabled,
-          createdAt: now,
-          updatedAt: now
-        })
-        .onConflictDoUpdate({
-          target: widgetsTable.url,
-          set: {
+      // Find existing widget for this URL
+      const existingWidget = await this.db
+        .select({ id: widgetTable.id })
+        .from(widgetTable)
+        .where(eq(widgetTable.url, url))
+        .limit(1);
+
+      if (existingWidget.length > 0) {
+        // Update existing widget
+        await this.db
+          .update(widgetTable)
+          .set({
             cacheEnabled: enabled,
             updatedAt: now
-          }
-        });
+          })
+          .where(eq(widgetTable.id, existingWidget[0].id));
+      } else {
+        // Insert new widget
+        await this.db
+          .insert(widgetTable)
+          .values({
+            userId: null,
+            name: `Widget - ${url}`,
+            url,
+            cacheEnabled: enabled,
+            createdAt: now,
+            updatedAt: now
+          });
+      }
 
       console.log(`DatabaseService: Cache ${enabled ? 'enabled' : 'disabled'} for URL: ${url}`);
     } catch (error) {
@@ -221,17 +265,19 @@ export class DatabaseService {
   async ensureUrlTracked(url: string): Promise<void> {
     try {
       const result = await this.db
-        .select({ url: widgetsTable.url })
-        .from(widgetsTable)
-        .where(eq(widgetsTable.url, url))
+        .select({ url: widgetTable.url })
+        .from(widgetTable)
+        .where(eq(widgetTable.url, url))
         .limit(1);
 
       if (result.length === 0) {
         const now = new Date();
         
         await this.db
-          .insert(widgetsTable)
+          .insert(widgetTable)
           .values({
+            userId: null,
+            name: `Widget - ${url}`,
             url,
             cacheEnabled: false,
             createdAt: now,
@@ -249,11 +295,12 @@ export class DatabaseService {
   async listCachedUrls(): Promise<string[]> {
     try {
       const result = await this.db
-        .select({ url: widgetsTable.url })
-        .from(widgetsTable)
-        .orderBy(desc(widgetsTable.createdAt));
+        .select({ url: widgetTable.url })
+        .from(widgetTable)
+        .where(isNull(widgetTable.userId))
+        .orderBy(desc(widgetTable.createdAt));
 
-      return result.map(row => row.url);
+      return result.map(row => row.url).filter(url => url !== null) as string[];
     } catch (error) {
       console.error('DatabaseService listCachedUrls error:', error);
       return [];
@@ -264,20 +311,23 @@ export class DatabaseService {
     try {
       const result = await this.db
         .select({
-          url: widgetsTable.url,
-          cacheEnabled: widgetsTable.cacheEnabled
+          url: widgetTable.url,
+          cacheEnabled: widgetTable.cacheEnabled
         })
-        .from(widgetsTable)
-        .orderBy(desc(widgetsTable.createdAt));
+        .from(widgetTable)
+        .where(isNull(widgetTable.userId))
+        .orderBy(desc(widgetTable.createdAt));
 
       const enabledUrls: string[] = [];
       const disabledUrls: string[] = [];
 
       for (const widget of result) {
-        if (widget.cacheEnabled) {
-          enabledUrls.push(widget.url);
-        } else {
-          disabledUrls.push(widget.url);
+        if (widget.url) {
+          if (widget.cacheEnabled) {
+            enabledUrls.push(widget.url);
+          } else {
+            disabledUrls.push(widget.url);
+          }
         }
       }
 
@@ -294,7 +344,9 @@ export class DatabaseService {
 
   async clearAll(): Promise<void> {
     try {
-      await this.db.delete(widgetsTable);
+      await this.db
+        .delete(widgetTable)
+        .where(isNull(widgetTable.userId));
       console.log('DatabaseService: All cache cleared');
     } catch (error) {
       console.error('DatabaseService clearAll error:', error);
