@@ -21,7 +21,7 @@ export interface UpdateWidgetRequest {
 
 export interface WidgetWithFiles extends Widget {
   files: Array<{
-    id: number;
+    id: string;
     filename: string;
     fileType: string;
     fileSize: number;
@@ -69,7 +69,7 @@ export class WidgetService {
       );
     }
 
-    // Handle file uploads
+    // Handle file uploads - OCR processing and embedding creation happens automatically
     const uploadedFiles = [];
     if (request.files && request.files.length > 0) {
       for (const file of request.files) {
@@ -78,17 +78,8 @@ export class WidgetService {
           widgetId: createdWidget.id
         });
         uploadedFiles.push(storedFile);
-
-        // Create embeddings for file content
-        const fileContent = await this.fileStorage.getFileContent(storedFile.id, createdWidget.id);
-        if (fileContent) {
-          await this.vectorSearch.createEmbeddingsForWidget(
-            createdWidget.id,
-            fileContent,
-            `file:${storedFile.filename}`,
-            storedFile.id
-          );
-        }
+        
+        console.log(`[WIDGET_CREATE] Uploaded file: ${storedFile.filename} (${storedFile.fileType})`);
       }
     }
 
@@ -107,7 +98,7 @@ export class WidgetService {
     };
   }
 
-  async getWidget(id: number, userId: string): Promise<WidgetWithFiles | null> {
+  async getWidget(id: string, userId: string): Promise<WidgetWithFiles | null> {
     const [widgetRecord] = await this.db.getDatabase()
       .select()
       .from(widget)
@@ -168,7 +159,7 @@ export class WidgetService {
     return result;
   }
 
-  async updateWidget(id: number, userId: string, request: UpdateWidgetRequest): Promise<WidgetWithFiles | null> {
+  async updateWidget(id: string, userId: string, request: UpdateWidgetRequest): Promise<WidgetWithFiles | null> {
     const updateData: Partial<NewWidget> = {};
     
     if (request.name !== undefined) updateData.name = request.name;
@@ -220,7 +211,7 @@ export class WidgetService {
     };
   }
 
-  async deleteWidget(id: number, userId: string): Promise<boolean> {
+  async deleteWidget(id: string, userId: string): Promise<boolean> {
     // Verify ownership
     const widgetRecord = await this.getWidget(id, userId);
     if (!widgetRecord) {
@@ -244,7 +235,7 @@ export class WidgetService {
     return true;
   }
 
-  async searchWidgetContent(id: number, userId: string, query: string, limit: number = 10) {
+  async searchWidgetContent(id: string, userId: string, query: string, limit: number = 10) {
     // Verify ownership
     const widgetRecord = await this.getWidget(id, userId);
     if (!widgetRecord) {
@@ -271,7 +262,7 @@ export class WidgetService {
     return await this.vectorSearch.searchSimilarContent(query, undefined, limit);
   }
 
-  async addFileToWidget(id: number, userId: string, file: File) {
+  async addFileToWidget(id: string, userId: string, file: File) {
     // Verify ownership
     const widgetRecord = await this.getWidget(id, userId);
     if (!widgetRecord) {
@@ -284,16 +275,8 @@ export class WidgetService {
       widgetId: id
     });
 
-    // Create embeddings for file content
-    const fileContent = await this.fileStorage.getFileContent(storedFile.id, id);
-    if (fileContent) {
-      await this.vectorSearch.createEmbeddingsForWidget(
-        id,
-        fileContent,
-        `file:${storedFile.filename}`,
-        storedFile.id
-      );
-    }
+    // OCR processing and embedding creation happens automatically in FileStorageService
+    console.log(`[WIDGET_FILE_ADD] Added file: ${storedFile.filename} (${storedFile.fileType})`);
 
     // Update widget timestamp
     await this.db.getDatabase()
@@ -310,7 +293,7 @@ export class WidgetService {
     };
   }
 
-  async removeFileFromWidget(widgetId: number, fileId: number, userId: string): Promise<boolean> {
+  async removeFileFromWidget(widgetId: string, fileId: string, userId: string): Promise<boolean> {
     // Verify ownership
     const widgetRecord = await this.getWidget(widgetId, userId);
     if (!widgetRecord) {

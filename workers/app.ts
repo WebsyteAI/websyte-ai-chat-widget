@@ -62,7 +62,12 @@ const getServices = (env: Env) => {
     const openai = new OpenAIService(env.OPENAI_API_KEY);
     const database = new DatabaseService(env.DATABASE_URL);
     const vectorSearch = new VectorSearchService(env.OPENAI_API_KEY, database);
-    const fileStorage = new FileStorageService(env.WIDGET_FILES, database);
+    const fileStorage = new FileStorageService(
+      env.WIDGET_FILES, 
+      database, 
+      env.MISTRAL_AI_API_KEY, 
+      vectorSearch
+    );
     servicesCache = {
       chat: new ChatService(openai, database),
       summaries: new SummariesService(openai, database),
@@ -194,9 +199,9 @@ app.get('/api/widgets/:id', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const id = parseInt(c.req.param('id'));
-  if (isNaN(id)) {
-    return c.json({ error: 'Invalid widget ID' }, 400);
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
   }
 
   try {
@@ -218,9 +223,9 @@ app.put('/api/widgets/:id', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const id = parseInt(c.req.param('id'));
-  if (isNaN(id)) {
-    return c.json({ error: 'Invalid widget ID' }, 400);
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
   }
 
   try {
@@ -243,9 +248,9 @@ app.delete('/api/widgets/:id', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const id = parseInt(c.req.param('id'));
-  if (isNaN(id)) {
-    return c.json({ error: 'Invalid widget ID' }, 400);
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
   }
 
   try {
@@ -267,9 +272,9 @@ app.post('/api/widgets/:id/search', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const id = parseInt(c.req.param('id'));
-  if (isNaN(id)) {
-    return c.json({ error: 'Invalid widget ID' }, 400);
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
   }
 
   try {
@@ -314,9 +319,9 @@ app.post('/api/widgets/:id/files', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const id = parseInt(c.req.param('id'));
-  if (isNaN(id)) {
-    return c.json({ error: 'Invalid widget ID' }, 400);
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
   }
 
   try {
@@ -343,10 +348,10 @@ app.get('/api/widgets/:id/files/:fileId/download', async (c) => {
   }
 
   const id = parseInt(c.req.param('id'));
-  const fileId = parseInt(c.req.param('fileId'));
+  const fileId = c.req.param('fileId');
   
-  if (isNaN(id) || isNaN(fileId)) {
-    return c.json({ error: 'Invalid IDs' }, 400);
+  if (!id || !fileId) {
+    return c.json({ error: 'Widget ID and File ID are required' }, 400);
   }
 
   try {
@@ -375,10 +380,10 @@ app.delete('/api/widgets/:id/files/:fileId', async (c) => {
   }
 
   const id = parseInt(c.req.param('id'));
-  const fileId = parseInt(c.req.param('fileId'));
+  const fileId = c.req.param('fileId');
   
-  if (isNaN(id) || isNaN(fileId)) {
-    return c.json({ error: 'Invalid IDs' }, 400);
+  if (!id || !fileId) {
+    return c.json({ error: 'Widget ID and File ID are required' }, 400);
   }
 
   try {

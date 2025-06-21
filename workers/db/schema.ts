@@ -41,7 +41,7 @@ export const widgetEmbedding = pgTable('widget_embedding', {
   widgetId: uuid('widget_id').notNull().references(() => widget.id, { onDelete: 'cascade' }),
   fileId: uuid('file_id').notNull().references(() => widgetFile.id, { onDelete: 'cascade' }), // Reference to source file
   contentChunk: text('content_chunk').notNull(),
-  embedding: vector('embedding', { dimensions: 1536 }), // OpenAI ada-002 dimensions
+  embedding: vector('embedding', { dimensions: 1536 }), // OpenAI text-embedding-3-small dimensions
   metadata: json('metadata').$type<{
     chunkIndex: number;
     source?: string;
