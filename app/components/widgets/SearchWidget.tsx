@@ -4,6 +4,7 @@ import { Input } from '../ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Search, FileText, ExternalLink } from 'lucide-react';
+import { marked } from 'marked';
 
 interface SearchResult {
   chunk: string;
@@ -11,13 +12,13 @@ interface SearchResult {
   metadata: {
     chunkIndex: number;
     source?: string;
-    fileId?: number;
+    fileId?: string;
   };
-  widgetId: number;
+  widgetId: string;
 }
 
 interface SearchWidgetProps {
-  widgetId?: number; // If provided, search within specific widget; otherwise search all
+  widgetId?: string; // If provided, search within specific widget; otherwise search all
   placeholder?: string;
   className?: string;
 }
@@ -73,6 +74,15 @@ export function SearchWidget({ widgetId, placeholder = "Search your content...",
   const truncateText = (text: string, maxLength: number = 200): string => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
+  };
+
+  const renderMarkdown = (text: string): string => {
+    try {
+      return marked(text, { breaks: true, gfm: true });
+    } catch (error) {
+      console.error('Markdown parsing error:', error);
+      return text;
+    }
   };
 
   return (
@@ -138,9 +148,12 @@ export function SearchWidget({ widgetId, placeholder = "Search your content...",
                       <CardContent className="pt-4">
                         <div className="space-y-3">
                           {/* Content */}
-                          <p className="text-sm text-gray-700 leading-relaxed">
-                            {truncateText(result.chunk)}
-                          </p>
+                          <div 
+                            className="text-sm text-gray-700 leading-relaxed prose prose-sm max-w-none prose-headings:mb-2 prose-headings:mt-0 prose-p:mb-2 prose-ul:mb-2 prose-ol:mb-2"
+                            dangerouslySetInnerHTML={{ 
+                              __html: renderMarkdown(result.chunk) 
+                            }}
+                          />
 
                           {/* Metadata */}
                           <div className="flex items-center justify-between text-xs text-gray-500">
