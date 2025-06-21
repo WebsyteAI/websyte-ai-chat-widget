@@ -80,9 +80,79 @@
 - **Benefits**: Why this change was made and its advantages
 ```
 
+## Architecture Documentation
+
+### OCR Document Processing Pipeline
+
+The system features a comprehensive OCR processing pipeline for widget file uploads that automatically processes non-text documents and creates searchable embeddings.
+
+```
+File Upload Flow:
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   File Upload   │───►│  File Storage   │───►│ OCR Processing  │
+│  (API Request)  │    │   (R2 Bucket)   │    │ (Mistral AI)    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                                        │
+                                                        ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│Vector Embeddings│◄───│   Text Content  │◄───│  Page Markdown  │
+│   (OpenAI)      │    │   Processing    │    │   Extraction    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+
+Storage Structure: widgets/{widgetId}/{fileId}/
+├── original_file.pdf          # Original uploaded file  
+├── page_1.md                  # OCR extracted page 1
+├── page_2.md                  # OCR extracted page 2
+└── page_N.md                  # OCR extracted page N
+```
+
+#### Key Components:
+
+1. **FileStorageService** (`workers/services/file-storage.ts`)
+   - Manages R2 storage with UUID-based file structure
+   - Automatically triggers OCR for non-text files
+   - Handles file metadata and database records
+
+2. **OCRService** (`workers/services/ocr-service.ts`)
+   - Processes documents using Mistral AI OCR API
+   - Extracts text as markdown per page
+   - Stores individual page files in R2
+   - Automatically creates embeddings via VectorSearchService
+
+3. **VectorSearchService** (`workers/services/vector-search.ts`)
+   - Creates embeddings using OpenAI text-embedding-3-small
+   - Word-based chunking with 2000 word limit and 100 word overlap
+   - Conservative token estimation (8192 token limit)
+   - Batch embedding creation for efficiency
+
+#### Processing Rules:
+- **OCR Processed**: PDFs, images, Office docs, etc.
+- **Direct Processing**: .md, .txt, .json, .csv files (skip OCR)
+- **Cost Efficiency**: Re-chunking possible without re-OCR
+- **Error Handling**: OCR failures don't break file upload
+
+#### Integration Points:
+- Widget creation with files: Automatic OCR processing
+- File addition to existing widgets: Seamless OCR integration
+- Search functionality: Searches across all OCR-extracted content
+- File deletion: Cleans up all associated page files and embeddings
+
 ## Recent Implementation Updates
 
-### ✅ Umami Analytics Integration (Latest)
+### ✅ OCR Document Processing System (Latest)
+- **What Changed**: Implemented comprehensive OCR processing pipeline using Mistral AI for automatic document parsing and content extraction
+- **Technical Details**:
+  - **OCR Service**: Created `workers/services/ocr-service.ts` for Mistral AI integration with automatic page-by-page markdown extraction
+  - **File Storage**: Updated `workers/services/file-storage.ts` with UUID-based paths (`widgets/{widgetId}/{fileId}/`) and automatic OCR triggering
+  - **Vector Embeddings**: Enhanced `workers/services/vector-search.ts` with word-based chunking (2000 words, 100 overlap) and OCR-specific embedding creation
+  - **API Integration**: Updated all widget endpoints in `workers/app.ts` to use string UUIDs instead of integer IDs
+  - **Automatic Processing**: Files uploaded through any endpoint automatically trigger OCR for non-text files
+  - **Storage Structure**: Original files plus individual page markdown files (page_1.md, page_2.md, etc.)
+- **User Impact**: Zero-configuration document processing with automatic text extraction, chunking, and search capability for uploaded files
+- **Testing**: Comprehensive error handling, token limit management, and cleanup procedures implemented
+- **Benefits**: Cost-efficient processing (re-chunking without re-OCR), automatic embeddings creation, seamless integration with existing upload workflows
+
+### ✅ Umami Analytics Integration
 - **What Changed**: Implemented comprehensive Umami tracking using API-based approach with centralized configuration
 - **Technical Details**: 
   - **API-based tracking**: Created `app/lib/umami-tracker.ts` using Umami Cloud API (`https://cloud.umami.is/api/send`) instead of client-side scripts
