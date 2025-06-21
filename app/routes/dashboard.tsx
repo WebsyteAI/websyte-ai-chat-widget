@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { useAuth } from '../lib/auth/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -8,32 +8,23 @@ import { UserProfile } from '../components/auth/UserProfile';
 import { WidgetList } from '../components/widgets/WidgetList';
 import { WidgetForm } from '../components/widgets/WidgetForm';
 import { SearchWidget } from '../components/widgets/SearchWidget';
+import { useWidgetStore, useUIStore } from '../stores';
 
-interface Widget {
-  id: number;
-  name: string;
-  description?: string;
-  url?: string;
-  cacheEnabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-  files: Array<{
-    id: number;
-    filename: string;
-    fileType: string;
-    fileSize: number;
-    createdAt: string;
-  }>;
-  embeddingsCount: number;
-}
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingWidget, setEditingWidget] = useState<Widget | null>(null);
-  const [formLoading, setFormLoading] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  // Zustand stores
+  const { createWidget, updateWidget, deleteWidget } = useWidgetStore();
+  const { 
+    showCreateForm, 
+    editingWidget, 
+    formLoading,
+    setShowCreateForm, 
+    setEditingWidget, 
+    setFormLoading 
+  } = useUIStore();
 
   // Redirect unauthenticated users to login
   useEffect(() => {
@@ -45,18 +36,8 @@ export default function DashboardPage() {
   const handleCreateWidget = async (formData: FormData) => {
     setFormLoading(true);
     try {
-      const response = await fetch('/api/widgets', {
-        method: 'POST',
-        credentials: 'include',
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create widget');
-      }
-
+      await createWidget(formData);
       setShowCreateForm(false);
-      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Error creating widget:', error);
       alert('Failed to create widget. Please try again.');
@@ -78,21 +59,8 @@ export default function DashboardPage() {
         }
       }
 
-      const response = await fetch(`/api/widgets/${editingWidget.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update widget');
-      }
-
+      await updateWidget(editingWidget.id, data);
       setEditingWidget(null);
-      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Error updating widget:', error);
       alert('Failed to update widget. Please try again.');
@@ -101,22 +69,13 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDeleteWidget = async (widget: Widget) => {
+  const handleDeleteWidget = async (widget: any) => {
     if (!confirm(`Are you sure you want to delete "${widget.name}"? This action cannot be undone.`)) {
       return;
     }
 
     try {
-      const response = await fetch(`/api/widgets/${widget.id}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete widget');
-      }
-
-      setRefreshTrigger(prev => prev + 1);
+      await deleteWidget(widget.id);
     } catch (error) {
       console.error('Error deleting widget:', error);
       alert('Failed to delete widget. Please try again.');
@@ -198,7 +157,6 @@ export default function DashboardPage() {
 
             <TabsContent value="widgets" className="space-y-6">
               <WidgetList
-                refreshTrigger={refreshTrigger}
                 onCreateWidget={() => setShowCreateForm(true)}
                 onEditWidget={setEditingWidget}
                 onDeleteWidget={handleDeleteWidget}

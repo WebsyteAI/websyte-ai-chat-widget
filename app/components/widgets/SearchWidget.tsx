@@ -1,21 +1,11 @@
-import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Search, FileText, ExternalLink } from 'lucide-react';
 import { marked } from 'marked';
+import { useSearchStore } from '../../stores';
 
-interface SearchResult {
-  chunk: string;
-  similarity: number;
-  metadata: {
-    chunkIndex: number;
-    source?: string;
-    fileId?: string;
-  };
-  widgetId: string;
-}
 
 interface SearchWidgetProps {
   widgetId?: string; // If provided, search within specific widget; otherwise search all
@@ -24,46 +14,24 @@ interface SearchWidgetProps {
 }
 
 export function SearchWidget({ widgetId, placeholder = "Search your content...", className }: SearchWidgetProps) {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  const { 
+    query, 
+    results, 
+    loading, 
+    hasSearched, 
+    setQuery, 
+    searchWidget, 
+    searchAllWidgets 
+  } = useSearchStore();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
 
-    setLoading(true);
-    try {
-      const endpoint = widgetId 
-        ? `/api/widgets/${widgetId}/search`
-        : '/api/widgets/search';
-      
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          query: query.trim(),
-          limit: 10
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Search failed');
-      }
-
-      const data: any = await response.json();
-      setResults(data.results || []);
-      setHasSearched(true);
-    } catch (error) {
-      console.error('Search error:', error);
-      setResults([]);
-      setHasSearched(true);
-    } finally {
-      setLoading(false);
+    if (widgetId) {
+      await searchWidget(widgetId, query);
+    } else {
+      await searchAllWidgets(query);
     }
   };
 
@@ -78,7 +46,8 @@ export function SearchWidget({ widgetId, placeholder = "Search your content...",
 
   const renderMarkdown = (text: string): string => {
     try {
-      return marked(text, { breaks: true, gfm: true });
+      const result = marked(text, { breaks: true, gfm: true });
+      return typeof result === 'string' ? result : text;
     } catch (error) {
       console.error('Markdown parsing error:', error);
       return text;

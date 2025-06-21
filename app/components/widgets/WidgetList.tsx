@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
@@ -13,62 +13,22 @@ import {
   Plus,
   ExternalLink 
 } from 'lucide-react';
+import { useWidgetStore, type Widget } from '../../stores';
 
-interface WidgetFile {
-  id: number;
-  filename: string;
-  fileType: string;
-  fileSize: number;
-  createdAt: string;
-}
-
-interface Widget {
-  id: number;
-  name: string;
-  description?: string;
-  url?: string;
-  cacheEnabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-  files: WidgetFile[];
-  embeddingsCount: number;
-}
 
 interface WidgetListProps {
   onCreateWidget: () => void;
   onEditWidget: (widget: Widget) => void;
   onDeleteWidget: (widget: Widget) => void;
-  refreshTrigger?: number;
 }
 
-export function WidgetList({ onCreateWidget, onEditWidget, onDeleteWidget, refreshTrigger }: WidgetListProps) {
-  const [widgets, setWidgets] = useState<Widget[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function WidgetList({ onCreateWidget, onEditWidget, onDeleteWidget }: WidgetListProps) {
+  const { widgets, loading, error, fetchWidgets, clearError } = useWidgetStore();
 
-  const fetchWidgets = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/widgets', {
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch widgets');
-      }
-
-      const data: any = await response.json();
-      setWidgets(data.widgets || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch widgets');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     fetchWidgets();
-  }, [refreshTrigger]);
+  }, [fetchWidgets]);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -94,7 +54,7 @@ export function WidgetList({ onCreateWidget, onEditWidget, onDeleteWidget, refre
     return (
       <div className="text-center py-8">
         <p className="text-red-600 mb-4">{error}</p>
-        <Button onClick={fetchWidgets} variant="outline">
+        <Button onClick={() => { clearError(); fetchWidgets(); }} variant="outline">
           Try Again
         </Button>
       </div>

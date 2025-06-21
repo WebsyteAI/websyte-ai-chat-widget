@@ -1,30 +1,12 @@
-import { useState, useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Upload, X, FileText, AlertCircle } from 'lucide-react';
+import { useUIStore, type Widget } from '../../stores';
 
-interface WidgetFile {
-  id: number;
-  filename: string;
-  fileType: string;
-  fileSize: number;
-  createdAt: string;
-}
-
-interface Widget {
-  id: number;
-  name: string;
-  description?: string;
-  url?: string;
-  cacheEnabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-  files: WidgetFile[];
-  embeddingsCount: number;
-}
 
 interface WidgetFormProps {
   widget?: Widget;
@@ -34,15 +16,30 @@ interface WidgetFormProps {
 }
 
 export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: WidgetFormProps) {
-  const [name, setName] = useState(widget?.name || '');
-  const [description, setDescription] = useState(widget?.description || '');
-  const [url, setUrl] = useState(widget?.url || '');
-  const [content, setContent] = useState('');
-  const [files, setFiles] = useState<File[]>([]);
-  const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const {
+    widgetFormData,
+    updateWidgetFormField,
+    addFiles,
+    removeFile,
+    setDragActive,
+    resetWidgetForm
+  } = useUIStore();
+  
+  const { name, description, url, content, files, dragActive } = widgetFormData;
 
   const isEditing = !!widget;
+  
+  // Update form when widget changes
+  useEffect(() => {
+    if (widget) {
+      updateWidgetFormField('name', widget.name || '');
+      updateWidgetFormField('description', widget.description || '');
+      updateWidgetFormField('url', widget.url || '');
+    } else {
+      resetWidgetForm();
+    }
+  }, [widget, updateWidgetFormField, resetWidgetForm]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -68,24 +65,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: Widg
     addFiles(selectedFiles);
   };
 
-  const addFiles = (newFiles: File[]) => {
-    // Filter for supported file types
-    const supportedFiles = newFiles.filter(file => {
-      const type = file.type.toLowerCase();
-      return type.includes('text') || 
-             type.includes('pdf') || 
-             type.includes('word') ||
-             type.includes('document') ||
-             file.name.toLowerCase().endsWith('.txt') ||
-             file.name.toLowerCase().endsWith('.md');
-    });
 
-    setFiles(prev => [...prev, ...supportedFiles]);
-  };
-
-  const removeFile = (index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
-  };
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -134,7 +114,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: Widg
               <Input
                 id="name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => updateWidgetFormField('name', e.target.value)}
                 placeholder="My Custom Widget"
                 required
               />
@@ -146,7 +126,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: Widg
                 id="url"
                 type="url"
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={(e) => updateWidgetFormField('url', e.target.value)}
                 placeholder="https://example.com"
               />
             </div>
@@ -157,7 +137,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: Widg
             <Textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => updateWidgetFormField('description', e.target.value)}
               placeholder="Brief description of your widget's purpose..."
               rows={3}
             />
@@ -169,7 +149,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: Widg
             <Textarea
               id="content"
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={(e) => updateWidgetFormField('content', e.target.value)}
               placeholder="Add any text content you want to include in the widget's knowledge base..."
               rows={6}
             />
