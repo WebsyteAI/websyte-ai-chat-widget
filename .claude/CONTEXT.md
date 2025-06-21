@@ -104,29 +104,25 @@ workers/
 - `pnpm test:coverage` - Test coverage report
 - `pnpm run deploy` - Deploy to Cloudflare Workers
 
-## Important Implementation Notes
+## Technical Implementation
 
-### Content Extraction Strategy
-- Uses user-provided `contentTarget` selector (required)
-- Advanced content processing with script/style removal
-- Content validation (50+ chars, 10+ words)
-- Strict selector matching without fallbacks
-- 10,000 character limit for API performance
+### Content Processing
+- Automatic content extraction and filtering
+- Advanced noise removal (scripts, styles, navigation)
+- Content validation with quality requirements
+- 10,000 character limit for optimal performance
 
-### Caching Architecture
-- URL + contentTarget composite keying for cache entries
-- 5-minute TTL with automatic expiration cleanup
-- 100-entry LRU eviction when size limits exceeded
-- Cache statistics tracking (hits, misses, hit rate)
-- Cache warming on widget initialization
-- Graceful fallbacks when cache fails
+### Caching System
+- Intelligent TTL and LRU eviction strategies
+- URL-based composite keying
+- Statistics tracking and monitoring
+- Graceful fallback mechanisms
 
-### Testing Strategy
-- Vitest with jsdom environment for DOM testing
-- Comprehensive mocking (fetch, localStorage, DOM elements)
-- 100% coverage requirements for all new code
-- Error scenario testing (API failures, abort signals, validation errors)
-- Performance testing for caching and content processing
+### Testing Framework
+- Vitest with comprehensive mocking infrastructure
+- 100% coverage requirements
+- Error scenario and edge case testing
+- Performance validation
 
 ## Future Development Guidelines
 
@@ -145,11 +141,11 @@ workers/
 - Maintain 100% statement/function/line coverage
 - Update test/README.md with new test descriptions
 
-### Performance Considerations
-- Always use content caching for DOM operations
-- Minimize bundle size impact (<50KB additions)
-- Consider API rate limiting and content size limits
-- Test with large content and multiple concurrent requests
+### Performance Focus
+- Content caching for all DOM operations
+- Bundle size optimization (<50KB additions)
+- API rate limiting and content size management
+- Large content and concurrent request testing
 
 ## Common Patterns and Utilities
 

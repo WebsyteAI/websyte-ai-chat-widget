@@ -1,38 +1,28 @@
 # Websyte AI Chat Widget
 
-## Project Overview
-React-based AI chat widget that can be embedded into websites. Provides content summarization, audio playback, and interactive chat functionality.
+Embeddable React-based AI chat widget for websites with content summarization and interactive chat.
 
-## Architecture
-- **Frontend**: React Router 7 with Vite
-- **Backend**: Hono on Cloudflare Workers
-- **Database**: Neon PostgreSQL with Drizzle ORM
-- **Auth**: Better Auth
-- **Storage**: Cloudflare R2 for files
-- **AI**: OpenAI API for embeddings and chat
+## 🚨 IMPORTANT - MUST READ FIRST
+**For detailed documentation, architecture details, API references, and development guides, refer to the `.claude/` directory.** This file provides only high-level overview.
 
-## Development Commands
+## Quick Start
 ```bash
-pnpm dev              # Start development server (port 5173)
+pnpm dev              # Development server (port 5173)
 pnpm dev:widget       # Build widget in watch mode
-pnpm build            # Build for production
-pnpm typecheck        # Run TypeScript checks
-pnpm test             # Run tests
-pnpm db:generate      # Generate database migrations
-pnpm db:push          # Push schema changes to database
-pnpm db:studio        # Open Drizzle Studio
+pnpm build            # Production build
+pnpm typecheck        # TypeScript checks
 pnpm deploy           # Deploy to Cloudflare
 ```
 
-## Key Files
-- `workers/db/schema.ts` - Database schema definitions
-- `workers/app.ts` - Main Hono application
-- `app/` - React Router frontend
-- `vite.widget.config.ts` - Widget build configuration
+## Tech Stack
+- React Router 7 + Vite
+- Hono on Cloudflare Workers
+- Neon PostgreSQL + Drizzle ORM
+- Better Auth
+- OpenAI API
 
-## Important Notes
-- Always use `pnpm` for package management
-- Development server runs on port 5173
-- Check `.claude/` directory for additional documentation and context
-- Widget uses UUID for all primary keys
-- Vector embeddings use OpenAI text-embedding-3-small (1536 dimensions)
+## Essential Files
+- `workers/app.ts` - Main backend
+- `workers/db/schema.ts` - Database schema
+- `app/` - Frontend code
+- `.claude/` - **Detailed documentation**

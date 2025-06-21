@@ -1,13 +1,10 @@
-# ChatWidget Component Architecture
+# Component Architecture
 
 ## Overview
 
-The ChatWidget has been completely refactored from a monolithic 875-line component into a modular component architecture with extracted hooks and sub-components. This refactoring improves testability, maintainability, and code organization while preserving the exact same user interface and functionality.
+Modular component architecture with extracted hooks and sub-components for better testability and maintainability.
 
-## Latest Refactoring (December 2024)
-
-### Component-Based Architecture
-The ChatWidget has been further modularized into focused, reusable components and custom hooks:
+## Component Structure
 
 **New Project Structure:**
 ```
@@ -37,55 +34,12 @@ app/components/ChatWidget/
 - **Easier Maintenance**: Smaller, focused files easier to understand and modify
 - **Type Safety**: Proper TypeScript interfaces for all component props
 
-## Performance Enhancements
+## Design Principles
 
-### Parallel API Loading
-
-The widget now implements high-performance parallel API loading for optimal user experience:
-
-- **Simultaneous API Calls**: Three critical APIs (analyze-selector, recommendations, summaries) execute in parallel during widget initialization
-- **Reduced Load Time**: Eliminated sequential API bottlenecks for faster widget startup
-- **Smart Caching**: Content extraction is warmed once and reused across all API calls
-- **Error Resilience**: Individual API failures don't block other operations
-
-```typescript
-// Parallel execution implementation
-const [selectorResponse, recommendationsResponse, summariesResponse] = await Promise.all([
-  fetch(`${baseUrl}/api/analyze-selector`, { /* ... */ }),
-  fetch(`${baseUrl}/api/recommendations`, { /* ... */ }),
-  fetch(`${baseUrl}/api/summaries`, { /* ... */ })
-]);
-```
-
-### Enhanced Action Bar
-
-The action bar now features a two-row design for improved user engagement:
-
-**Row 1 - Core Actions**:
-- "Summarize Content" - Dropdown with Original/Short/Medium options
-- "Audio Version" - Transform to audio player mode
-- "Ask Questions" - Open chat panel
-
-**Row 2 - Prompt Recommendations**:
-- Up to 4 AI-generated question suggestions
-- Directly clickable for immediate chat interaction
-- Horizontally scrollable if needed
-- Loading states with skeleton placeholders
-
-### Flexible Height Design
-
-The action bar container uses `min-height` instead of fixed height:
-- Automatically expands to show both rows when recommendations are available
-- Maintains minimum 3.5rem height for consistent audio player mode
-- Smooth transitions between single and double-row layouts
-
-## Architecture Goals
-
-- **Zero UI Changes**: Maintain identical user experience
-- **Enhanced Testability**: Enable independent testing of business logic
-- **Separation of Concerns**: Isolate different responsibilities into focused modules
-- **Improved Maintainability**: Reduce component complexity and improve code readability
-- **Future Extensibility**: Support easier feature additions and modifications
+- **Separation of Concerns**: UI components separated from business logic
+- **Enhanced Testability**: Independent testing of components and hooks
+- **Maintainability**: Focused, single-responsibility modules
+- **Reusability**: Components designed for reuse across features
 
 ## Component Structure
 
@@ -255,73 +209,14 @@ test('should call onToggleChat when chat button is clicked', () => {
 });
 ```
 
-### Hook Testing
-Each hook can now be tested independently:
+### Testing Strategy
 
-### Message Management Testing
-```typescript
-import { renderHook, act } from '@testing-library/react';
-import { useChatMessages } from './useChatMessages';
+The modular architecture enables comprehensive testing:
 
-test('should add message with correct structure', () => {
-  const { result } = renderHook(() => useChatMessages());
-  
-  act(() => {
-    result.current.addMessage({
-      role: 'user',
-      content: 'Test message'
-    });
-  });
-  
-  expect(result.current.messages).toHaveLength(1);
-  expect(result.current.messages[0]).toMatchObject({
-    role: 'user',
-    content: 'Test message',
-    id: expect.any(String),
-    timestamp: expect.any(Date)
-  });
-});
-```
-
-### Audio Player Testing
-```typescript
-import { renderHook, act } from '@testing-library/react';
-import { useAudioPlayer } from './useAudioPlayer';
-
-test('should handle play/pause correctly', () => {
-  const { result } = renderHook(() => useAudioPlayer(180));
-  
-  expect(result.current.isPlaying).toBe(false);
-  
-  act(() => {
-    result.current.handlePlayPause();
-  });
-  
-  expect(result.current.isPlaying).toBe(true);
-});
-```
-
-### Content Summarization Testing
-```typescript
-import { renderHook, act } from '@testing-library/react';
-import { useContentSummarization } from './useContentSummarization';
-
-test('should change content mode correctly', () => {
-  const mockExtractPageContent = jest.fn();
-  const { result } = renderHook(() => 
-    useContentSummarization({
-      baseUrl: 'http://test.com',
-      extractPageContent: mockExtractPageContent
-    })
-  );
-  
-  act(() => {
-    result.current.handleContentModeChange('short');
-  });
-  
-  expect(result.current.currentContentMode).toBe('short');
-});
-```
+- **Component Testing**: Each UI component tested independently
+- **Hook Testing**: Business logic hooks tested in isolation
+- **Integration Testing**: Component and hook integration verified
+- **Error Handling**: Comprehensive error scenario coverage
 
 ## Migration Guide
 
@@ -453,225 +348,28 @@ export function ChatWidget(props: ChatWidgetProps) {
 - **Context integration**: Use React Context for global state if needed
 - **Custom hook libraries**: Create reusable hook collections for different features
 
-## Recent Implementation: Umami Analytics Integration ✅
+## Performance Features
 
-### What Was Completed
-- **API-Based Tracking**: Implemented Umami tracking using the official Umami Cloud API instead of client-side scripts
-- **Centralized Configuration**: Created shared Umami configuration in `app/lib/umami-tracker.ts` used by both widget and landing page
-- **Comprehensive Event Tracking**: Added tracking for all requested widget interactions and landing page actions
-- **Automatic Browser Data**: Programmatically generates all required Umami payload fields using browser APIs
-- **Error Handling**: Graceful fallback with console warnings if tracking fails
+### Content Caching System
+- **Intelligent Caching**: TTL and LRU eviction for 70-80% performance improvement
+- **Cache-First Architecture**: Content extraction warmed once and reused
+- **Smart Key Management**: URL-based composite keying for cache entries
 
-### Key Technical Achievements
-- **API Integration**: Uses `https://cloud.umami.is/api/send` endpoint with proper payload structure
-- **Shared Service**: Single source of truth for website ID, script URL, and API endpoint configuration
-- **Browser Data Collection**: Automatically generates hostname, language, referrer, screen resolution, title, and URL
-- **No Script Dependencies**: Direct API calls eliminate need for client-side Umami script loading
-- **Consistent Tracking**: Same tracking service used across widget and landing page components
+### Parallel API Loading
+- **Simultaneous Calls**: Critical APIs execute in parallel during initialization
+- **Error Resilience**: Individual API failures don't block other operations
+- **Reduced Load Time**: Eliminated sequential bottlenecks
 
-### Technical Implementation Details
-- **Umami Tracker**: `app/lib/umami-tracker.ts` with API-based tracking and shared configuration constants
-- **Widget Tracking**: `app/components/ChatWidget/ChatWidget.tsx` tracks widget load, button clicks, and chat messages
-- **Landing Page Tracking**: `app/components/LandingPage.tsx` tracks user actions like demo clicks and code copying
-- **Root Layout**: `app/root.tsx` uses shared configuration for script tag (maintains existing client-side tracking)
-- **Payload Structure**: Follows official Umami API specification with all required fields
+## Architecture Benefits
 
-### Tracking Events Implemented
-**Widget Events:**
-- `widget-loaded` - When widget initializes (includes current URL)
-- `button-click` - For all action button interactions (audio, chat toggle, summary dropdown, summary mode changes)
-- `chat-message-sent` - For chat messages (user/recommendation with message length, type, and URL)
-
-**Landing Page Events:**
-- `landing-page-action` - For landing page interactions (demo clicks, copy actions, CTA clicks)
-
-### User Experience Benefits
-- **No Performance Impact**: API calls don't block UI interactions
-- **Reliable Tracking**: Direct API calls more reliable than client-side script dependencies
-- **Comprehensive Data**: Captures all user interactions with detailed context
-- **Privacy Friendly**: Uses Umami's privacy-focused analytics approach
-- **Consistent Behavior**: Same tracking logic across all components
-
-## Recent Implementation: Zero-Configuration Content Extraction ✅
-
-### What Was Completed
-- **Simplified Configuration**: Removed `data-content-target` requirement - widget now automatically processes entire HTML pages
-- **Smart Content Filtering**: Enhanced content extraction to remove scripts, styles, navigation, ads, and other noise elements
-- **Full Page Processing**: Updated `app/lib/content-extractor.ts` to process `document.documentElement` instead of targeted elements
-- **HTML-to-Markdown Conversion**: Integrated structured markdown conversion for cleaner AI processing
-- **Updated Integration**: Modified widget entry and ChatWidget to remove contentTarget dependencies
-- **Enhanced Caching**: Updated cache system to use 'full-page' keys instead of selector-specific keys
-
-### Key Technical Achievements
-- **Zero Configuration**: No content selectors required - automatically captures all relevant page content
-- **Intelligent Filtering**: Comprehensive noise removal while preserving semantic structure
-- **Better AI Processing**: Clean markdown format improves AI understanding and responses
-- **Backward Compatibility**: Existing implementations continue to work without changes
-- **Performance Optimization**: Smart caching reduces redundant content processing
-
-### Technical Implementation Details
-- **Content Extraction**: `app/lib/content-extractor.ts` now processes full document with advanced filtering
-- **Widget Entry**: `app/widget-entry.tsx` updated to remove content selector configuration
-- **ChatWidget**: `app/components/ChatWidget/ChatWidget.tsx` simplified without contentTarget props
-- **Cache Keys**: Updated from selector-specific to 'full-page' for consistent caching
-- **Type Definitions**: Removed contentTarget from TypeScript interfaces
-
-### User Experience Benefits
-- **Effortless Setup**: Single script tag with no configuration required
-- **Complete Coverage**: Captures all page content automatically
-- **Better Recommendations**: Improved AI-generated questions from cleaner content
-- **Enhanced Summaries**: More accurate summaries from comprehensive content extraction
-- **Consistent Behavior**: Same extraction logic across all implementations
-
-## Recent Implementation: Per-URL Cache Management System ✅
-
-### What Was Completed
-- **Admin Interface**: Created comprehensive cache management UI with statistics dashboard and URL-specific controls
-- **Per-URL Cache Control**: Implemented granular caching controls where each URL can be individually enabled/disabled (defaults to disabled)
-- **API Endpoints**: Built complete REST API for cache management including stats, listing, toggling, and clearing operations
-- **KV Storage Integration**: Enhanced KV caching service with management capabilities and cache statistics
-- **Default Disabled Behavior**: Caching is disabled by default for all URLs, requiring explicit opt-in per URL
-
-### Key Technical Achievements
-- **Granular Control**: Each URL has independent cache enable/disable state stored in KV with key pattern `cache_enabled:${url}`
-- **Admin Dashboard**: Full-featured UI at `/admin/cache` with search, filtering, statistics, and bulk operations
-- **URL Detail Pages**: Individual URL management at `/admin/cache/:url` with cached data display and controls
-- **Service Integration**: Updated SummariesService and RecommendationsService to check cache enabled state before operations
-- **React Router v7**: Proper routing configuration with Response.json() for compatibility
-
-### Technical Implementation Details
-- **Cache Admin Service**: `workers/services/cache-admin.ts` provides API endpoints for cache management operations
-- **Enhanced UICacheService**: `workers/services/ui-cache.ts` extended with listCachedUrls, getCacheStats, and setCacheEnabled methods
-- **Admin UI Components**: `app/routes/admin.cache._index.tsx` and `app/routes/admin.cache.$url.tsx` with shadcn/ui components
-- **Service Logic**: Services check `await this.cache.getCacheEnabled(url)` before performing cache operations
-- **API Routes**: RESTful endpoints for stats, listing, toggling, clearing specific URLs, and bulk operations
-
-### Cache Management Features
-**Dashboard (/admin/cache):**
-- Statistics overview (total cached, enabled count, disabled count)
-- Searchable and filterable URL list with tabbed views (all/enabled/disabled)
-- Bulk operations (clear all cache)
-- URL cards showing status, last updated, and data types available
-
-**URL Detail Pages (/admin/cache/:url):**
-- Toggle cache enabled/disabled for specific URL
-- Clear cache data for specific URL
-- View cached summaries and recommendations data
-- Real-time feedback for all operations
-
-### API Endpoints Implemented
-```
-GET /api/admin/cache/stats         - Get cache statistics
-GET /api/admin/cache/list          - List all cached URLs with data
-POST /api/admin/cache/toggle/:url  - Toggle cache enabled/disabled
-DELETE /api/admin/cache/:url       - Clear cache for specific URL
-DELETE /api/admin/cache/all        - Clear all cache data
-```
-
-### User Experience Benefits
-- **Zero Performance Impact**: Caching disabled by default ensures no changes to existing behavior
-- **Selective Optimization**: Enable caching only for high-traffic URLs that benefit from it
-- **Complete Control**: Granular management with statistics and monitoring capabilities
-- **Visual Feedback**: Clear status indicators and real-time operation feedback
-- **Data Transparency**: View actual cached data content for debugging and verification
-
-### Security Considerations
-- **No Authentication**: Admin routes currently unprotected (should add authentication for production)
-- **URL Encoding**: Proper URL encoding/decoding for special characters in URLs
-- **Error Handling**: Comprehensive error handling with graceful fallbacks
-- **Logging**: All cache operations logged for debugging and monitoring
-
-## Recent Implementation: Smart Selector Generation with Validation Loop ✅
-
-### What Was Completed
-- **Multi-Strategy Selector Generation**: Enhanced selector analysis to try multiple approaches when initial generation fails
-- **Validation Loop Architecture**: Implemented iterative validation that tests generated selectors against actual DOM structure
-- **Improved Success Rate**: Increased selector accuracy from ~25% to significantly higher success rates through systematic retry logic
-- **Fallback Strategy Chain**: Multiple fallback approaches ensure reliable selector generation even for complex page structures
-- **DOM Validation Integration**: Real-time validation of generated selectors against provided HTML content
-
-### Key Technical Achievements
-- **Iterative Refinement**: Smart loop that tries different selector generation strategies until validation passes
-- **Multi-Approach Generation**: Uses various AI prompting strategies and selector patterns for different HTML structures
-- **Real-Time Validation**: Tests each generated selector against the actual HTML to ensure it targets the correct elements
-- **Intelligent Fallbacks**: Systematic fallback chain from specific to general selectors with validation at each step
-- **Performance Optimization**: Efficient validation loop that balances accuracy with response time
-
-### Technical Implementation Details
-- **Enhanced OpenAI Service**: `workers/services/openai.ts` updated with multi-strategy selector generation methods
-- **Validation Loop Logic**: `workers/services/selector-analysis.ts` implements iterative validation and retry mechanisms
-- **DOM Testing**: Client-side validation helpers that test selectors against actual page structure
-- **Strategy Patterns**: Multiple AI prompting approaches for different types of content structures
-- **Fallback Hierarchy**: Systematic progression from specific to general selectors with validation gates
-
-### Validation Strategies Implemented
-**Primary Strategy:**
-- AI-generated specific selectors based on semantic HTML analysis
-- Content-aware selector generation targeting main article areas
-- Preservation of headers, navigation, and metadata elements
-
-**Fallback Strategies:**
-- Common article patterns (`article`, `.content`, `.post-content`, etc.)
-- Semantic HTML element targeting (`main`, `section[role="main"]`, etc.)
-- Class-based content selectors (`.article-body`, `.entry-content`, etc.)
-- ID-based targeting (`#content`, `#main-content`, etc.)
-- Generic content containers with validation
-
-### Loop Architecture
-```typescript
-// Pseudo-code for validation loop
-async function generateValidatedSelector(html: string): Promise<SelectorResult> {
-  const strategies = [
-    () => generateAISpecificSelector(html),
-    () => generateSemanticSelector(html),
-    () => generateCommonPatternSelector(html),
-    () => generateFallbackSelector(html)
-  ];
-  
-  for (const strategy of strategies) {
-    const selector = await strategy();
-    if (await validateSelector(selector, html)) {
-      return { selector, validated: true };
-    }
-  }
-  
-  return { selector: 'main', validated: false }; // Ultimate fallback
-}
-```
-
-### User Experience Benefits
-- **Higher Accuracy**: Dramatically improved selector generation success rate
-- **Reliable Content Targeting**: More precise content extraction and summarization
-- **Better Widget Performance**: Reduced failures in content processing and display
-- **Consistent Behavior**: Reliable selector generation across diverse website structures
-- **Graceful Degradation**: Intelligent fallbacks ensure functionality even when optimal selectors can't be generated
-
-### Performance Considerations
-- **Optimized Loop Logic**: Efficient validation that stops at first successful match
-- **Caching Strategy**: Successful selectors cached to avoid repeated generation for similar structures
-- **Timeout Protection**: Loop includes timeout mechanisms to prevent infinite retry scenarios
-- **Resource Management**: Balanced approach between accuracy and API usage/response time
-
-## Conclusion
-
-The component-based architecture refactoring successfully achieves all goals:
-- ✅ **Zero UI changes** while improving code quality
-- ✅ **Enhanced testability** with isolated components and business logic
-- ✅ **Better maintainability** with focused responsibilities
-- ✅ **Improved reusability** with modular components
-- ✅ **Future extensibility** for new features and modifications
-- ✅ **Type safety** with comprehensive TypeScript interfaces
-- ✅ **Clean imports** with organized directory structure
-- ✅ **Zero-configuration content** with automatic content extraction
-- ✅ **Smart selector generation** with validation loop for improved accuracy
-
-**Key Metrics:**
+### Development Experience
 - **55% code reduction** in main component (875+ → ~400 lines)
-- **6 focused UI components** replacing monolithic structure
+- **6 focused UI components** with single responsibilities
 - **3 custom hooks** for business logic separation
-- **100% functional preservation** of existing UI and behavior
-- **Enhanced developer experience** with better code organization
-- **Simplified configuration** with automatic content extraction
-- **Improved selector accuracy** from ~25% to significantly higher success rates
+- **Enhanced testability** with isolated components
 
-This architecture provides a solid foundation for continued development while making the codebase more approachable for new developers and easier to maintain over time. The separation between UI components and business logic hooks creates clear boundaries that support both testing and future feature development. The smart selector generation with validation loop ensures reliable content targeting across diverse website structures.
+### Code Quality
+- **Type safety** with comprehensive TypeScript interfaces
+- **Clean imports** with organized directory structure
+- **Future extensibility** for new features and modifications
+- **Better maintainability** with focused responsibilities

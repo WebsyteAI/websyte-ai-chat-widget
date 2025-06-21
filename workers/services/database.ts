@@ -1,10 +1,12 @@
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
-import { eq, desc, isNull } from 'drizzle-orm';
+import { eq, desc, isNull, ilike, and } from 'drizzle-orm';
 import { 
   widget as widgetTable,
+  widgetEmbedding as widgetEmbeddingTable,
   type Widget,
-  type NewWidget
+  type NewWidget,
+  type WidgetEmbedding
 } from '../db/schema';
 import type { SummariesResponse, RecommendationsResponse } from '../types';
 
@@ -350,6 +352,52 @@ export class DatabaseService {
       console.log('DatabaseService: All cache cleared');
     } catch (error) {
       console.error('DatabaseService clearAll error:', error);
+    }
+  }
+
+  async searchEmbeddings(widgetId: string, query: string, limit: number = 10): Promise<WidgetEmbedding[]> {
+    try {
+      console.log(`DatabaseService: Searching embeddings for widget ${widgetId} with query: ${query}`);
+      
+      const result = await this.db
+        .select()
+        .from(widgetEmbeddingTable)
+        .where(
+          and(
+            eq(widgetEmbeddingTable.widgetId, widgetId),
+            ilike(widgetEmbeddingTable.contentChunk, `%${query}%`)
+          )
+        )
+        .limit(limit);
+
+      console.log(`DatabaseService: Found ${result.length} matching embeddings`);
+      return result;
+    } catch (error) {
+      console.error('DatabaseService searchEmbeddings error:', error);
+      return [];
+    }
+  }
+
+  async searchEmbeddingsByUrl(url: string, query: string, limit: number = 10): Promise<WidgetEmbedding[]> {
+    try {
+      console.log(`DatabaseService: Searching embeddings for URL ${url} with query: ${query}`);
+      
+      // First get the widget ID for the URL
+      const widget = await this.db
+        .select({ id: widgetTable.id })
+        .from(widgetTable)
+        .where(eq(widgetTable.url, url))
+        .limit(1);
+
+      if (widget.length === 0) {
+        console.log(`DatabaseService: No widget found for URL: ${url}`);
+        return [];
+      }
+
+      return await this.searchEmbeddings(widget[0].id, query, limit);
+    } catch (error) {
+      console.error('DatabaseService searchEmbeddingsByUrl error:', error);
+      return [];
     }
   }
 }

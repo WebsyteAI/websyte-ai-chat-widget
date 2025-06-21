@@ -8,6 +8,27 @@
       "when": 1750457022170,
       "tag": "0000_outgoing_elektra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1750526545061,
+      "tag": "0001_goofy_alex_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1750526561236,
+      "tag": "0002_panoramic_dexter_bennett",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1750526578768,
+      "tag": "0003_fast_whirlwind",
+      "breakpoints": true
     }
   ]
 }
