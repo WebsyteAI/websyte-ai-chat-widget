@@ -175,7 +175,7 @@ export class VectorSearchService {
     query: string, 
     widgetId?: string, 
     limit: number = 10,
-    threshold: number = 0.3
+    threshold: number = 0
   ): Promise<SearchResult[]> {
     const queryEmbedding = await this.generateEmbedding(query);
     const queryVector = JSON.stringify(queryEmbedding);
