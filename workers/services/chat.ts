@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import { OpenAIService } from './openai';
 import { DatabaseService } from './database';
+import { WidgetService } from './widget';
 import type { ChatRequest, ChatMessage, Env } from '../types';
 import { ServiceValidation, ErrorHandler } from './common';
 import { RAGAgent } from './rag-agent';
@@ -9,13 +10,16 @@ type AppContext = Context<{ Bindings: Env; Variables: any }>;
 
 export class ChatService {
   private ragAgent?: RAGAgent;
+  private widgetService?: WidgetService;
 
   constructor(
     private openai: OpenAIService, 
     private database?: DatabaseService,
-    ragAgent?: RAGAgent
+    ragAgent?: RAGAgent,
+    widgetService?: WidgetService
   ) {
     this.ragAgent = ragAgent;
+    this.widgetService = widgetService;
   }
 
   async handleChat(c: AppContext): Promise<Response> {
@@ -36,18 +40,32 @@ export class ChatService {
       }
 
       // Use RAG if widgetId is provided and RAG agent is available
-      if (widgetId && this.ragAgent) {
+      if (widgetId && this.ragAgent && this.widgetService) {
         try {
           const auth = c.get('auth');
-          if (!auth?.user?.id) {
-            return c.json({ error: "Authentication required for widget access" }, 401);
-          }
-          const ragResult = await this.ragAgent.generateResponse(body, auth.user.id);
           
-          return c.json({ 
-            message: ragResult.response,
-            sources: ragResult.sources 
-          });
+          // Check if widget is public
+          const publicWidget = await this.widgetService.getPublicWidget(widgetId);
+          
+          if (publicWidget) {
+            // Public widget - no auth required, use anonymous user ID
+            const ragResult = await this.ragAgent.generateResponse(body, 'anonymous');
+            
+            return c.json({ 
+              message: ragResult.response,
+              sources: ragResult.sources 
+            });
+          } else if (auth?.user?.id) {
+            // Private widget - requires auth
+            const ragResult = await this.ragAgent.generateResponse(body, auth.user.id);
+            
+            return c.json({ 
+              message: ragResult.response,
+              sources: ragResult.sources 
+            });
+          } else {
+            return c.json({ error: "Widget not found or authentication required" }, 401);
+          }
         } catch (ragError) {
           console.error('RAG error, falling back to standard chat:', ragError);
           // Fall through to standard chat functionality

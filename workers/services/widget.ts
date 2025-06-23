@@ -17,6 +17,7 @@ export interface UpdateWidgetRequest {
   description?: string;
   url?: string;
   content?: string;
+  isPublic?: boolean;
 }
 
 export interface WidgetWithFiles extends Widget {
@@ -128,6 +129,36 @@ export class WidgetService {
     };
   }
 
+  async getPublicWidget(id: string): Promise<WidgetWithFiles | null> {
+    const [widgetRecord] = await this.db.getDatabase()
+      .select()
+      .from(widget)
+      .where(and(
+        eq(widget.id, id),
+        eq(widget.isPublic, true)
+      ))
+      .limit(1);
+
+    if (!widgetRecord) {
+      return null;
+    }
+
+    const files = await this.fileStorage.getWidgetFiles(id);
+    const embeddingsCount = await this.vectorSearch.getEmbeddingsCount(id);
+
+    return {
+      ...widgetRecord,
+      files: files.map(f => ({
+        id: f.id,
+        filename: f.filename,
+        fileType: f.fileType,
+        fileSize: f.fileSize,
+        createdAt: f.createdAt
+      })),
+      embeddingsCount
+    };
+  }
+
   async getUserWidgets(userId: string, limit: number = 50, offset: number = 0): Promise<WidgetWithFiles[]> {
     const widgets = await this.db.getDatabase()
       .select()
@@ -165,6 +196,7 @@ export class WidgetService {
     if (request.name !== undefined) updateData.name = request.name;
     if (request.description !== undefined) updateData.description = request.description;
     if (request.url !== undefined) updateData.url = request.url;
+    if (request.isPublic !== undefined) updateData.isPublic = request.isPublic;
 
     const [updatedWidget] = await this.db.getDatabase()
       .update(widget)
@@ -240,6 +272,16 @@ export class WidgetService {
     const widgetRecord = await this.getWidget(id, userId);
     if (!widgetRecord) {
       throw new Error('Widget not found');
+    }
+
+    return await this.vectorSearch.searchSimilarContent(query, id, limit);
+  }
+
+  async searchPublicWidgetContent(id: string, query: string, limit: number = 10) {
+    // Verify widget is public
+    const widgetRecord = await this.getPublicWidget(id);
+    if (!widgetRecord) {
+      throw new Error('Widget not found or not public');
     }
 
     return await this.vectorSearch.searchSimilarContent(query, id, limit);

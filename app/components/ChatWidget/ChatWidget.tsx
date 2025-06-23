@@ -27,7 +27,7 @@ marked.setOptions({
   gfm: true,
 });
 
-export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, advertiserUrl = "https://websyte.ai", isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false }: ChatWidgetProps) {
+export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, advertiserUrl = "https://websyte.ai", isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false, widgetId }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -298,6 +298,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
           message: userMessage.content,
           history: messages.slice(-10),
           context: pageContent,
+          ...(widgetId && { widgetId }),
         }),
         signal: controller.signal,
       });

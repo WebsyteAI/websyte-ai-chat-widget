@@ -13,6 +13,7 @@ export interface Widget {
   description?: string;
   url?: string;
   cacheEnabled: boolean;
+  isPublic: boolean;
   createdAt: string;
   updatedAt: string;
   files: WidgetFile[];

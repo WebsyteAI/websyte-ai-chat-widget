@@ -1,9 +1,130 @@
+import { useState } from "react";
 import { ChatWidget } from "../components/ChatWidget";
 
 export default function Test() {
+  const [widgetId, setWidgetId] = useState("");
+  const [testMode, setTestMode] = useState<"standard" | "custom">("standard");
+  const [advertiserName, setAdvertiserName] = useState("Test Company");
+  const [advertiserLogo, setAdvertiserLogo] = useState("");
+  
   return (
     <div style={{ minHeight: "100vh", padding: "2rem", backgroundColor: "#f5f5f5" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        {/* Control Panel */}
+        <div style={{ 
+          backgroundColor: "white", 
+          padding: "2rem", 
+          borderRadius: "8px", 
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          marginBottom: "2rem"
+        }}>
+          <h2 style={{ marginBottom: "1.5rem", color: "#333" }}>Chat Widget Testing Playground</h2>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "2rem" }}>
+            {/* Test Mode Selection */}
+            <div>
+              <h3 style={{ marginBottom: "1rem", color: "#555" }}>Test Mode</h3>
+              <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <input
+                    type="radio"
+                    value="standard"
+                    checked={testMode === "standard"}
+                    onChange={(e) => setTestMode(e.target.value as "standard" | "custom")}
+                  />
+                  Standard Chat (Page Content)
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <input
+                    type="radio"
+                    value="custom"
+                    checked={testMode === "custom"}
+                    onChange={(e) => setTestMode(e.target.value as "standard" | "custom")}
+                  />
+                  Custom Widget (RAG)
+                </label>
+              </div>
+              
+              {testMode === "custom" && (
+                <div>
+                  <label style={{ display: "block", marginBottom: "0.5rem", color: "#666" }}>
+                    Widget ID:
+                  </label>
+                  <input
+                    type="text"
+                    value={widgetId}
+                    onChange={(e) => setWidgetId(e.target.value)}
+                    placeholder="Enter widget UUID"
+                    style={{
+                      width: "100%",
+                      padding: "0.5rem",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      fontSize: "0.9rem"
+                    }}
+                  />
+                  <p style={{ fontSize: "0.8rem", color: "#666", marginTop: "0.5rem" }}>
+                    Must be a public widget UUID
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            {/* Widget Configuration */}
+            <div>
+              <h3 style={{ marginBottom: "1rem", color: "#555" }}>Widget Configuration</h3>
+              <div style={{ marginBottom: "1rem" }}>
+                <label style={{ display: "block", marginBottom: "0.5rem", color: "#666" }}>
+                  Advertiser Name:
+                </label>
+                <input
+                  type="text"
+                  value={advertiserName}
+                  onChange={(e) => setAdvertiserName(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    border: "1px solid #ddd",
+                    borderRadius: "4px",
+                    fontSize: "0.9rem"
+                  }}
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", color: "#666" }}>
+                  Advertiser Logo URL:
+                </label>
+                <input
+                  type="text"
+                  value={advertiserLogo}
+                  onChange={(e) => setAdvertiserLogo(e.target.value)}
+                  placeholder="https://logo.clearbit.com/example.com"
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    border: "1px solid #ddd",
+                    borderRadius: "4px",
+                    fontSize: "0.9rem"
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Current Configuration Display */}
+          <div style={{ marginTop: "2rem", padding: "1rem", backgroundColor: "#f9f9f9", borderRadius: "4px" }}>
+            <h4 style={{ marginBottom: "0.5rem", color: "#333" }}>Current Configuration:</h4>
+            <code style={{ fontSize: "0.8rem", color: "#666" }}>
+              {testMode === "custom" && widgetId 
+                ? `<script src="/dist/widget.js" data-widget-id="${widgetId}" data-advertiser-name="${advertiserName}"${advertiserLogo ? ` data-advertiser-logo="${advertiserLogo}"` : ''} async></script>`
+                : `<script src="/dist/widget.js" data-advertiser-name="${advertiserName}"${advertiserLogo ? ` data-advertiser-logo="${advertiserLogo}"` : ''} async></script>`
+              }
+            </code>
+          </div>
+        </div>
+
+        {/* Sample Article Content */}
         <div style={{ 
           backgroundColor: "white", 
           padding: "3rem", 
@@ -116,7 +237,11 @@ export default function Test() {
         </div>
       </div>
 
-      <ChatWidget />
+      <ChatWidget 
+        advertiserName={advertiserName}
+        advertiserLogo={advertiserLogo || undefined}
+        widgetId={testMode === "custom" && widgetId ? widgetId : undefined}
+      />
     </div>
   );
 }

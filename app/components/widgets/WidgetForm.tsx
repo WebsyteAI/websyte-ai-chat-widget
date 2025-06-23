@@ -4,7 +4,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Upload, X, FileText, Trash2 } from 'lucide-react';
+import { Upload, X, FileText, Trash2, Copy, Check, Code, Lock } from 'lucide-react';
 import { useUIStore, type Widget } from '../../stores';
 
 
@@ -19,6 +19,10 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: Widg
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deletingFileId, setDeletingFileId] = useState<number | null>(null);
   const [existingFiles, setExistingFiles] = useState(widget?.files || []);
+  const [isPublic, setIsPublic] = useState(false);
+  const [advertiserName, setAdvertiserName] = useState('My Company');
+  const [advertiserLogo, setAdvertiserLogo] = useState('');
+  const [copiedEmbed, setCopiedEmbed] = useState(false);
   const {
     widgetFormData,
     updateWidgetFormField,
@@ -39,9 +43,11 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: Widg
       updateWidgetFormField('description', widget.description || '');
       updateWidgetFormField('url', widget.url || '');
       setExistingFiles(widget.files || []);
+      setIsPublic(widget.isPublic || false);
     } else {
       resetWidgetForm();
       setExistingFiles([]);
+      setIsPublic(false);
     }
   }, [widget, updateWidgetFormField, resetWidgetForm]);
 
@@ -107,6 +113,58 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: Widg
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const generateEmbedCode = () => {
+    if (!widget?.id) return '';
+    
+    const baseUrl = window.location.origin;
+    const attributes = [
+      `src="${baseUrl}/dist/widget.js"`,
+      widget.id ? `data-widget-id="${widget.id}"` : '',
+      advertiserName ? `data-advertiser-name="${advertiserName}"` : '',
+      advertiserLogo ? `data-advertiser-logo="${advertiserLogo}"` : '',
+      'async'
+    ].filter(Boolean);
+    
+    return `<script ${attributes.join(' ')}></script>`;
+  };
+
+  const copyEmbedCode = async () => {
+    const embedCode = generateEmbedCode();
+    try {
+      await navigator.clipboard.writeText(embedCode);
+      setCopiedEmbed(true);
+      setTimeout(() => setCopiedEmbed(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy embed code:', err);
+    }
+  };
+
+  const toggleWidgetPublic = async () => {
+    if (!widget?.id) return;
+    
+    try {
+      const response = await fetch(`/api/widgets/${widget.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          isPublic: !isPublic
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update widget visibility');
+      }
+
+      setIsPublic(!isPublic);
+    } catch (error) {
+      console.error('Error updating widget visibility:', error);
+      alert('Failed to update widget visibility. Please try again.');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -337,6 +395,112 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: Widg
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Embed Code Section - Only show for existing widgets */}
+          {widget?.id && (
+            <div className="space-y-4 pt-6 border-t border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Embed Widget</h3>
+                  <p className="text-sm text-gray-600">
+                    Copy the script tag below to embed this widget on your website
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Public</span>
+                  <button
+                    type="button"
+                    onClick={toggleWidgetPublic}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      isPublic ? 'bg-blue-600' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        isPublic ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {isPublic ? (
+                <div className="space-y-4">
+                  {/* Widget Configuration */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="advertiser-name">Advertiser Name</Label>
+                      <Input
+                        id="advertiser-name"
+                        value={advertiserName}
+                        onChange={(e) => setAdvertiserName(e.target.value)}
+                        placeholder="My Company"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="advertiser-logo">Advertiser Logo URL (optional)</Label>
+                      <Input
+                        id="advertiser-logo"
+                        value={advertiserLogo}
+                        onChange={(e) => setAdvertiserLogo(e.target.value)}
+                        placeholder="https://logo.clearbit.com/example.com"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Generated Embed Code */}
+                  <div className="space-y-2">
+                    <Label>Embed Code</Label>
+                    <div className="relative">
+                      <pre className="bg-gray-900 text-gray-100 p-3 rounded-lg text-sm overflow-x-auto">
+                        <code>{generateEmbedCode()}</code>
+                      </pre>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={copyEmbedCode}
+                        className="absolute top-2 right-2 h-8 w-8 p-0"
+                      >
+                        {copiedEmbed ? (
+                          <Check className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-600">
+                      Paste this code into your website's HTML where you want the widget to appear.
+                    </p>
+                  </div>
+
+                  {/* Usage Instructions */}
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <Code className="w-5 h-5 text-blue-600 mt-0.5" />
+                      <div>
+                        <h4 className="font-medium text-blue-900 mb-1">Usage Instructions</h4>
+                        <ul className="text-sm text-blue-800 space-y-1">
+                          <li>• Widget will use your uploaded files and content as its knowledge base</li>
+                          <li>• Visitors can chat with AI trained on your specific content</li>
+                          <li>• No authentication required for public widgets</li>
+                          <li>• Fully responsive and works on all devices</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-gray-50 p-4 rounded-lg text-center">
+                  <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-600 mb-2">Widget is currently private</p>
+                  <p className="text-sm text-gray-500">
+                    Enable public access to generate embed code for your website
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

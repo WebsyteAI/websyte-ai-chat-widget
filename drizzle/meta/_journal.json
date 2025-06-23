@@ -29,6 +29,13 @@
       "when": 1750526578768,
       "tag": "0003_fast_whirlwind",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1750657840040,
+      "tag": "0004_eager_mephistopheles",
+      "breakpoints": true
     }
   ]
 }

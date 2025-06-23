@@ -18,6 +18,7 @@ declare global {
         contentSelector?: string;
         hidePoweredBy?: boolean;
         enableSmartSelector?: boolean;
+        widgetId?: string;
       };
       open?: () => void;
       close?: () => void;
@@ -76,6 +77,9 @@ declare global {
       
       const enableSmartSelector = scriptTag.getAttribute('data-enable-smart-selector');
       if (enableSmartSelector !== null) scriptConfig.enableSmartSelector = enableSmartSelector === 'true';
+      
+      const widgetId = scriptTag.getAttribute('data-widget-id');
+      if (widgetId) scriptConfig.widgetId = widgetId;
     }
     
     return scriptConfig;
@@ -92,7 +96,8 @@ declare global {
     targetElement: '',
     contentSelector: '',
     hidePoweredBy: true,
-    enableSmartSelector: false
+    enableSmartSelector: false,
+    widgetId: undefined
   };
   
   // Merge configs: defaults < window config < script attributes
@@ -186,7 +191,8 @@ declare global {
         isTargetedInjection: isTargetedInjection,
         contentSelector: config.contentSelector,
         hidePoweredBy: config.hidePoweredBy,
-        enableSmartSelector: config.enableSmartSelector
+        enableSmartSelector: config.enableSmartSelector,
+        widgetId: config.widgetId
       })
     );
   }

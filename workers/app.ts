@@ -73,7 +73,7 @@ const getServices = (env: Env) => {
     const ragAgent = new RAGAgent(env.OPENAI_API_KEY, widget);
     
     servicesCache = {
-      chat: new ChatService(openai, database, ragAgent),
+      chat: new ChatService(openai, database, ragAgent, widget),
       summaries: new SummariesService(openai, database),
       recommendations: new RecommendationsService(openai, database),
       selectorAnalysis: new SelectorAnalysisService(openai, database),
@@ -351,7 +351,7 @@ app.get('/api/widgets/:id/files/:fileId/download', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const id = parseInt(c.req.param('id'));
+  const id = c.req.param('id');
   const fileId = c.req.param('fileId');
   
   if (!id || !fileId) {
@@ -383,7 +383,7 @@ app.delete('/api/widgets/:id/files/:fileId', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const id = parseInt(c.req.param('id'));
+  const id = c.req.param('id');
   const fileId = c.req.param('fileId');
   
   if (!id || !fileId) {
@@ -399,6 +399,25 @@ app.delete('/api/widgets/:id/files/:fileId', async (c) => {
   } catch (error) {
     console.error('Error deleting file:', error);
     return c.json({ error: 'Failed to delete file' }, 500);
+  }
+});
+
+// Public widget access (no auth required)
+app.get('/api/widgets/:id/public', async (c) => {
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    const widget = await c.get('services').widget.getPublicWidget(id);
+    if (!widget) {
+      return c.json({ error: 'Widget not found or not public' }, 404);
+    }
+    return c.json({ widget });
+  } catch (error) {
+    console.error('Error getting public widget:', error);
+    return c.json({ error: 'Failed to get widget' }, 500);
   }
 });
 

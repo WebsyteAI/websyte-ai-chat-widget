@@ -14,6 +14,7 @@ export interface ChatWidgetProps {
   contentSelector?: string;
   hidePoweredBy?: boolean;
   enableSmartSelector?: boolean;
+  widgetId?: string;
 }
 
 export interface Recommendation {

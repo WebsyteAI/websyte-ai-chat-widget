@@ -28,6 +28,7 @@ export const widget = pgTable('widget', {
     description: string;
   }> | null>(),
   cacheEnabled: boolean('cache_enabled').default(false).notNull(),
+  isPublic: boolean('is_public').default(false).notNull(), // Allow public embedding
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
