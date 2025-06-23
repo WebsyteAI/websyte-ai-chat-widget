@@ -11,6 +11,7 @@ import { AuthService } from './services/auth';
 import { VectorSearchService } from './services/vector-search';
 import { FileStorageService } from './services/file-storage';
 import { WidgetService } from './services/widget';
+import { RAGAgent } from './services/rag-agent';
 import { optionalAuthMiddleware, authMiddleware, type AuthContext } from './lib/middleware';
 import type { Env } from './types';
 
@@ -68,15 +69,18 @@ const getServices = (env: Env) => {
       env.MISTRAL_AI_API_KEY, 
       vectorSearch
     );
+    const widget = new WidgetService(database, vectorSearch, fileStorage);
+    const ragAgent = new RAGAgent(env.OPENAI_API_KEY, widget);
+    
     servicesCache = {
-      chat: new ChatService(openai, database),
+      chat: new ChatService(openai, database, ragAgent),
       summaries: new SummariesService(openai, database),
       recommendations: new RecommendationsService(openai, database),
       selectorAnalysis: new SelectorAnalysisService(openai, database),
       auth: new AuthService(env),
       vectorSearch,
       fileStorage,
-      widget: new WidgetService(database, vectorSearch, fileStorage),
+      widget,
     };
   }
   return servicesCache;

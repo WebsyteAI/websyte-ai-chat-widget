@@ -6,7 +6,7 @@ import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { UserProfile } from '../components/auth/UserProfile';
 import { WidgetList } from '../components/widgets/WidgetList';
-import { WidgetForm } from '../components/widgets/WidgetForm';
+import { WidgetEditor } from '../components/widgets/WidgetEditor';
 import { SearchWidget } from '../components/widgets/SearchWidget';
 import { useWidgetStore, useUIStore } from '../stores';
 
@@ -16,14 +16,12 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   
   // Zustand stores
-  const { createWidget, updateWidget, deleteWidget } = useWidgetStore();
+  const { fetchWidgets } = useWidgetStore();
   const { 
     showCreateForm, 
     editingWidget, 
-    formLoading,
     setShowCreateForm, 
-    setEditingWidget, 
-    setFormLoading 
+    setEditingWidget 
   } = useUIStore();
 
   // Redirect unauthenticated users to login
@@ -33,53 +31,30 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  const handleCreateWidget = async (formData: FormData) => {
-    setFormLoading(true);
-    try {
-      await createWidget(formData);
-      setShowCreateForm(false);
-    } catch (error) {
-      console.error('Error creating widget:', error);
-      alert('Failed to create widget. Please try again.');
-    } finally {
-      setFormLoading(false);
-    }
+  const handleCreateWidget = () => {
+    setShowCreateForm(true);
   };
 
-  const handleEditWidget = async (formData: FormData) => {
-    if (!editingWidget) return;
-    
-    setFormLoading(true);
-    try {
-      // Convert FormData to JSON for PUT request
-      const data: any = {};
-      for (const [key, value] of formData.entries()) {
-        if (typeof value === 'string') {
-          data[key] = value;
-        }
-      }
-
-      await updateWidget(editingWidget.id, data);
-      setEditingWidget(null);
-    } catch (error) {
-      console.error('Error updating widget:', error);
-      alert('Failed to update widget. Please try again.');
-    } finally {
-      setFormLoading(false);
-    }
+  const handleEditWidget = (widget: any) => {
+    setEditingWidget(widget);
   };
 
-  const handleDeleteWidget = async (widget: any) => {
-    if (!confirm(`Are you sure you want to delete "${widget.name}"? This action cannot be undone.`)) {
-      return;
-    }
+  const handleBackToList = () => {
+    setShowCreateForm(false);
+    setEditingWidget(null);
+    fetchWidgets(); // Refresh the widget list
+  };
 
-    try {
-      await deleteWidget(widget.id);
-    } catch (error) {
-      console.error('Error deleting widget:', error);
-      alert('Failed to delete widget. Please try again.');
-    }
+  const handleWidgetCreated = () => {
+    fetchWidgets(); // Refresh the widget list
+  };
+
+  const handleWidgetUpdated = () => {
+    fetchWidgets(); // Refresh the widget list
+  };
+
+  const handleWidgetDeleted = () => {
+    fetchWidgets(); // Refresh the widget list
   };
 
   if (isLoading) {
@@ -134,17 +109,16 @@ export default function DashboardPage() {
 
         {/* Show create/edit form or main dashboard */}
         {showCreateForm ? (
-          <WidgetForm
-            onSubmit={handleCreateWidget}
-            onCancel={() => setShowCreateForm(false)}
-            loading={formLoading}
+          <WidgetEditor
+            onBack={handleBackToList}
+            onWidgetCreated={handleWidgetCreated}
           />
         ) : editingWidget ? (
-          <WidgetForm
+          <WidgetEditor
             widget={editingWidget}
-            onSubmit={handleEditWidget}
-            onCancel={() => setEditingWidget(null)}
-            loading={formLoading}
+            onBack={handleBackToList}
+            onWidgetUpdated={handleWidgetUpdated}
+            onWidgetDeleted={handleWidgetDeleted}
           />
         ) : (
           <Tabs defaultValue="widgets" className="space-y-6">
@@ -157,9 +131,9 @@ export default function DashboardPage() {
 
             <TabsContent value="widgets" className="space-y-6">
               <WidgetList
-                onCreateWidget={() => setShowCreateForm(true)}
-                onEditWidget={setEditingWidget}
-                onDeleteWidget={handleDeleteWidget}
+                onCreateWidget={handleCreateWidget}
+                onEditWidget={handleEditWidget}
+                onDeleteWidget={() => {}} // Delete is handled in WidgetEditor now
               />
             </TabsContent>
 

@@ -12,6 +12,7 @@ export interface ChatRequest {
     title: string;
     content: string;
   };
+  widgetId?: string;
 }
 
 export interface SummarizeRequest {

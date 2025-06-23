@@ -3,11 +3,20 @@ import { OpenAIService } from './openai';
 import { DatabaseService } from './database';
 import type { ChatRequest, ChatMessage, Env } from '../types';
 import { ServiceValidation, ErrorHandler } from './common';
+import { RAGAgent } from './rag-agent';
 
 type AppContext = Context<{ Bindings: Env; Variables: any }>;
 
 export class ChatService {
-  constructor(private openai: OpenAIService, private database?: DatabaseService) {}
+  private ragAgent?: RAGAgent;
+
+  constructor(
+    private openai: OpenAIService, 
+    private database?: DatabaseService,
+    ragAgent?: RAGAgent
+  ) {
+    this.ragAgent = ragAgent;
+  }
 
   async handleChat(c: AppContext): Promise<Response> {
     const methodError = ServiceValidation.validatePostMethod(c);
@@ -15,19 +24,39 @@ export class ChatService {
 
     try {
       const body: ChatRequest = await ServiceValidation.parseRequestBody<ChatRequest>(c);
-      const { message, history = [], context } = body;
+      const { message, history = [], context, widgetId } = body;
 
       if (!message || typeof message !== "string") {
         return c.json({ error: "Invalid message" }, 400);
       }
 
-      if (!context) {
-        return c.json({ error: "Content context is required" }, 400);
+      // Ensure URL is tracked in database regardless of caching status
+      if (context?.url && this.database) {
+        await this.database.ensureUrlTracked(context.url);
       }
 
-      // Ensure URL is tracked in database regardless of caching status
-      if (context.url && this.database) {
-        await this.database.ensureUrlTracked(context.url);
+      // Use RAG if widgetId is provided and RAG agent is available
+      if (widgetId && this.ragAgent) {
+        try {
+          const auth = c.get('auth');
+          if (!auth?.user?.id) {
+            return c.json({ error: "Authentication required for widget access" }, 401);
+          }
+          const ragResult = await this.ragAgent.generateResponse(body, auth.user.id);
+          
+          return c.json({ 
+            message: ragResult.response,
+            sources: ragResult.sources 
+          });
+        } catch (ragError) {
+          console.error('RAG error, falling back to standard chat:', ragError);
+          // Fall through to standard chat functionality
+        }
+      }
+
+      // Standard chat functionality (fallback or when no widgetId)
+      if (!context) {
+        return c.json({ error: "Content context is required for standard chat" }, 400);
       }
 
       const messages: ChatMessage[] = [
