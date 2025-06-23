@@ -19,10 +19,21 @@ pnpm deploy           # Deploy to Cloudflare
 - Hono on Cloudflare Workers
 - Neon PostgreSQL + Drizzle ORM
 - Better Auth
-- OpenAI API
+- OpenAI API (GPT-4.1-mini + text-embedding-3-small)
+- Vector Search with pgvector
+- OCR capabilities
 
 ## Essential Files
 - `workers/app.ts` - Main backend
 - `workers/db/schema.ts` - Database schema
+- `workers/services/rag-agent.ts` - RAG chat agent
+- `workers/services/vector-search.ts` - Vector search & embeddings
 - `app/` - Frontend code
 - `.claude/` - **Detailed documentation**
+
+## New Features
+- **RAG Chat Agent**: Context-aware chat with knowledge base retrieval
+- **Vector Search**: Semantic search with embeddings and similarity matching
+- **Full-text Search**: Enhanced search capabilities with Drizzle ORM
+- **OCR Support**: Extract text from images and PDFs
+- **Mistral AI**: Alternative AI provider support

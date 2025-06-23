@@ -1,8 +1,75 @@
-# Component Architecture
+# System Architecture
 
 ## Overview
 
-Modular component architecture with extracted hooks and sub-components for better testability and maintainability.
+Full-stack chat widget system with modular component architecture, RAG capabilities, and vector search functionality for better testability and maintainability.
+
+## Core Architecture Stack
+
+- **Frontend**: React Router 7 + Vite + Zustand for state management
+- **Backend**: Hono on Cloudflare Workers
+- **Database**: Neon PostgreSQL + Drizzle ORM with pgvector extension
+- **AI Services**: OpenAI GPT-4.1-mini + text-embedding-3-small, Mistral AI support
+- **Search**: Vector similarity search with embeddings, full-text search
+- **Authentication**: Better Auth for user management
+- **Storage**: PostgreSQL for persistent data, localStorage for client state
+
+## New RAG & Vector Search Architecture
+
+### RAG Agent Service (`workers/services/rag-agent.ts`)
+```typescript
+class RAGAgent {
+  // Context retrieval with similarity search
+  private async retrieveRelevantContext(query, widgetId, userId, maxChunks, threshold)
+  
+  // System prompt building with retrieved context
+  private buildSystemPrompt(retrievedChunks, webpageContent)
+  
+  // Response generation with context
+  async generateResponse(request, userId, options)
+  async streamResponse(request, userId, options)
+}
+```
+
+### Vector Search Service (`workers/services/vector-search.ts`)
+```typescript
+class VectorSearchService {
+  // Text chunking with overlap for better semantic coherence
+  async chunkText(text, maxWords = 2000, overlapWords = 100)
+  
+  // OpenAI embedding generation
+  async generateEmbedding(text): Promise<number[]>
+  
+  // Batch embedding creation for widgets
+  async createEmbeddingsForWidget(widgetId, content, source, fileId)
+  
+  // Semantic similarity search with PostgreSQL + pgvector
+  async searchSimilarContent(query, widgetId?, limit = 10, threshold = 0)
+  
+  // OCR support for documents
+  async createEmbeddingsFromOCRPages(widgetId, fileId, pages)
+}
+```
+
+### Database Schema Updates
+```sql
+-- Vector embeddings table with pgvector support
+CREATE TABLE widget_embedding (
+  id UUID PRIMARY KEY,
+  widget_id VARCHAR NOT NULL,
+  file_id VARCHAR NOT NULL, 
+  content_chunk TEXT NOT NULL,
+  embedding vector(1536), -- OpenAI text-embedding-3-small dimensions
+  metadata JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Vector similarity index for performance
+CREATE INDEX idx_widget_embedding_vector ON widget_embedding 
+USING ivfflat (embedding vector_cosine_ops);
+```
+
+## Component Architecture
 
 ## Component Structure
 

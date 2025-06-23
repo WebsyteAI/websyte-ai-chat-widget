@@ -16,10 +16,12 @@ This is a production-ready AI chat widget for article websites built with React/
 
 ## Core Architecture
 - **Frontend**: React + TypeScript compiled to standalone widget bundle
-- **Backend**: Cloudflare Workers with OpenAI API integration
+- **Backend**: Cloudflare Workers with AI integrations
+- **Database**: Neon PostgreSQL + Drizzle ORM with pgvector extension
 - **Styling**: Tailwind CSS v4 with Shadow DOM isolation
-- **Storage**: localStorage for message history and widget state
-- **AI Services**: OpenAI GPT for chat, summarization, and recommendations
+- **Storage**: PostgreSQL for embeddings/data, localStorage for client state  
+- **AI Services**: OpenAI GPT-4.1-mini + text-embedding-3-small, Mistral AI
+- **Search**: Vector similarity search with embeddings, full-text search
 
 ## Key Features Implemented
 1. **Embeddable Widget**: Single script tag integration with Shadow DOM isolation
@@ -29,8 +31,22 @@ This is a production-ready AI chat widget for article websites built with React/
 5. **Content Caching**: Intelligent caching system with TTL and LRU eviction (70-80% performance improvement)
 6. **Targeted Injection**: Flexible widget placement via `data-target-element` attribute
 7. **Professional UI**: Glass morphism design with smooth animations and responsive layout
+8. **RAG Chat Agent**: Retrieval-Augmented Generation with knowledge base integration
+9. **Vector Search**: Semantic search using OpenAI embeddings and pgvector
+10. **OCR Support**: Extract and search text from images and PDF documents
+11. **Full-text Search**: Enhanced search capabilities with PostgreSQL
+12. **Multi-AI Support**: OpenAI GPT-4.1-mini and Mistral AI integration
 
 ## Recent Major Implementations
+
+### RAG & Vector Search System ✅ (Latest)
+- **RAG Agent**: Context-aware chat with knowledge base retrieval using similarity search
+- **Vector Embeddings**: OpenAI text-embedding-3-small with 1536 dimensions
+- **pgvector Integration**: PostgreSQL vector similarity search with cosine distance
+- **Text Chunking**: Intelligent chunking with overlap for better semantic coherence
+- **OCR Support**: Extract and embed text from images and PDF documents
+- **Multi-AI Support**: Integrated Mistral AI alongside OpenAI models
+- **Full-text Search**: Enhanced Drizzle ORM queries for comprehensive search
 
 ### Content Caching System ✅ 
 - Implemented intelligent content caching with TTL (5 minutes) and LRU eviction
@@ -69,12 +85,16 @@ app/
 
 workers/
 ├── app.ts                      # Main Cloudflare Workers API endpoints
+├── db/schema.ts               # Database schema with vector embeddings
 └── services/
     ├── chat.ts                 # Chat service with context handling
     ├── recommendations.ts      # AI-generated article recommendations  
     ├── summarize.ts           # Page summarization service
     ├── openai.ts              # OpenAI API integration
     ├── common.ts              # Shared utilities and error handling
+    ├── rag-agent.ts           # RAG chat agent with knowledge retrieval
+    ├── vector-search.ts       # Vector search and embeddings service
+    ├── database.ts            # Database service layer
     └── [comprehensive test files for all services]
 ```
 
@@ -83,6 +103,10 @@ workers/
 - `POST /api/recommendations` - AI-generated article discussion questions
 - `POST /api/summarize` - Page content summarization
 - `POST /api/analyze-selector` - Smart content selector analysis
+- `POST /api/rag-chat` - RAG-powered chat with knowledge base retrieval
+- `POST /api/search` - Vector similarity search across widget content
+- `POST /api/embeddings` - Create embeddings for documents and content
+- `POST /api/ocr` - Extract text from images and PDFs for embedding
 
 ## Configuration Options
 ```html
@@ -148,6 +172,54 @@ workers/
 - Large content and concurrent request testing
 
 ## Common Patterns and Utilities
+
+### RAG Chat Integration
+```typescript
+// Initialize RAG agent
+const ragAgent = new RAGAgent(openaiApiKey, widgetService);
+
+// Generate context-aware response
+const result = await ragAgent.generateResponse({
+  message: userQuery,
+  widgetId: widgetId,
+  history: chatHistory
+}, userId, {
+  maxRetrievedChunks: 5,
+  similarityThreshold: 0.3
+});
+
+// Stream response for real-time chat
+const stream = await ragAgent.streamResponse(request, userId, options);
+```
+
+### Vector Search Usage
+```typescript
+// Initialize vector search service
+const vectorSearch = new VectorSearchService(openaiApiKey, databaseService);
+
+// Create embeddings for content
+await vectorSearch.createEmbeddingsForWidget(
+  widgetId, 
+  textContent, 
+  'document',
+  fileId
+);
+
+// Search similar content
+const results = await vectorSearch.searchSimilarContent(
+  query, 
+  widgetId, 
+  limit: 10,
+  threshold: 0.7
+);
+
+// Process OCR pages and create embeddings
+await vectorSearch.createEmbeddingsFromOCRPages(
+  widgetId,
+  fileId, 
+  ocrPages
+);
+```
 
 ### Content Extraction
 ```typescript
