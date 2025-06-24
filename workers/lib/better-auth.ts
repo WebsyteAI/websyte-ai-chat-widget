@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { admin } from "better-auth/plugins";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "../db/schema";
@@ -26,6 +27,9 @@ export const createAuth = (env: Env) => {
         expiresIn: 60 * 60 * 24 * 7, // 7 days
         updateAge: 60 * 60 * 24, // 1 day
       },
+      plugins: [
+        admin()
+      ],
     });
   } catch (error) {
     console.error('Error creating Better Auth:', error);

@@ -24,22 +24,31 @@ This is a production-ready AI chat widget for article websites built with React/
 - **Search**: Vector similarity search with embeddings, full-text search
 
 ## Key Features Implemented
-1. **Embeddable Widget**: Single script tag integration with Shadow DOM isolation
-2. **Context-Aware Chat**: AI chat with page content context
-3. **Content Summarization**: One-click page summarization with smart content replacement
-4. **Smart Recommendations**: AI-generated discussion questions specific to article content
-5. **Content Caching**: Intelligent caching system with TTL and LRU eviction (70-80% performance improvement)
-6. **Targeted Injection**: Flexible widget placement via `data-target-element` attribute
-7. **Professional UI**: Glass morphism design with smooth animations and responsive layout
-8. **RAG Chat Agent**: Retrieval-Augmented Generation with knowledge base integration
-9. **Vector Search**: Semantic search using OpenAI embeddings and pgvector
-10. **OCR Support**: Extract and search text from images and PDF documents
-11. **Full-text Search**: Enhanced search capabilities with PostgreSQL
-12. **Multi-AI Support**: OpenAI GPT-4.1-mini and Mistral AI integration
+1. **Custom Widget Embed Scripts**: Generate personalized AI assistants with custom knowledge bases
+2. **Embeddable Widget**: Single script tag integration with Shadow DOM isolation
+3. **RAG Chat Agent**: Retrieval-Augmented Generation with knowledge base integration
+4. **Vector Search**: Semantic search using OpenAI embeddings and pgvector
+5. **Embed Code Generation**: One-click script generation with public/private controls
+6. **Public Widget API**: Anonymous access to public widgets for embedding
+7. **Context-Aware Chat**: AI chat with page content context
+8. **Content Summarization**: One-click page summarization with smart content replacement
+9. **OCR Support**: Extract and search text from images and PDF documents
+10. **Multi-AI Support**: OpenAI GPT-4.1-mini and Mistral AI integration
+11. **Content Caching**: Intelligent caching system with TTL and LRU eviction (70-80% performance improvement)
+12. **Testing Playground**: Comprehensive widget testing environment at `/test`
 
 ## Recent Major Implementations
 
-### RAG & Vector Search System ✅ (Latest)
+### Custom Widget Embed Script Support ✅ (Latest)
+- **Widget Embed Generation**: One-click embed code generation in WidgetForm.tsx
+- **Public/Private Controls**: Toggle widget visibility with `isPublic` database field
+- **Custom Widget ID Support**: `data-widget-id` attribute in embed scripts for RAG functionality
+- **Public Widget API**: Anonymous access endpoint `/api/widgets/:id/public`
+- **Enhanced ChatWidget**: Support for custom widget IDs and RAG-powered responses
+- **Testing Playground**: Comprehensive `/test` route for widget experimentation
+- **Updated Landing Page**: Showcases custom widget workflow and capabilities
+
+### RAG & Vector Search System ✅
 - **RAG Agent**: Context-aware chat with knowledge base retrieval using similarity search
 - **Vector Embeddings**: OpenAI text-embedding-3-small with 1536 dimensions
 - **pgvector Integration**: PostgreSQL vector similarity search with cosine distance
@@ -99,16 +108,19 @@ workers/
 ```
 
 ## API Endpoints
-- `POST /api/chat` - Context-aware chat with message history
+- `POST /api/chat` - Context-aware chat with message history (supports widgetId for RAG)
 - `POST /api/recommendations` - AI-generated article discussion questions
 - `POST /api/summarize` - Page content summarization
 - `POST /api/analyze-selector` - Smart content selector analysis
+- `GET /api/widgets/:id/public` - Public widget access (no auth required)
 - `POST /api/rag-chat` - RAG-powered chat with knowledge base retrieval
 - `POST /api/search` - Vector similarity search across widget content
 - `POST /api/embeddings` - Create embeddings for documents and content
 - `POST /api/ocr` - Extract text from images and PDFs for embedding
 
 ## Configuration Options
+
+### Standard Widget (Page Content Chat)
 ```html
 <script 
   src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js"
@@ -117,6 +129,17 @@ workers/
   data-advertiser-name="My Brand"
   data-advertiser-logo="https://logo.clearbit.com/mybrand.com"
   data-base-url="https://api.example.com"
+  async>
+</script>
+```
+
+### Custom Widget (RAG-Powered with Knowledge Base)
+```html
+<script 
+  src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js"
+  data-widget-id="your-widget-uuid-here"
+  data-advertiser-name="My Company"
+  data-advertiser-logo="https://logo.clearbit.com/mycompany.com"
   async>
 </script>
 ```
@@ -238,6 +261,59 @@ const stats = ContentExtractor.getCacheStats();
 // Use shared error handling utilities
 return ErrorHandler.handleAbortError(error, fallbackResponse);
 return ErrorHandler.handleGeneralError(error, message, status);
+```
+
+### Custom Widget Embed Code Generation
+```typescript
+// Generate embed script in WidgetForm
+const generateEmbedCode = () => {
+  if (!widget?.id) return '';
+  
+  const baseUrl = window.location.origin;
+  const attributes = [
+    `src="${baseUrl}/dist/widget.js"`,
+    widget.id ? `data-widget-id="${widget.id}"` : '',
+    advertiserName ? `data-advertiser-name="${advertiserName}"` : '',
+    advertiserLogo ? `data-advertiser-logo="${advertiserLogo}"` : '',
+    'async'
+  ].filter(Boolean);
+  
+  return `<script ${attributes.join(' ')}></script>`;
+};
+
+// Copy embed code to clipboard
+const copyEmbedCode = async () => {
+  const embedCode = generateEmbedCode();
+  await navigator.clipboard.writeText(embedCode);
+};
+```
+
+### Public Widget Access Pattern
+```typescript
+// Check if widget is public in chat service
+const publicWidget = await this.widgetService.getPublicWidget(widgetId);
+
+if (publicWidget) {
+  // Public widget - no auth required, use anonymous user ID
+  const ragResult = await this.ragAgent.generateResponse(body, 'anonymous');
+} else if (auth?.user?.id) {
+  // Private widget - requires auth
+  const ragResult = await this.ragAgent.generateResponse(body, auth.user.id);
+}
+```
+
+### Widget Entry Script Pattern
+```typescript
+// Parse data-widget-id from script tag
+const widgetId = scriptTag.getAttribute('data-widget-id');
+if (widgetId) scriptConfig.widgetId = widgetId;
+
+// Pass to ChatWidget component
+<ChatWidget 
+  widgetId={config.widgetId}
+  advertiserName={config.advertiserName}
+  // ... other props
+/>
 ```
 
 ### Testing Patterns

@@ -1,15 +1,84 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../lib/auth/auth-context";
+import { Navigate } from "react-router";
 import { ChatWidget } from "../components/ChatWidget";
 
+interface Widget {
+  id: string;
+  name: string;
+  description?: string;
+  isPublic: boolean;
+  createdAt: string;
+  userId?: string;
+}
+
 export default function Test() {
+  const { user, isLoading, isAuthenticated, isAdmin } = useAuth();
   const [widgetId, setWidgetId] = useState("");
   const [testMode, setTestMode] = useState<"standard" | "custom">("standard");
   const [advertiserName, setAdvertiserName] = useState("Test Company");
   const [advertiserLogo, setAdvertiserLogo] = useState("");
+  const [widgets, setWidgets] = useState<Widget[]>([]);
+  const [loadingWidgets, setLoadingWidgets] = useState(false);
+
+  // Check if user is admin
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        minHeight: "100vh",
+        fontSize: "1.2rem"
+      }}>
+        Loading...
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !isAdmin) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Load all widgets for admin testing
+  useEffect(() => {
+    const loadWidgets = async () => {
+      setLoadingWidgets(true);
+      try {
+        const response = await fetch('/api/admin/widgets');
+        if (response.ok) {
+          const data = await response.json() as { widgets: Widget[] };
+          setWidgets(data.widgets || []);
+        } else {
+          console.error('Failed to load widgets:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error loading widgets:', error);
+      } finally {
+        setLoadingWidgets(false);
+      }
+    };
+
+    loadWidgets();
+  }, []);
   
   return (
     <div style={{ minHeight: "100vh", padding: "2rem", backgroundColor: "#f5f5f5" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        {/* Admin Notice */}
+        <div style={{ 
+          backgroundColor: "#f0f9ff", 
+          border: "1px solid #0ea5e9",
+          padding: "1rem", 
+          borderRadius: "8px", 
+          marginBottom: "2rem"
+        }}>
+          <h4 style={{ color: "#0369a1", margin: "0 0 0.5rem 0" }}>🔧 Admin Testing Environment</h4>
+          <p style={{ color: "#0369a1", margin: 0, fontSize: "0.9rem" }}>
+            Welcome, {user?.name}! You have admin access to test all widgets in the system.
+          </p>
+        </div>
+
         {/* Control Panel */}
         <div style={{ 
           backgroundColor: "white", 
@@ -48,24 +117,37 @@ export default function Test() {
               {testMode === "custom" && (
                 <div>
                   <label style={{ display: "block", marginBottom: "0.5rem", color: "#666" }}>
-                    Widget ID:
+                    Select Widget:
                   </label>
-                  <input
-                    type="text"
-                    value={widgetId}
-                    onChange={(e) => setWidgetId(e.target.value)}
-                    placeholder="Enter widget UUID"
-                    style={{
-                      width: "100%",
-                      padding: "0.5rem",
-                      border: "1px solid #ddd",
-                      borderRadius: "4px",
-                      fontSize: "0.9rem"
-                    }}
-                  />
-                  <p style={{ fontSize: "0.8rem", color: "#666", marginTop: "0.5rem" }}>
-                    Must be a public widget UUID
-                  </p>
+                  {loadingWidgets ? (
+                    <div style={{ padding: "0.5rem", color: "#666" }}>Loading widgets...</div>
+                  ) : (
+                    <>
+                      <select
+                        value={widgetId}
+                        onChange={(e) => setWidgetId(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "0.5rem",
+                          border: "1px solid #ddd",
+                          borderRadius: "4px",
+                          fontSize: "0.9rem",
+                          backgroundColor: "white"
+                        }}
+                      >
+                        <option value="">-- Select a widget --</option>
+                        {widgets.map((widget) => (
+                          <option key={widget.id} value={widget.id}>
+                            {widget.name} ({widget.isPublic ? 'Public' : 'Private'}) 
+                            {widget.userId && ` - ${widget.userId.substring(0, 8)}...`}
+                          </option>
+                        ))}
+                      </select>
+                      <p style={{ fontSize: "0.8rem", color: "#666", marginTop: "0.5rem" }}>
+                        {widgets.length} widgets available • All widgets shown for admin testing
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </div>

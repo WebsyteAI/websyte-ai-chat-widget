@@ -43,4 +43,21 @@ export class AuthService {
     }
     return session;
   }
+
+  // Check if user is admin by checking their role
+  async isAdmin(userId: string, c: Context<{ Bindings: Env }>) {
+    try {
+      // Get the session to check the user's role
+      const session = await this.getSession(c);
+      if (!session?.user) {
+        return false;
+      }
+      
+      // Check if the user has the admin role
+      return session.user.role === 'admin';
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      return false;
+    }
+  }
 }

@@ -190,6 +190,7 @@ export class WidgetService {
     return result;
   }
 
+
   async updateWidget(id: string, userId: string, request: UpdateWidgetRequest): Promise<WidgetWithFiles | null> {
     const updateData: Partial<NewWidget> = {};
     

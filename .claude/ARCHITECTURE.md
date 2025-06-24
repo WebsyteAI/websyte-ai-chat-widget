@@ -14,7 +14,59 @@ Full-stack chat widget system with modular component architecture, RAG capabilit
 - **Authentication**: Better Auth for user management
 - **Storage**: PostgreSQL for persistent data, localStorage for client state
 
-## New RAG & Vector Search Architecture
+## Custom Widget Embed Architecture
+
+### Widget Entry Script (`app/widget-entry.tsx`)
+The embed script architecture supports both standard and custom widgets:
+
+```typescript
+// Standard widget (page content chat)
+<script src="/dist/widget.js" async></script>
+
+// Custom widget (RAG-powered with knowledge base)
+<script src="/dist/widget.js" data-widget-id="uuid" async></script>
+```
+
+**Key Components:**
+- **Script Attribute Parsing**: Extracts `data-widget-id` and other configuration
+- **Dynamic Widget Loading**: Renders different widget types based on configuration
+- **Public Access Support**: Anonymous access for public widgets
+
+### Widget Management Service (`workers/services/widget.ts`)
+```typescript
+class WidgetService {
+  // Standard authenticated widget access
+  async getWidget(id: string, userId: string): Promise<WidgetWithFiles | null>
+  
+  // Public widget access (no authentication required)
+  async getPublicWidget(id: string): Promise<WidgetWithFiles | null>
+  
+  // Public widget content search
+  async searchPublicWidgetContent(id: string, query: string, limit: number)
+}
+```
+
+### Enhanced Chat Service (`workers/services/chat.ts`)
+```typescript
+class ChatService {
+  async handleChat(c: AppContext): Promise<Response> {
+    // Support both standard and custom widgets
+    if (widgetId && this.ragAgent && this.widgetService) {
+      const publicWidget = await this.widgetService.getPublicWidget(widgetId);
+      
+      if (publicWidget) {
+        // Public widget - anonymous access
+        const ragResult = await this.ragAgent.generateResponse(body, 'anonymous');
+      } else if (auth?.user?.id) {
+        // Private widget - authenticated access
+        const ragResult = await this.ragAgent.generateResponse(body, auth.user.id);
+      }
+    }
+  }
+}
+```
+
+## RAG & Vector Search Architecture
 
 ### RAG Agent Service (`workers/services/rag-agent.ts`)
 ```typescript

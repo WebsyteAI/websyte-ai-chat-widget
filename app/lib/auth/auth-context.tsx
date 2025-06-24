@@ -21,6 +21,7 @@ export interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -39,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const isAuthenticated = !!user && !!session;
 
@@ -65,6 +67,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           expiresAt: new Date(sessionData.data.session.expiresAt),
           userId: sessionData.data.session.userId,
         });
+
+        // Check admin status using Better Auth admin plugin
+        try {
+          const adminStatus = await authClient.admin.isAdmin({
+            userId: sessionData.data.user.id
+          });
+          setIsAdmin(adminStatus?.isAdmin || false);
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+          setIsAdmin(false);
+        }
       }
     } catch (error) {
       console.error('Session check failed:', error);
@@ -111,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
       setSession(null);
+      setIsAdmin(false);
       setIsLoading(false);
     }
   };
@@ -120,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     isLoading,
     isAuthenticated,
+    isAdmin,
     signInWithGoogle,
     signOut,
   };

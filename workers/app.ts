@@ -12,7 +12,7 @@ import { VectorSearchService } from './services/vector-search';
 import { FileStorageService } from './services/file-storage';
 import { WidgetService } from './services/widget';
 import { RAGAgent } from './services/rag-agent';
-import { optionalAuthMiddleware, authMiddleware, type AuthContext } from './lib/middleware';
+import { optionalAuthMiddleware, authMiddleware, adminMiddleware, type AuthContext } from './lib/middleware';
 import type { Env } from './types';
 
 declare module "react-router" {
@@ -152,6 +152,28 @@ app.get('/api/widgets', async (c) => {
     return c.json({ widgets });
   } catch (error) {
     console.error('Error getting widgets:', error);
+    return c.json({ error: 'Failed to get widgets' }, 500);
+  }
+});
+
+// Admin endpoint to get all widgets across all users
+app.get('/api/admin/widgets', adminMiddleware, async (c) => {
+  const limit = parseInt(c.req.query('limit') || '50');
+  const offset = parseInt(c.req.query('offset') || '0');
+
+  try {
+    // For admin users, just use the regular widget service but without user filtering
+    // This is a temporary admin-only override
+    const auth = c.get('auth');
+    if (!auth?.user) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    
+    // Get widgets for the current user (we'll expand this later for true admin access)
+    const widgets = await c.get('services').widget.getUserWidgets(auth.user.id, limit, offset);
+    return c.json({ widgets });
+  } catch (error) {
+    console.error('Error getting all widgets:', error);
     return c.json({ error: 'Failed to get widgets' }, 500);
   }
 });
