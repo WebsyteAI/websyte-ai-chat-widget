@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { marked } from "marked";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import { ChevronDown, ChevronUp, FileText, Search } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -14,9 +16,6 @@ interface ChatMessageProps {
 export function ChatMessage({ message, showSources = true, showDebug = false }: ChatMessageProps) {
   const [showSourcesExpanded, setShowSourcesExpanded] = useState(false);
   
-  const renderMarkdown = (content: string) => {
-    return { __html: marked(content) };
-  };
 
   const formatSimilarity = (similarity: number): string => {
     return `${Math.round(similarity * 100)}%`;
@@ -41,10 +40,11 @@ export function ChatMessage({ message, showSources = true, showDebug = false }: 
           }`}
         >
           {message.role === "assistant" ? (
-            <div 
-              className="text-sm prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0"
-              dangerouslySetInnerHTML={renderMarkdown(message.content)}
-            />
+            <div className="text-sm prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                {message.content}
+              </ReactMarkdown>
+            </div>
           ) : (
             <p className="text-sm whitespace-pre-wrap">{message.content}</p>
           )}

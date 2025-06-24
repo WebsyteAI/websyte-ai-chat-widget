@@ -1,4 +1,6 @@
-import { marked } from "marked";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import type { Message } from "../types";
 
 interface ChatMessageProps {
@@ -6,9 +8,6 @@ interface ChatMessageProps {
 }
 
 export function ChatMessage({ message }: ChatMessageProps) {
-  const renderMarkdown = (content: string) => {
-    return { __html: marked(content) };
-  };
 
   return (
     <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -20,10 +19,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
         }`}
       >
         {message.role === "assistant" ? (
-          <div 
-            className="text-sm prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0"
-            dangerouslySetInnerHTML={renderMarkdown(message.content)}
-          />
+          <div className="text-sm prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+              {message.content}
+            </ReactMarkdown>
+          </div>
         ) : (
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         )}

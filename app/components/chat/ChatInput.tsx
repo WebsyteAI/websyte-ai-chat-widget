@@ -49,7 +49,7 @@ export function ChatInput({
 
   return (
     <div className="p-4 border-t border-gray-200">
-      <div className={`flex items-end bg-gray-100 rounded-lg p-2 ${
+      <div className={`flex items-center bg-gray-100 rounded-lg p-2 ${
         disabled ? 'opacity-50' : ''
       }`}>
         <textarea
@@ -57,7 +57,7 @@ export function ChatInput({
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={disabled ? "Create a widget to enable chat" : placeholder}
-          className="flex-1 px-3 py-2 bg-transparent border-0 focus:outline-none text-sm placeholder-gray-500 resize-none min-h-[2.5rem] max-h-32"
+          className="flex-1 px-3 py-2 bg-transparent border-0 focus:outline-none text-sm placeholder-gray-500 resize-none min-h-[2.5rem] max-h-32 self-end"
           disabled={disabled || loading}
           maxLength={maxLength}
           rows={1}
@@ -72,7 +72,7 @@ export function ChatInput({
           }}
         />
         
-        <div className="flex items-center gap-2 ml-2">
+        <div className="flex items-center gap-2 ml-2 self-center">
           {/* Character count (when approaching limit) */}
           {value.length > maxLength * 0.8 && (
             <span className={`text-xs ${
@@ -89,7 +89,7 @@ export function ChatInput({
             size="icon"
             variant={canCancel ? "destructive" : "default"}
             className={cn(
-              "h-9 w-9 shadow-sm",
+              "h-9 w-9 shadow-sm flex items-center justify-center",
               canCancel && "hover:bg-red-600",
               !canSend && !canCancel && "bg-gray-200 text-gray-400"
             )}

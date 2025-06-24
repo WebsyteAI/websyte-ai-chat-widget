@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { marked } from "marked";
 import { ContentExtractor } from "../../lib/content-extractor";
 import { UmamiTracking } from "../../lib/umami-tracker";
 import { 
@@ -20,12 +19,6 @@ import type {
   ContentMode,
   Message,
 } from "./types";
-
-// Configure marked for safe HTML rendering
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-});
 
 export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, advertiserUrl = "https://websyte.ai", isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false, widgetId }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");

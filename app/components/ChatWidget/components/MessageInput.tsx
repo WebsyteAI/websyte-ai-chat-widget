@@ -37,7 +37,7 @@ export function MessageInput({
           disabled={!isLoading && !inputValue.trim()}
           variant={isLoading ? "destructive" : "secondary"}
           size="icon"
-          className="h-8 w-8 bg-white hover:bg-gray-50 disabled:bg-gray-200 text-gray-600 shadow-sm ml-2"
+          className="h-8 w-8 bg-white hover:bg-gray-50 disabled:bg-gray-200 text-gray-600 shadow-sm ml-2 flex items-center justify-center"
         >
           {isLoading ? <Square size={16} /> : <ArrowUp size={16} />}
         </Button>
