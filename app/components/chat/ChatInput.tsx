@@ -1,4 +1,6 @@
 import { ArrowUp, Square } from "lucide-react";
+import { Button } from "../ui/button";
+import { cn } from "~/lib/utils";
 
 interface ChatInputProps {
   value: string;
@@ -81,16 +83,16 @@ export function ChatInput({
           )}
           
           {/* Send/Cancel Button */}
-          <button
+          <Button
             onClick={canCancel ? handleCancel : handleSubmit}
             disabled={!canSend && !canCancel}
-            className={`p-2 rounded-md transition-colors flex items-center justify-center shadow-sm ${
-              canCancel
-                ? 'bg-red-500 hover:bg-red-600 text-white'
-                : canSend
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
+            size="icon"
+            variant={canCancel ? "destructive" : "default"}
+            className={cn(
+              "h-9 w-9 shadow-sm",
+              canCancel && "hover:bg-red-600",
+              !canSend && !canCancel && "bg-gray-200 text-gray-400"
+            )}
             title={canCancel ? 'Cancel message' : 'Send message'}
           >
             {canCancel ? (
@@ -98,7 +100,7 @@ export function ChatInput({
             ) : (
               <ArrowUp size={16} />
             )}
-          </button>
+          </Button>
         </div>
       </div>
       

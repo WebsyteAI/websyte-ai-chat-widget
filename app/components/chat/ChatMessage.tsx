@@ -2,6 +2,7 @@ import { useState } from "react";
 import { marked } from "marked";
 import { ChevronDown, ChevronUp, FileText, Search } from "lucide-react";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import type { ChatMessage as ChatMessageType } from "./types";
 
 interface ChatMessageProps {
@@ -64,9 +65,11 @@ export function ChatMessage({ message, showSources = true, showDebug = false }: 
         {/* Sources Section */}
         {message.role === "assistant" && message.sources && message.sources.length > 0 && showSources && (
           <div className="space-y-2">
-            <button
+            <Button
               onClick={() => setShowSourcesExpanded(!showSourcesExpanded)}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+              variant="ghost"
+              size="sm"
+              className="h-auto py-1 px-2 text-gray-600 hover:text-gray-800"
             >
               <Search className="w-4 h-4" />
               <span>{message.sources.length} source{message.sources.length !== 1 ? 's' : ''} retrieved</span>
@@ -75,7 +78,7 @@ export function ChatMessage({ message, showSources = true, showDebug = false }: 
               ) : (
                 <ChevronDown className="w-4 h-4" />
               )}
-            </button>
+            </Button>
 
             {showSourcesExpanded && (
               <div className="space-y-2">

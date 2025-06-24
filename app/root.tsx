@@ -11,6 +11,7 @@ import {
 import type { Route } from "./+types/root";
 import { UmamiTracking } from "./lib/umami-tracker";
 import { AuthProvider } from "./lib/auth/auth-context";
+import { Toaster } from "@/components/ui/sonner";
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [
@@ -52,6 +53,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <AuthProvider>
           {children}
         </AuthProvider>
+        <Toaster />
         <ScrollRestoration />
         <Scripts />
         {isHomePage && (

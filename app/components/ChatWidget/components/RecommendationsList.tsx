@@ -1,5 +1,6 @@
 import type { Recommendation } from "../types";
 import { Marquee } from "../../ui/marquee";
+import { Button } from "~/components/ui/button";
 
 interface RecommendationsListProps {
   recommendations: Recommendation[];
@@ -27,15 +28,17 @@ export function RecommendationsList({
           ))
         ) : (
           recommendations.map((rec, index) => (
-            <button
+            <Button
               key={index}
               onClick={() => onRecommendationClick(rec)}
               disabled={isTransitioning || isLoading}
-              className="h-5 hover:bg-gray-50 rounded-lg px-2 text-sm text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              variant="ghost"
+              size="sm"
+              className="h-5 text-gray-500 hover:text-gray-700 whitespace-nowrap px-2"
               title={rec.description}
             >
               {rec.title}
-            </button>
+            </Button>
           ))
         )}
       </Marquee>

@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { ScriptCopyBtn } from "@/components/ui/script-copy-btn";
+import { toast } from "@/lib/use-toast";
 import {
   Brain,
   Zap,
@@ -21,7 +23,6 @@ import {
   Shield,
   Code,
   Palette,
-  Copy,
   MessageCircle,
   Globe,
   ArrowUp,
@@ -78,7 +79,13 @@ export function LandingPage() {
   };
 
   const copyToClipboard = async () => {
-    await navigator.clipboard.writeText(generateEmbedCode());
+    try {
+      await navigator.clipboard.writeText(generateEmbedCode());
+      toast.success('Embed code copied to clipboard!');
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      toast.error('Failed to copy embed code');
+    }
   };
 
   const features = [
@@ -134,14 +141,14 @@ export function LandingPage() {
       icon: <Layers className="h-6 w-6" />,
       title: "Multi-AI Support", 
       description:
-        "Powered by OpenAI GPT-4.1-mini and Mistral AI with intelligent fallback and model selection.",
+        "Powered by OpenAI GPT-4o-mini and Mistral AI with intelligent fallback and model selection.",
     },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative z-10">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -329,23 +336,10 @@ export function LandingPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="relative">
-                  <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm overflow-x-auto">
-                    <code className="text-green-400">
-                      {`<script src="https://websyte.ai/dist/widget.js" async></script>`}
-                    </code>
-                  </div>
-                  <button
-                    className="absolute top-2 right-2 px-3 py-2 rounded-md border border-black bg-white text-black text-sm hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(
-                        `<script src="https://websyte.ai/dist/widget.js" async></script>`
-                      );
-                    }}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
+                <ScriptCopyBtn
+                  code={`<script src="https://websyte.ai/dist/widget.js" async></script>`}
+                  codeLanguage="html"
+                />
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">Perfect for:</p>
                   <ul className="text-sm space-y-1 ml-4">
@@ -379,23 +373,10 @@ export function LandingPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="relative">
-                  <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm overflow-x-auto">
-                    <code className="text-green-400">
-                      {`<script src="https://websyte.ai/dist/widget.js" data-widget-id="your-widget-id" async></script>`}
-                    </code>
-                  </div>
-                  <button
-                    className="absolute top-2 right-2 px-3 py-2 rounded-md border border-black bg-white text-black text-sm hover:shadow-[2px_2px_0px_0px_rgba(0,0,0)] transition duration-200 cursor-pointer"
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(
-                        `<script src="https://websyte.ai/dist/widget.js" data-widget-id="your-widget-id" async></script>`
-                      );
-                    }}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
+                <ScriptCopyBtn
+                  code={`<script src="https://websyte.ai/dist/widget.js" data-widget-id="your-widget-id" async></script>`}
+                  codeLanguage="html"
+                />
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">Features:</p>
                   <ul className="text-sm space-y-1 ml-4">

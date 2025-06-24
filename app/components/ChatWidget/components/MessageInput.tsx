@@ -1,4 +1,5 @@
 import { ArrowUp, Square } from "lucide-react";
+import { Button } from "~/components/ui/button";
 
 interface MessageInputProps {
   inputValue: string;
@@ -31,13 +32,15 @@ export function MessageInput({
           className="flex-1 px-3 py-2 bg-transparent border-0 focus:outline-none text-sm placeholder-gray-500"
           disabled={isLoading}
         />
-        <button
+        <Button
           onClick={isLoading ? onCancel : onSend}
           disabled={!isLoading && !inputValue.trim()}
-          className="bg-white hover:bg-gray-50 disabled:bg-gray-200 text-gray-600 p-2 rounded-md transition-colors flex items-center justify-center shadow-sm ml-2"
+          variant={isLoading ? "destructive" : "secondary"}
+          size="icon"
+          className="h-8 w-8 bg-white hover:bg-gray-50 disabled:bg-gray-200 text-gray-600 shadow-sm ml-2"
         >
           {isLoading ? <Square size={16} /> : <ArrowUp size={16} />}
-        </button>
+        </Button>
       </div>
     </div>
   );

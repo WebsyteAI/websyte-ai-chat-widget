@@ -1,4 +1,5 @@
 import { Play, Pause, X } from "lucide-react";
+import { Button } from "~/components/ui/button";
 
 interface AudioPlayerProps {
   isPlaying: boolean;
@@ -56,32 +57,38 @@ export function AudioPlayer({
 
       {/* Bottom Row: Audio control buttons */}
       <div className="flex items-center justify-center gap-2">
-        <button
+        <Button
           onClick={onSpeedChange}
           disabled={isTransitioning}
-          className="bg-white hover:bg-gray-50 px-2 py-1 rounded text-sm font-medium text-gray-700 transition-colors shadow-sm disabled:opacity-50"
+          variant="outline"
+          size="sm"
+          className="bg-white hover:bg-gray-50 text-gray-700 shadow-sm h-7 px-2"
           title="Playback speed"
         >
           {playbackSpeed}x
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={onPlayPause}
           disabled={isTransitioning}
-          className="bg-white hover:bg-gray-50 p-2 rounded-full shadow-sm transition-colors disabled:opacity-50"
+          variant="outline"
+          size="icon"
+          className="bg-white hover:bg-gray-50 shadow-sm h-9 w-9 rounded-full"
           title={isPlaying ? "Pause" : "Play"}
         >
           {isPlaying ? <Pause size={20} className="text-gray-700" /> : <Play size={20} className="text-gray-700" />}
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={onExit}
           disabled={isTransitioning}
-          className="bg-white hover:bg-gray-50 p-2 rounded-full shadow-sm transition-colors disabled:opacity-50"
+          variant="outline"
+          size="icon"
+          className="bg-white hover:bg-gray-50 shadow-sm h-9 w-9 rounded-full"
           title="Exit audio player"
         >
           <X size={18} className="text-gray-700" />
-        </button>
+        </Button>
       </div>
     </div>
   );

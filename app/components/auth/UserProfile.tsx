@@ -48,7 +48,7 @@ export function UserProfile() {
       </button>
 
       {showDropdown && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border py-2 z-50">
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border py-2 z-[10000]">
           <div className="px-4 py-2 border-b">
             <p className="text-sm font-medium">{user.name}</p>
             <p className="text-xs text-gray-600">{user.email}</p>
@@ -76,7 +76,7 @@ export function UserProfile() {
       {/* Click outside to close */}
       {showDropdown && (
         <div 
-          className="fixed inset-0 z-40"
+          className="fixed inset-0 z-[9999]"
           onClick={() => setShowDropdown(false)}
         />
       )}

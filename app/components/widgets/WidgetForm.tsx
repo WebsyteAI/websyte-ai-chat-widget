@@ -4,8 +4,10 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Upload, X, FileText, Trash2, Copy, Check, Code, Lock, ArrowLeft } from 'lucide-react';
+import { Upload, X, FileText, Trash2, Code, Lock, ArrowLeft } from 'lucide-react';
 import { useUIStore, type Widget } from '../../stores';
+import { ScriptCopyBtn } from '../ui/script-copy-btn';
+import { toast } from '@/lib/use-toast';
 
 
 interface WidgetFormProps {
@@ -21,7 +23,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
   const [existingFiles, setExistingFiles] = useState(widget?.files || []);
   const [isPublic, setIsPublic] = useState(false);
-  const [copiedEmbed, setCopiedEmbed] = useState(false);
   const {
     widgetFormData,
     updateWidgetFormField,
@@ -98,9 +99,10 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
 
       // Remove the file from the existing files list
       setExistingFiles(prev => prev.filter(f => f.id !== fileId));
+      toast.success('File deleted successfully');
     } catch (error) {
       console.error('Error deleting file:', error);
-      alert('Failed to delete file. Please try again.');
+      toast.error('Failed to delete file. Please try again.');
     } finally {
       setDeletingFileId(null);
     }
@@ -127,16 +129,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
     return `<script ${attributes.join(' ')}></script>`;
   };
 
-  const copyEmbedCode = async () => {
-    const embedCode = generateEmbedCode();
-    try {
-      await navigator.clipboard.writeText(embedCode);
-      setCopiedEmbed(true);
-      setTimeout(() => setCopiedEmbed(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy embed code:', err);
-    }
-  };
 
   const toggleWidgetPublic = async () => {
     if (!widget?.id) return;
@@ -158,9 +150,10 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
       }
 
       setIsPublic(!isPublic);
+      toast.success(`Widget is now ${!isPublic ? 'public' : 'private'}`);
     } catch (error) {
       console.error('Error updating widget visibility:', error);
-      alert('Failed to update widget visibility. Please try again.');
+      toast.error('Failed to update widget visibility. Please try again.');
     }
   };
 
@@ -209,9 +202,10 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
         for (let i = files.length - 1; i >= 0; i--) {
           removeFile(i);
         }
+        toast.success(`${files.length} file${files.length > 1 ? 's' : ''} uploaded successfully`);
       } catch (error) {
         console.error('Error uploading files:', error);
-        alert('Some files failed to upload. Please try again.');
+        toast.error('Some files failed to upload. Please try again.');
       }
     }
   };
@@ -454,31 +448,12 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
 
                   {/* Generated Embed Code */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label>Embed Code</Label>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={copyEmbedCode}
-                        className="flex items-center gap-2"
-                      >
-                        {copiedEmbed ? (
-                          <>
-                            <Check className="w-4 h-4 text-green-600" />
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-4 h-4" />
-                            Copy
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                    <pre className="bg-gray-900 text-gray-100 p-3 rounded-lg text-sm overflow-x-auto">
-                      <code>{generateEmbedCode()}</code>
-                    </pre>
+                    <Label>Embed Code</Label>
+                    <ScriptCopyBtn
+                      code={generateEmbedCode()}
+                      codeLanguage="html"
+                      className="mt-2"
+                    />
                     <p className="text-xs text-gray-600">
                       Paste this code into your website's HTML where you want the widget to appear.
                     </p>

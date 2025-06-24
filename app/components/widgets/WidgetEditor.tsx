@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChatPanel } from '../chat';
 import { WidgetForm } from './WidgetForm';
+import { toast } from '../../lib/use-toast';
 import type { Widget } from '../../stores/types';
 
 interface WidgetEditorProps {
@@ -55,6 +56,7 @@ export function WidgetEditor({
         
         setCreatedWidget(updatedWidget);
         onWidgetUpdated?.(updatedWidget);
+        toast.success('Widget updated successfully');
       } else {
         // Create new widget
         const response = await fetch('/api/widgets', {
@@ -72,10 +74,11 @@ export function WidgetEditor({
         
         setCreatedWidget(newWidget);
         onWidgetCreated?.(newWidget);
+        toast.success('Widget created successfully');
       }
     } catch (error) {
       console.error('Error submitting widget:', error);
-      alert(`Failed to ${isEditing ? 'update' : 'create'} widget. Please try again.`);
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} widget. Please try again.`);
     } finally {
       setFormLoading(false);
     }
@@ -98,11 +101,12 @@ export function WidgetEditor({
         throw new Error('Failed to delete widget');
       }
 
+      toast.success('Widget deleted successfully');
       onWidgetDeleted?.(createdWidget);
       onBack();
     } catch (error) {
       console.error('Error deleting widget:', error);
-      alert('Failed to delete widget. Please try again.');
+      toast.error('Failed to delete widget. Please try again.');
     }
   };
 
