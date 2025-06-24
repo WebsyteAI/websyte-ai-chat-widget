@@ -2,7 +2,7 @@ import { WidgetList } from '../components/widgets/WidgetList';
 import { WidgetEditor } from '../components/widgets/WidgetEditor';
 import { useWidgetStore, useUIStore } from '../stores';
 
-export default function DashboardWidgetsPage() {
+export default function DashboardIndex() {
   // Zustand stores
   const { fetchWidgets } = useWidgetStore();
   const { 

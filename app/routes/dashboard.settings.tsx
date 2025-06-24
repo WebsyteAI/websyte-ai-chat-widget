@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { useAuth } from '../lib/auth/auth-context';
 
-export default function DashboardSettingsPage() {
+export default function DashboardSettings() {
   const { user } = useAuth();
 
   if (!user) {
