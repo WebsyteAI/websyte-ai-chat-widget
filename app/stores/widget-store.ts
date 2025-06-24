@@ -11,8 +11,8 @@ interface WidgetState {
   // Actions
   fetchWidgets: () => Promise<void>;
   createWidget: (formData: FormData) => Promise<void>;
-  updateWidget: (id: number, data: any) => Promise<void>;
-  deleteWidget: (id: number) => Promise<void>;
+  updateWidget: (id: string, data: any) => Promise<void>;
+  deleteWidget: (id: string) => Promise<void>;
   clearError: () => void;
   
   // Selectors
@@ -73,7 +73,7 @@ export const useWidgetStore = create<WidgetState>()(
         }
       },
 
-      updateWidget: async (id: number, updateData: any) => {
+      updateWidget: async (id: string, updateData: any) => {
         set({ loading: true, error: null });
         try {
           const response = await fetch(`/api/widgets/${id}`, {
@@ -102,7 +102,7 @@ export const useWidgetStore = create<WidgetState>()(
         }
       },
 
-      deleteWidget: async (id: number) => {
+      deleteWidget: async (id: string) => {
         set({ loading: true, error: null });
         try {
           const response = await fetch(`/api/widgets/${id}`, {

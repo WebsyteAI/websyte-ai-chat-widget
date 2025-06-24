@@ -125,7 +125,7 @@ export function WidgetEditor({
       <div className="w-1/2 bg-gray-50 flex flex-col [&_[data-slot='card']]:border-0 [&_[data-slot='card']]:shadow-none">
         <ChatPanel
           config={{
-            widgetId: createdWidget?.id ? String(createdWidget.id) : undefined,
+            widgetId: createdWidget?.id || undefined,
             enabled: hasWidget,
             baseUrl: '',
             enableSources: true,

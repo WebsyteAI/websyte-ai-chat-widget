@@ -27,6 +27,8 @@ export class RAGAgent {
     threshold: number = 0
   ): Promise<{ chunks: string[]; sources: any[] }> {
     try {
+      console.log('[RAG] Retrieving context for widget:', widgetId, 'user:', userId, 'query:', query);
+      
       const searchResults = await this.widgetService.searchWidgetContent(
         widgetId,
         userId,
@@ -34,15 +36,19 @@ export class RAGAgent {
         maxChunks
       );
 
+      console.log('[RAG] Search results count:', searchResults.length);
+
       // Filter by similarity threshold
       const filteredResults = searchResults.filter((result: any) => result.similarity >= threshold);
+      
+      console.log('[RAG] Filtered results count:', filteredResults.length);
       
       return {
         chunks: filteredResults.map((result: any) => result.chunk),
         sources: filteredResults
       };
     } catch (error) {
-      console.error('Error retrieving context:', error);
+      console.error('[RAG] Error retrieving context:', error);
       return { chunks: [], sources: [] };
     }
   }

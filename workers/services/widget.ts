@@ -269,13 +269,20 @@ export class WidgetService {
   }
 
   async searchWidgetContent(id: string, userId: string, query: string, limit: number = 10) {
+    console.log('[WIDGET] Searching content for widget:', id, 'user:', userId, 'query:', query);
+    
     // Verify ownership
     const widgetRecord = await this.getWidget(id, userId);
     if (!widgetRecord) {
+      console.error('[WIDGET] Widget not found or user does not have access. Widget ID:', id, 'User ID:', userId);
       throw new Error('Widget not found');
     }
 
-    return await this.vectorSearch.searchSimilarContent(query, id, limit);
+    console.log('[WIDGET] Widget found, performing vector search');
+    const results = await this.vectorSearch.searchSimilarContent(query, id, limit);
+    console.log('[WIDGET] Vector search returned', results.length, 'results');
+    
+    return results;
   }
 
   async searchPublicWidgetContent(id: string, query: string, limit: number = 10) {

@@ -43,21 +43,24 @@ export class ChatService {
       if (widgetId && this.ragAgent && this.widgetService) {
         try {
           const auth = c.get('auth');
+          console.log('[CHAT] Auth status:', auth ? 'authenticated' : 'not authenticated', 'User ID:', auth?.user?.id || 'none');
           
-          // Check if widget is public
-          const publicWidget = await this.widgetService.getPublicWidget(widgetId);
-          
-          if (publicWidget) {
-            // Public widget - no auth required, use anonymous user ID
-            const ragResult = await this.ragAgent.generateResponse(body, 'anonymous');
+          // If user is authenticated, use their ID (for widget editor and authenticated access)
+          if (auth?.user?.id) {
+            const ragResult = await this.ragAgent.generateResponse(body, auth.user.id);
             
             return c.json({ 
               message: ragResult.response,
               sources: ragResult.sources 
             });
-          } else if (auth?.user?.id) {
-            // Private widget - requires auth
-            const ragResult = await this.ragAgent.generateResponse(body, auth.user.id);
+          }
+          
+          // For unauthenticated users, check if widget is public
+          const publicWidget = await this.widgetService.getPublicWidget(widgetId);
+          
+          if (publicWidget) {
+            // Public widget - use anonymous user ID
+            const ragResult = await this.ragAgent.generateResponse(body, 'anonymous');
             
             return c.json({ 
               message: ragResult.response,

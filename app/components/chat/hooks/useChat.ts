@@ -69,6 +69,7 @@ export function useChat(config: ChatConfig): ChatState & ChatAPI {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(chatRequest),
         signal: controller.signal,
       });

@@ -18,7 +18,7 @@ interface WidgetFormProps {
 
 export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = false }: WidgetFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [deletingFileId, setDeletingFileId] = useState<number | null>(null);
+  const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
   const [existingFiles, setExistingFiles] = useState(widget?.files || []);
   const [isPublic, setIsPublic] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
@@ -74,7 +74,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
     addFiles(selectedFiles);
   };
 
-  const handleDeleteExistingFile = async (fileId: number) => {
+  const handleDeleteExistingFile = async (fileId: string) => {
     if (!widget) return;
     
     const file = existingFiles.find(f => f.id === fileId);

@@ -1,6 +1,6 @@
 // Shared types for stores
 export interface WidgetFile {
-  id: number;
+  id: string;
   filename: string;
   fileType: string;
   fileSize: number;
@@ -8,7 +8,7 @@ export interface WidgetFile {
 }
 
 export interface Widget {
-  id: number;
+  id: string;
   name: string;
   description?: string;
   url?: string;
