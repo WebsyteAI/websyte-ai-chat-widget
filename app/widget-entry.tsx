@@ -112,6 +112,7 @@ declare global {
   function createWidgetContainer() {
     const container = document.createElement('div');
     container.id = 'websyte-chat-widget-root';
+    container.setAttribute('data-websyte-widget-container', 'true');
     
     // Determine where to inject the widget
     let targetParent = document.body;

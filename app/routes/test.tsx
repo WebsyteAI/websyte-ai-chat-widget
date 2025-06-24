@@ -20,6 +20,8 @@ export default function Test() {
   const [advertiserLogo, setAdvertiserLogo] = useState("");
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [loadingWidgets, setLoadingWidgets] = useState(false);
+  const [renderMode, setRenderMode] = useState<"floating" | "target">("floating");
+  const [loadMode, setLoadMode] = useState<"import" | "script">("import");
 
   // Load all widgets for admin testing
   useEffect(() => {
@@ -44,6 +46,55 @@ export default function Test() {
       loadWidgets();
     }
   }, [isAuthenticated, isAdmin]);
+
+  // Handle script tag loading/unloading
+  useEffect(() => {
+    if (loadMode === "script") {
+      // Remove any existing widget script
+      const existingScript = document.getElementById("websyte-widget-script");
+      if (existingScript) {
+        existingScript.remove();
+      }
+
+      // Remove any existing widget container
+      const existingContainer = document.querySelector('[data-websyte-widget-container]');
+      if (existingContainer) {
+        existingContainer.remove();
+      }
+
+      // Create and append script
+      const script = document.createElement("script");
+      script.id = "websyte-widget-script";
+      script.src = "/dist/widget.js";
+      script.async = true;
+      
+      // Set data attributes
+      script.dataset.advertiserName = advertiserName;
+      if (advertiserLogo) {
+        script.dataset.advertiserLogo = advertiserLogo;
+      }
+      if (testMode === "custom" && widgetId) {
+        script.dataset.widgetId = widgetId;
+      }
+      if (renderMode === "target") {
+        script.dataset.targetElement = "#chat-widget-target";
+      }
+
+      document.body.appendChild(script);
+
+      // Cleanup on unmount or when dependencies change
+      return () => {
+        const scriptToRemove = document.getElementById("websyte-widget-script");
+        if (scriptToRemove) {
+          scriptToRemove.remove();
+        }
+        const containerToRemove = document.querySelector('[data-websyte-widget-container]');
+        if (containerToRemove) {
+          containerToRemove.remove();
+        }
+      };
+    }
+  }, [loadMode, advertiserName, advertiserLogo, testMode, widgetId, renderMode]);
 
   // Check if user is admin
   if (isLoading) {
@@ -194,17 +245,90 @@ export default function Test() {
                 />
               </div>
             </div>
+            
+            {/* Rendering Options */}
+            <div>
+              <h3 style={{ marginBottom: "1rem", color: "#555" }}>Rendering Options</h3>
+              
+              {/* Render Mode */}
+              <div style={{ marginBottom: "1rem" }}>
+                <label style={{ display: "block", marginBottom: "0.5rem", color: "#666" }}>
+                  Display Mode:
+                </label>
+                <select
+                  value={renderMode}
+                  onChange={(e) => setRenderMode(e.target.value as "floating" | "target")}
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    border: "1px solid #ddd",
+                    borderRadius: "4px",
+                    fontSize: "0.9rem",
+                    backgroundColor: "white"
+                  }}
+                >
+                  <option value="floating">Floating Widget (bottom-right)</option>
+                  <option value="target">Target Element (embedded in page)</option>
+                </select>
+              </div>
+              
+              {/* Load Mode */}
+              <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", color: "#666" }}>
+                  Load Method:
+                </label>
+                <select
+                  value={loadMode}
+                  onChange={(e) => setLoadMode(e.target.value as "import" | "script")}
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    border: "1px solid #ddd",
+                    borderRadius: "4px",
+                    fontSize: "0.9rem",
+                    backgroundColor: "white"
+                  }}
+                >
+                  <option value="import">Direct Import (React Component)</option>
+                  <option value="script">Script Tag (Production Mode)</option>
+                </select>
+              </div>
+            </div>
           </div>
           
           {/* Current Configuration Display */}
           <div style={{ marginTop: "2rem", padding: "1rem", backgroundColor: "#f9f9f9", borderRadius: "4px" }}>
             <h4 style={{ marginBottom: "0.5rem", color: "#333" }}>Current Configuration:</h4>
-            <code style={{ fontSize: "0.8rem", color: "#666" }}>
-              {testMode === "custom" && widgetId 
-                ? `<script src="/dist/widget.js" data-widget-id="${widgetId}" data-advertiser-name="${advertiserName}"${advertiserLogo ? ` data-advertiser-logo="${advertiserLogo}"` : ''} async></script>`
-                : `<script src="/dist/widget.js" data-advertiser-name="${advertiserName}"${advertiserLogo ? ` data-advertiser-logo="${advertiserLogo}"` : ''} async></script>`
-              }
+            <code style={{ fontSize: "0.8rem", color: "#666", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+              {(() => {
+                let scriptTag = '<script src="/dist/widget.js"';
+                scriptTag += ` data-advertiser-name="${advertiserName}"`;
+                if (advertiserLogo) {
+                  scriptTag += ` data-advertiser-logo="${advertiserLogo}"`;
+                }
+                if (testMode === "custom" && widgetId) {
+                  scriptTag += ` data-widget-id="${widgetId}"`;
+                }
+                if (renderMode === "target") {
+                  scriptTag += ` data-target-element="#chat-widget-target"`;
+                }
+                scriptTag += ' async></script>';
+                return scriptTag;
+              })()}
             </code>
+            
+            {/* Display mode-specific notes */}
+            {loadMode === "import" && renderMode === "target" && (
+              <p style={{ marginTop: "0.5rem", fontSize: "0.8rem", color: "#e74c3c" }}>
+                ⚠️ Target element rendering is only supported with script tag mode. Switch to "Script Tag" load method to test target element rendering.
+              </p>
+            )}
+            
+            {loadMode === "script" && (
+              <p style={{ marginTop: "0.5rem", fontSize: "0.8rem", color: "#27ae60" }}>
+                ✓ Widget loaded via script tag. The widget will appear {renderMode === "floating" ? "in the bottom-right corner" : "in the target element below"}.
+              </p>
+            )}
           </div>
         </div>
 
@@ -319,13 +443,44 @@ export default function Test() {
             </div>
           </article>
         </div>
+
+        {/* Target Element Demo */}
+        <div style={{ 
+          backgroundColor: "white", 
+          padding: "2rem", 
+          borderRadius: "8px", 
+          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          marginTop: "2rem"
+        }}>
+          <h2 style={{ marginBottom: "1rem", color: "#333" }}>Target Element Example</h2>
+          <p style={{ color: "#666", marginBottom: "1rem" }}>
+            This demonstrates how the widget can be embedded in a specific target element instead of floating.
+          </p>
+          <div id="chat-widget-target" style={{
+            border: "2px dashed #ddd",
+            borderRadius: "8px",
+            minHeight: "400px",
+            backgroundColor: "#fafafa"
+          }}></div>
+        </div>
       </div>
 
-      <ChatWidget 
-        advertiserName={advertiserName}
-        advertiserLogo={advertiserLogo || undefined}
-        widgetId={testMode === "custom" && widgetId ? widgetId : undefined}
-      />
+      {/* Only render ChatWidget component when using import mode */}
+      {loadMode === "import" && renderMode === "floating" && (
+        <ChatWidget 
+          advertiserName={advertiserName}
+          advertiserLogo={advertiserLogo || undefined}
+          widgetId={testMode === "custom" && widgetId ? widgetId : undefined}
+        />
+      )}
+      
+      {/* For target mode with import, we need to render it inside a portal or handle differently */}
+      {loadMode === "import" && renderMode === "target" && (
+        <div style={{ display: "none" }}>
+          {/* Note: Target element rendering with direct import is not supported yet */}
+          {/* The script tag method should be used for target element rendering */}
+        </div>
+      )}
     </div>
   );
 }
