@@ -21,6 +21,30 @@ export default function Test() {
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [loadingWidgets, setLoadingWidgets] = useState(false);
 
+  // Load all widgets for admin testing
+  useEffect(() => {
+    if (isAuthenticated && isAdmin) {
+      const loadWidgets = async () => {
+        setLoadingWidgets(true);
+        try {
+          const response = await fetch('/api/admin/widgets');
+          if (response.ok) {
+            const data = await response.json() as { widgets: Widget[] };
+            setWidgets(data.widgets || []);
+          } else {
+            console.error('Failed to load widgets:', response.statusText);
+          }
+        } catch (error) {
+          console.error('Error loading widgets:', error);
+        } finally {
+          setLoadingWidgets(false);
+        }
+      };
+
+      loadWidgets();
+    }
+  }, [isAuthenticated, isAdmin]);
+
   // Check if user is admin
   if (isLoading) {
     return (
@@ -39,28 +63,6 @@ export default function Test() {
   if (!isAuthenticated || !isAdmin) {
     return <Navigate to="/login" replace />;
   }
-
-  // Load all widgets for admin testing
-  useEffect(() => {
-    const loadWidgets = async () => {
-      setLoadingWidgets(true);
-      try {
-        const response = await fetch('/api/admin/widgets');
-        if (response.ok) {
-          const data = await response.json() as { widgets: Widget[] };
-          setWidgets(data.widgets || []);
-        } else {
-          console.error('Failed to load widgets:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error loading widgets:', error);
-      } finally {
-        setLoadingWidgets(false);
-      }
-    };
-
-    loadWidgets();
-  }, []);
   
   return (
     <div style={{ minHeight: "100vh", padding: "2rem", backgroundColor: "#f5f5f5" }}>

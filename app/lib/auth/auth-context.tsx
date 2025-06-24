@@ -68,16 +68,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           userId: sessionData.data.session.userId,
         });
 
-        // Check admin status using Better Auth admin plugin
-        try {
-          const adminStatus = await authClient.admin.isAdmin({
-            userId: sessionData.data.user.id
-          });
-          setIsAdmin(adminStatus?.isAdmin || false);
-        } catch (error) {
-          console.error('Error checking admin status:', error);
-          setIsAdmin(false);
-        }
+        // Check admin status from user role
+        const userRole = (sessionData.data.user as any).role;
+        setIsAdmin(userRole === 'admin');
       }
     } catch (error) {
       console.error('Session check failed:', error);

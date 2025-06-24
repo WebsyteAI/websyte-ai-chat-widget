@@ -45,7 +45,7 @@ export class AuthService {
   }
 
   // Check if user is admin by checking their role
-  async isAdmin(userId: string, c: Context<{ Bindings: Env }>) {
+  async isAdmin(_userId: string, c: Context<{ Bindings: Env }>) {
     try {
       // Get the session to check the user's role
       const session = await this.getSession(c);
