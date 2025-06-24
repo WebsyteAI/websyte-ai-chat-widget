@@ -38,9 +38,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b flex-shrink-0">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -56,63 +56,56 @@ export default function DashboardPage() {
               </Link>
             </div>
             
+            {/* Navigation */}
+            <nav className="flex items-center">
+              <div className="flex space-x-8">
+                <Link
+                  to="/dashboard/widgets"
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium transition-colors rounded-md",
+                    location.pathname.startsWith('/dashboard/widgets')
+                      ? "bg-blue-100 text-blue-700"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  )}
+                >
+                  My Widgets
+                </Link>
+                <Link
+                  to="/dashboard/analytics"
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium transition-colors rounded-md",
+                    isActiveRoute('/dashboard/analytics')
+                      ? "bg-blue-100 text-blue-700"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  )}
+                >
+                  Analytics
+                </Link>
+                <Link
+                  to="/dashboard/settings"
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium transition-colors rounded-md",
+                    isActiveRoute('/dashboard/settings')
+                      ? "bg-blue-100 text-blue-700"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  )}
+                >
+                  Settings
+                </Link>
+              </div>
+            </nav>
+            
             <UserProfile />
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user.name}!
-          </h1>
-          <p className="text-gray-600">
-            Manage your Websyte AI chat widgets and vector search.
-          </p>
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          {/* Nested Route Content */}
+          <Outlet />
         </div>
-
-        {/* Navigation */}
-        <nav className="border-b mb-6">
-          <div className="flex space-x-8">
-            <Link
-              to="/dashboard"
-              className={cn(
-                "pb-3 px-1 border-b-2 text-sm font-medium transition-colors",
-                isActiveRoute('/dashboard')
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              )}
-            >
-              My Widgets
-            </Link>
-            <Link
-              to="/dashboard/analytics"
-              className={cn(
-                "pb-3 px-1 border-b-2 text-sm font-medium transition-colors",
-                isActiveRoute('/dashboard/analytics')
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              )}
-            >
-              Analytics
-            </Link>
-            <Link
-              to="/dashboard/settings"
-              className={cn(
-                "pb-3 px-1 border-b-2 text-sm font-medium transition-colors",
-                isActiveRoute('/dashboard/settings')
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              )}
-            >
-              Settings
-            </Link>
-          </div>
-        </nav>
-
-        {/* Nested Route Content */}
-        <Outlet />
       </main>
     </div>
   );

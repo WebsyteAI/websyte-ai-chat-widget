@@ -111,43 +111,6 @@ export function WidgetEditor({
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-4 mb-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onBack}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Widgets
-          </Button>
-          
-          {isEditing && createdWidget && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleDeleteWidget}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-            >
-              Delete Widget
-            </Button>
-          )}
-        </div>
-        
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {isEditing ? `Edit ${createdWidget?.name || 'Widget'}` : 'Create New Widget'}
-          </h1>
-          <p className="text-gray-600">
-            {isEditing 
-              ? 'Update your widget settings and test the chat functionality'
-              : 'Create a custom AI widget with your content and files, then test it immediately'
-            }
-          </p>
-        </div>
-      </div>
 
       {/* Two-Panel Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[800px]">
@@ -157,6 +120,7 @@ export function WidgetEditor({
             widget={createdWidget || undefined}
             onSubmit={handleWidgetSubmit}
             onCancel={onBack}
+            onDelete={isEditing && createdWidget ? handleDeleteWidget : undefined}
             loading={formLoading}
           />
         </div>

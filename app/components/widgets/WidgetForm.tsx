@@ -4,7 +4,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Upload, X, FileText, Trash2, Copy, Check, Code, Lock } from 'lucide-react';
+import { Upload, X, FileText, Trash2, Copy, Check, Code, Lock, ArrowLeft } from 'lucide-react';
 import { useUIStore, type Widget } from '../../stores';
 
 
@@ -12,16 +12,15 @@ interface WidgetFormProps {
   widget?: Widget;
   onSubmit: (data: FormData) => Promise<void>;
   onCancel: () => void;
+  onDelete?: () => void;
   loading?: boolean;
 }
 
-export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: WidgetFormProps) {
+export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = false }: WidgetFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deletingFileId, setDeletingFileId] = useState<number | null>(null);
   const [existingFiles, setExistingFiles] = useState(widget?.files || []);
   const [isPublic, setIsPublic] = useState(false);
-  const [advertiserName, setAdvertiserName] = useState('My Company');
-  const [advertiserLogo, setAdvertiserLogo] = useState('');
   const [copiedEmbed, setCopiedEmbed] = useState(false);
   const {
     widgetFormData,
@@ -122,8 +121,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: Widg
     const attributes = [
       `src="${baseUrl}/dist/widget.js"`,
       widget.id ? `data-widget-id="${widget.id}"` : '',
-      advertiserName ? `data-advertiser-name="${advertiserName}"` : '',
-      advertiserLogo ? `data-advertiser-logo="${advertiserLogo}"` : '',
       'async'
     ].filter(Boolean);
     
@@ -222,6 +219,31 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: Widg
   return (
     <Card className="max-w-4xl mx-auto">
       <CardHeader>
+        <div className="flex items-center justify-between mb-4">
+          <Button 
+            type="button"
+            variant="outline" 
+            size="sm" 
+            onClick={onCancel}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Widgets
+          </Button>
+          
+          {isEditing && onDelete && (
+            <Button 
+              type="button"
+              variant="outline" 
+              size="sm" 
+              onClick={onDelete}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              Delete Widget
+            </Button>
+          )}
+        </div>
+        
         <CardTitle>
           {isEditing ? 'Edit Widget' : 'Create New Widget'}
         </CardTitle>
@@ -429,48 +451,34 @@ export function WidgetForm({ widget, onSubmit, onCancel, loading = false }: Widg
               {isPublic ? (
                 <div className="space-y-4">
                   {/* Widget Configuration */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="advertiser-name">Advertiser Name</Label>
-                      <Input
-                        id="advertiser-name"
-                        value={advertiserName}
-                        onChange={(e) => setAdvertiserName(e.target.value)}
-                        placeholder="My Company"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="advertiser-logo">Advertiser Logo URL (optional)</Label>
-                      <Input
-                        id="advertiser-logo"
-                        value={advertiserLogo}
-                        onChange={(e) => setAdvertiserLogo(e.target.value)}
-                        placeholder="https://logo.clearbit.com/example.com"
-                      />
-                    </div>
-                  </div>
 
                   {/* Generated Embed Code */}
                   <div className="space-y-2">
-                    <Label>Embed Code</Label>
-                    <div className="relative">
-                      <pre className="bg-gray-900 text-gray-100 p-3 rounded-lg text-sm overflow-x-auto">
-                        <code>{generateEmbedCode()}</code>
-                      </pre>
+                    <div className="flex items-center justify-between">
+                      <Label>Embed Code</Label>
                       <Button
                         type="button"
                         size="sm"
                         variant="outline"
                         onClick={copyEmbedCode}
-                        className="absolute top-2 right-2 h-8 w-8 p-0"
+                        className="flex items-center gap-2"
                       >
                         {copiedEmbed ? (
-                          <Check className="w-4 h-4 text-green-600" />
+                          <>
+                            <Check className="w-4 h-4 text-green-600" />
+                            Copied!
+                          </>
                         ) : (
-                          <Copy className="w-4 h-4" />
+                          <>
+                            <Copy className="w-4 h-4" />
+                            Copy
+                          </>
                         )}
                       </Button>
                     </div>
+                    <pre className="bg-gray-900 text-gray-100 p-3 rounded-lg text-sm overflow-x-auto">
+                      <code>{generateEmbedCode()}</code>
+                    </pre>
                     <p className="text-xs text-gray-600">
                       Paste this code into your website's HTML where you want the widget to appear.
                     </p>
