@@ -1,28 +1,14 @@
 import { useEffect } from 'react';
-import { useNavigate, Link } from 'react-router';
+import { useNavigate, Link, Outlet, useLocation } from 'react-router';
 import { useAuth } from '../lib/auth/auth-context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { UserProfile } from '../components/auth/UserProfile';
-import { WidgetList } from '../components/widgets/WidgetList';
-import { WidgetEditor } from '../components/widgets/WidgetEditor';
-import { SearchWidget } from '../components/widgets/SearchWidget';
-import { useWidgetStore, useUIStore } from '../stores';
+import { cn } from '../lib/utils';
 
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  
-  // Zustand stores
-  const { fetchWidgets } = useWidgetStore();
-  const { 
-    showCreateForm, 
-    editingWidget, 
-    setShowCreateForm, 
-    setEditingWidget 
-  } = useUIStore();
+  const location = useLocation();
 
   // Redirect unauthenticated users to login
   useEffect(() => {
@@ -31,30 +17,9 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  const handleCreateWidget = () => {
-    setShowCreateForm(true);
-  };
-
-  const handleEditWidget = (widget: any) => {
-    setEditingWidget(widget);
-  };
-
-  const handleBackToList = () => {
-    setShowCreateForm(false);
-    setEditingWidget(null);
-    fetchWidgets(); // Refresh the widget list
-  };
-
-  const handleWidgetCreated = () => {
-    fetchWidgets(); // Refresh the widget list
-  };
-
-  const handleWidgetUpdated = () => {
-    fetchWidgets(); // Refresh the widget list
-  };
-
-  const handleWidgetDeleted = () => {
-    fetchWidgets(); // Refresh the widget list
+  const isActiveRoute = (path: string) => {
+    if (path === '/dashboard' && location.pathname === '/dashboard') return true;
+    return location.pathname === path;
   };
 
   if (isLoading) {
@@ -107,142 +72,47 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Show create/edit form or main dashboard */}
-        {showCreateForm ? (
-          <WidgetEditor
-            onBack={handleBackToList}
-            onWidgetCreated={handleWidgetCreated}
-          />
-        ) : editingWidget ? (
-          <WidgetEditor
-            widget={editingWidget}
-            onBack={handleBackToList}
-            onWidgetUpdated={handleWidgetUpdated}
-            onWidgetDeleted={handleWidgetDeleted}
-          />
-        ) : (
-          <Tabs defaultValue="widgets" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="widgets">My Widgets</TabsTrigger>
-              <TabsTrigger value="search">Search</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-            </TabsList>
+        {/* Navigation */}
+        <nav className="border-b mb-6">
+          <div className="flex space-x-8">
+            <Link
+              to="/dashboard"
+              className={cn(
+                "pb-3 px-1 border-b-2 text-sm font-medium transition-colors",
+                isActiveRoute('/dashboard')
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              )}
+            >
+              My Widgets
+            </Link>
+            <Link
+              to="/dashboard/analytics"
+              className={cn(
+                "pb-3 px-1 border-b-2 text-sm font-medium transition-colors",
+                isActiveRoute('/dashboard/analytics')
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              )}
+            >
+              Analytics
+            </Link>
+            <Link
+              to="/dashboard/settings"
+              className={cn(
+                "pb-3 px-1 border-b-2 text-sm font-medium transition-colors",
+                isActiveRoute('/dashboard/settings')
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+              )}
+            >
+              Settings
+            </Link>
+          </div>
+        </nav>
 
-            <TabsContent value="widgets" className="space-y-6">
-              <WidgetList
-                onCreateWidget={handleCreateWidget}
-                onEditWidget={handleEditWidget}
-                onDeleteWidget={() => {}} // Delete is handled in WidgetEditor now
-              />
-            </TabsContent>
-
-            <TabsContent value="search" className="space-y-6">
-              <SearchWidget className="max-w-4xl mx-auto" />
-            </TabsContent>
-
-            <TabsContent value="analytics" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Quick Stats */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Active Widgets</CardTitle>
-                    <CardDescription>Widgets currently deployed</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-blue-600">0</div>
-                    <p className="text-sm text-gray-600 mt-1">No widgets deployed yet</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Total Conversations</CardTitle>
-                    <CardDescription>All-time chat interactions</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-green-600">0</div>
-                    <p className="text-sm text-gray-600 mt-1">Start getting conversations</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">This Month</CardTitle>
-                    <CardDescription>Conversations this month</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-purple-600">0</div>
-                    <p className="text-sm text-gray-600 mt-1">Monthly activity</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Action Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Deploy Your Widget</CardTitle>
-                    <CardDescription>
-                      Get the embed code for your AI chat widget
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-gray-600">
-                      Copy the embed code and add it to your website to start engaging with your visitors.
-                    </p>
-                    <Link to="/">
-                      <Button className="w-full">
-                        Get Embed Code
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Usage Statistics</CardTitle>
-                    <CardDescription>
-                      Monitor your widget performance
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-gray-600">
-                      View detailed analytics and usage patterns for your widgets.
-                    </p>
-                    <Button variant="outline" className="w-full" disabled>
-                      View Analytics (Coming Soon)
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="settings" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Account Settings</CardTitle>
-                  <CardDescription>
-                    Manage your profile and preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="text-sm">
-                      <span className="font-medium">Email:</span> {user.email}
-                    </div>
-                    <div className="text-sm">
-                      <span className="font-medium">Name:</span> {user.name}
-                    </div>
-                  </div>
-                  <Button variant="outline" className="w-full" disabled>
-                    Edit Profile (Coming Soon)
-                  </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        )}
+        {/* Nested Route Content */}
+        <Outlet />
       </main>
     </div>
   );

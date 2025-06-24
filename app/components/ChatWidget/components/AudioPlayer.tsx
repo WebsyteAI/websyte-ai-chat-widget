@@ -28,22 +28,13 @@ export function AudioPlayer({
   formatTime,
 }: AudioPlayerProps) {
   return (
-    <>
-      {/* Audio Player Content */}
-      <button
-        onClick={onPlayPause}
-        disabled={isTransitioning}
-        className="bg-white hover:bg-gray-50 p-2 rounded-full shadow-sm transition-colors disabled:opacity-50"
-        title={isPlaying ? "Pause" : "Play"}
-      >
-        {isPlaying ? <Pause size={20} className="text-gray-700" /> : <Play size={20} className="text-gray-700" />}
-      </button>
-
-      <div className="flex-1 flex items-center gap-2">
+    <div className="w-full flex flex-col gap-2 px-4 sm:px-6 min-h-[78px] justify-center">
+      {/* Top Row: Progress bar with time elapsed on left and total time on right */}
+      <div className="flex items-center gap-2">
         <span className="text-xs text-gray-600 font-mono min-w-fit">
-          {formatTime(elapsedTime)}/{formatTime(totalTime)}
+          {formatTime(elapsedTime)}
         </span>
-        <div className="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div className="relative flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
           <div 
             className="absolute left-0 top-0 h-full bg-blue-500 transition-all duration-300"
             style={{ width: `${audioProgress}%` }}
@@ -58,25 +49,40 @@ export function AudioPlayer({
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
           />
         </div>
+        <span className="text-xs text-gray-600 font-mono min-w-fit">
+          {formatTime(totalTime)}
+        </span>
       </div>
 
-      <button
-        onClick={onSpeedChange}
-        disabled={isTransitioning}
-        className="bg-white hover:bg-gray-50 px-2 py-1 rounded text-sm font-medium text-gray-700 transition-colors shadow-sm disabled:opacity-50"
-        title="Playback speed"
-      >
-        {playbackSpeed}x
-      </button>
+      {/* Bottom Row: Audio control buttons */}
+      <div className="flex items-center justify-center gap-2">
+        <button
+          onClick={onSpeedChange}
+          disabled={isTransitioning}
+          className="bg-white hover:bg-gray-50 px-2 py-1 rounded text-sm font-medium text-gray-700 transition-colors shadow-sm disabled:opacity-50"
+          title="Playback speed"
+        >
+          {playbackSpeed}x
+        </button>
 
-      <button
-        onClick={onExit}
-        disabled={isTransitioning}
-        className="bg-white hover:bg-gray-50 p-2 rounded-full shadow-sm transition-colors disabled:opacity-50"
-        title="Exit audio player"
-      >
-        <X size={18} className="text-gray-700" />
-      </button>
-    </>
+        <button
+          onClick={onPlayPause}
+          disabled={isTransitioning}
+          className="bg-white hover:bg-gray-50 p-2 rounded-full shadow-sm transition-colors disabled:opacity-50"
+          title={isPlaying ? "Pause" : "Play"}
+        >
+          {isPlaying ? <Pause size={20} className="text-gray-700" /> : <Play size={20} className="text-gray-700" />}
+        </button>
+
+        <button
+          onClick={onExit}
+          disabled={isTransitioning}
+          className="bg-white hover:bg-gray-50 p-2 rounded-full shadow-sm transition-colors disabled:opacity-50"
+          title="Exit audio player"
+        >
+          <X size={18} className="text-gray-700" />
+        </button>
+      </div>
+    </div>
   );
 }

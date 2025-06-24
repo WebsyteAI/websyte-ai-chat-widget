@@ -41,7 +41,7 @@ export function ActionBar({
   dropdownRef,
 }: ActionBarProps) {
   return (
-    <div className="flex items-center justify-between w-full sm:justify-start sm:gap-4 px-2 sm:px-4">
+    <div className="flex items-center justify-between w-full sm:justify-start sm:gap-4 px-4 sm:px-6">
       {/* Logo and AI text */}
       <div className="flex items-center gap-1 whitespace-nowrap overflow-hidden flex-shrink-0">
         <a
@@ -53,7 +53,7 @@ export function ActionBar({
           <img
             src={advertiserLogo || `${baseUrl}/websyte-ai-logo.svg`}
             alt={advertiserName}
-            className="w-6 h-6 sm:w-8 sm:h-8 rounded flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+            className="w-6 h-6 rounded flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
           />
         </a>
         <span className="font-bold text-gray-800 text-sm sm:text-base">AI</span>
@@ -96,7 +96,7 @@ export function ActionBar({
                   console.log("Original button clicked");
                   onContentModeChange("original");
                 }}
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors ${
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors cursor-pointer ${
                   currentContentMode === "original"
                     ? "bg-gray-50 font-medium"
                     : ""
@@ -110,7 +110,7 @@ export function ActionBar({
                   console.log("Short button clicked, summaries:", summaries);
                   onContentModeChange("short");
                 }}
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors ${
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors cursor-pointer ${
                   !summaries?.short ? "opacity-50" : ""
                 } ${
                   currentContentMode === "short" ? "bg-gray-50 font-medium" : ""
@@ -124,7 +124,7 @@ export function ActionBar({
                   console.log("Medium button clicked, summaries:", summaries);
                   onContentModeChange("medium");
                 }}
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors ${
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors cursor-pointer ${
                   !summaries?.medium ? "opacity-50" : ""
                 } ${
                   currentContentMode === "medium"

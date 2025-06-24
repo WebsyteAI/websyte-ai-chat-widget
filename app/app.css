@@ -244,15 +244,16 @@ body {
 }
 
 .container-audio {
-  width: 20rem;
-  max-width: calc(100vw - 2rem);
-  min-height: 3.5rem;
+  width: 480px !important;
+  max-width: calc(100vw - 2rem) !important;
+  min-height: 82px !important;
+  justify-content: center !important;
 }
 
 .container-action {
   width: 480px !important;
   max-width: calc(100vw - 2rem) !important;
-  min-height: 56px !important;
+  min-height: 82px !important;
   justify-content: center !important;
 }
 
