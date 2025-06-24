@@ -19,7 +19,7 @@ export default function WidgetEdit() {
       }
 
       // First try to find widget in current store
-      const existingWidget = widgets.find(w => w.id === id);
+      const existingWidget = widgets.find(w => String(w.id) === id);
       if (existingWidget) {
         setWidget(existingWidget);
         setLoading(false);
@@ -28,7 +28,7 @@ export default function WidgetEdit() {
 
       // If not found, fetch widgets and try again
       await fetchWidgets();
-      const fetchedWidget = widgets.find(w => w.id === id);
+      const fetchedWidget = widgets.find(w => String(w.id) === id);
       if (fetchedWidget) {
         setWidget(fetchedWidget);
       } else {
@@ -75,11 +75,13 @@ export default function WidgetEdit() {
   }
 
   return (
-    <WidgetEditor
-      widget={widget}
-      onBack={handleBack}
-      onWidgetUpdated={handleWidgetUpdated}
-      onWidgetDeleted={handleWidgetDeleted}
-    />
+    <div className="h-full">
+      <WidgetEditor
+        widget={widget}
+        onBack={handleBack}
+        onWidgetUpdated={handleWidgetUpdated}
+        onWidgetDeleted={handleWidgetDeleted}
+      />
+    </div>
   );
 }

@@ -1,7 +1,4 @@
 import { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { ChatPanel } from '../chat';
 import { WidgetForm } from './WidgetForm';
 import type { Widget } from '../../stores/types';
@@ -110,12 +107,10 @@ export function WidgetEditor({
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
-
-      {/* Two-Panel Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[800px]">
-        {/* Left Panel - Widget Form */}
-        <div className="lg:col-span-3">
+    <div className="h-full flex">
+      {/* Left Panel - Widget Form */}
+      <div className="w-1/2 overflow-y-auto bg-white">
+        <div className="p-6 [&_[data-slot='card']]:border-0 [&_[data-slot='card']]:shadow-none [&_.max-w-4xl]:max-w-none [&_.mx-auto]:mx-0">
           <WidgetForm
             widget={createdWidget || undefined}
             onSubmit={handleWidgetSubmit}
@@ -124,44 +119,25 @@ export function WidgetEditor({
             loading={formLoading}
           />
         </div>
-
-        {/* Right Panel - Chat Testing */}
-        <div className="lg:col-span-2">
-          <ChatPanel
-            config={{
-              widgetId: createdWidget?.id ? String(createdWidget.id) : undefined,
-              enabled: hasWidget,
-              baseUrl: '',
-              enableSources: true,
-              enableDebug: false,
-              mode: hasWidget ? 'rag' : 'standard',
-            }}
-            layout="panel"
-            title={hasWidget ? 'Test Your Widget' : 'Chat Testing'}
-            showHeader={true}
-            showDebugToggle={false}
-            className="h-full"
-          />
-        </div>
       </div>
 
-      {/* Mobile Layout Helper */}
-      <div className="lg:hidden mt-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Mobile View</CardTitle>
-            <CardDescription>
-              For the best widget editing experience, please use a desktop or tablet device.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              The two-panel layout with form and chat testing works best on larger screens. 
-              You can still create and edit widgets on mobile, but the chat testing feature 
-              is optimized for wider displays.
-            </p>
-          </CardContent>
-        </Card>
+      {/* Right Panel - Chat Testing */}
+      <div className="w-1/2 bg-gray-50 flex flex-col [&_[data-slot='card']]:border-0 [&_[data-slot='card']]:shadow-none">
+        <ChatPanel
+          config={{
+            widgetId: createdWidget?.id ? String(createdWidget.id) : undefined,
+            enabled: hasWidget,
+            baseUrl: '',
+            enableSources: true,
+            enableDebug: false,
+            mode: hasWidget ? 'rag' : 'standard',
+          }}
+          layout="panel"
+          title={hasWidget ? 'Test Your Widget' : 'Chat Preview'}
+          showHeader={true}
+          showDebugToggle={false}
+          className="h-full"
+        />
       </div>
     </div>
   );

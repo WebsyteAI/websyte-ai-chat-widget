@@ -30,8 +30,12 @@ pnpm deploy           # Deploy to Cloudflare
 - `workers/services/vector-search.ts` - Vector search & embeddings
 - `workers/services/widget.ts` - Widget management and public access
 - `app/components/widgets/WidgetForm.tsx` - Embed code generation UI
+- `app/components/widgets/WidgetEditor.tsx` - Full-screen widget editor with live preview
 - `app/widget-entry.tsx` - Custom widget embed script entry
 - `app/routes/test.tsx` - Widget testing playground
+- `app/routes/dashboard.tsx` - Dashboard layout with nested routing
+- `app/routes/dashboard.widgets.*.tsx` - Widget management routes
+- `app/routes.ts` - React Router 7 route configuration
 - `app/` - Frontend code
 - `.claude/` - **Detailed documentation**
 
@@ -44,6 +48,8 @@ pnpm deploy           # Deploy to Cloudflare
 - **OCR Support**: Extract text from images and PDFs for knowledge bases
 - **Multi-AI Support**: OpenAI GPT-4.1-mini and Mistral AI integration
 - **Testing Playground**: Comprehensive widget testing environment at `/test`
+- **Nested Dashboard Routes**: File-based routing with explicit route configuration
+- **Full-Screen Widget Editor**: Split-screen editor with form on left, chat preview on right (OpenAI GPT editor style)
 
 ## Workflow Memories
 - When asked to update docs, update @CLAUDE.md and .claude/ directory

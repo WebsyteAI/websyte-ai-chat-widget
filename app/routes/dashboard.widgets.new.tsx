@@ -17,9 +17,11 @@ export default function WidgetNew() {
   };
 
   return (
-    <WidgetEditor
-      onBack={handleBack}
-      onWidgetCreated={handleWidgetCreated}
-    />
+    <div className="h-full">
+      <WidgetEditor
+        onBack={handleBack}
+        onWidgetCreated={handleWidgetCreated}
+      />
+    </div>
   );
 }

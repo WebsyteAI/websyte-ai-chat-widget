@@ -358,6 +358,39 @@ The modular architecture enables comprehensive testing:
 6. **Testing First**: Write component and hook tests before implementing features
 7. **Type Safety**: Always define proper TypeScript interfaces for component props and hook returns
 
+## Routing Architecture (React Router 7)
+
+### Route Configuration
+React Router 7 uses an explicit route configuration in `app/routes.ts`:
+
+```typescript
+export default [
+  index("routes/home.tsx"),
+  route("/login", "routes/login.tsx"),
+  route("/dashboard", "routes/dashboard.tsx", [
+    index("routes/dashboard._index.tsx"),
+    route("analytics", "routes/dashboard.analytics.tsx"),
+    route("settings", "routes/dashboard.settings.tsx"),
+    route("widgets", "routes/dashboard.widgets._index.tsx"),
+    route("widgets/new", "routes/dashboard.widgets.new.tsx"),
+    route("widgets/:id/edit", "routes/dashboard.widgets.$id.edit.tsx"),
+  ]),
+  // ... other routes
+] satisfies RouteConfig;
+```
+
+### Dashboard Layout Structure
+- **Parent Route**: `dashboard.tsx` - Contains header, navigation, and Outlet
+- **Nested Routes**: Each tab is its own route for better organization
+- **Dynamic Layout**: Conditionally applies max-width based on route (full-width for editors)
+
+### Widget Editor Architecture
+The widget editor (`WidgetEditor.tsx`) features a split-screen layout:
+- **Left Panel (50%)**: Widget configuration form
+- **Right Panel (50%)**: Live chat preview
+- **Full Viewport**: No max-width constraints for immersive editing experience
+- **Borderless Design**: Card borders removed for seamless integration
+
 ## Implementation Details
 
 ### Component and Hook Integration

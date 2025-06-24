@@ -39,7 +39,16 @@ This is a production-ready AI chat widget for article websites built with React/
 
 ## Recent Major Implementations
 
-### Custom Widget Embed Script Support ✅ (Latest)
+### Dashboard Refactoring & Widget Editor ✅ (Latest)
+- **Nested Routes**: Converted dashboard tabs to proper nested routes using React Router 7
+- **Route Configuration**: Explicit route configuration in `app/routes.ts` with nested structure
+- **Full-Screen Widget Editor**: Split-screen layout with form (50%) and chat preview (50%)
+- **OpenAI GPT Editor Style**: Mimics OpenAI's custom GPT editor interface
+- **Dynamic Layouts**: Dashboard conditionally applies max-width based on route
+- **Removed Search Tab**: Simplified navigation by removing global search functionality
+- **Analytics Coming Soon**: All analytics sections now show "Coming Soon" placeholder
+
+### Custom Widget Embed Script Support ✅
 - **Widget Embed Generation**: One-click embed code generation in WidgetForm.tsx
 - **Public/Private Controls**: Toggle widget visibility with `isPublic` database field
 - **Custom Widget ID Support**: `data-widget-id` attribute in embed scripts for RAG functionality

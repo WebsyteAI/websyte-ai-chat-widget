@@ -64,7 +64,7 @@ export default function DashboardPage() {
                   className={cn(
                     "px-3 py-2 text-sm font-medium transition-colors rounded-md",
                     location.pathname.startsWith('/dashboard/widgets')
-                      ? "bg-blue-100 text-blue-700"
+                      ? "bg-gray-100 text-gray-900"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   )}
                 >
@@ -75,7 +75,7 @@ export default function DashboardPage() {
                   className={cn(
                     "px-3 py-2 text-sm font-medium transition-colors rounded-md",
                     isActiveRoute('/dashboard/analytics')
-                      ? "bg-blue-100 text-blue-700"
+                      ? "bg-gray-100 text-gray-900"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   )}
                 >
@@ -86,7 +86,7 @@ export default function DashboardPage() {
                   className={cn(
                     "px-3 py-2 text-sm font-medium transition-colors rounded-md",
                     isActiveRoute('/dashboard/settings')
-                      ? "bg-blue-100 text-blue-700"
+                      ? "bg-gray-100 text-gray-900"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   )}
                 >
@@ -101,11 +101,17 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          {/* Nested Route Content */}
-          <Outlet />
-        </div>
+      <main className="flex-1 overflow-hidden">
+        {/* Conditionally apply max-width for non-editor routes */}
+        {location.pathname.includes('/widgets/new') || location.pathname.includes('/edit') ? (
+          <div className="h-full">
+            <Outlet />
+          </div>
+        ) : (
+          <div className="max-w-6xl mx-auto px-4 py-8">
+            <Outlet />
+          </div>
+        )}
       </main>
     </div>
   );
