@@ -41,7 +41,7 @@ export function ActionBar({
   dropdownRef,
 }: ActionBarProps) {
   return (
-    <div className="flex items-center justify-between w-full sm:justify-start sm:gap-4">
+    <div className="flex items-center justify-between w-full sm:justify-start sm:gap-4 px-2 sm:px-4">
       {/* Logo and AI text */}
       <div className="flex items-center gap-1 whitespace-nowrap overflow-hidden flex-shrink-0">
         <a

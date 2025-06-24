@@ -250,7 +250,7 @@ body {
 }
 
 .container-action {
-  width: 640px !important;
+  width: 480px !important;
   max-width: calc(100vw - 2rem) !important;
   min-height: 56px !important;
   justify-content: center !important;
@@ -306,7 +306,7 @@ body {
   
   /* Reset inherited properties that can leak from parent page */
   color: inherit !important;
-  font-size: inherit !important;
+  font-size: 16px !important; /* Set base font size */
   font-weight: normal !important;
   font-style: normal !important;
   text-decoration: none !important;
@@ -324,44 +324,48 @@ body {
   font-family: inherit !important;
 }
 
-/* Specific resets for common elements */
-:host button {
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
-  color: inherit !important;
-  background: transparent !important;
-  border: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  cursor: pointer !important;
-  outline: none !important;
-  text-decoration: none !important;
-  text-transform: none !important;
-  letter-spacing: normal !important;
+/* Shadow DOM fixes for Tailwind utilities */
+/* The issue is Tailwind's base reset sets padding: 0 on buttons */
+/* We need to ensure utility classes can override this in Shadow DOM */
+
+/* Reset with lower specificity to allow utilities to work */
+:where(:host button) {
+  font-family: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+  text-transform: none;
+  cursor: pointer;
 }
 
-:host span {
-  font-family: inherit !important;
-  font-size: inherit !important;
-  line-height: inherit !important;
-  color: inherit !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-  border: none !important;
-  text-decoration: none !important;
-  text-transform: none !important;
-  letter-spacing: normal !important;
-}
+/* Ensure padding utilities work by increasing their specificity in shadow DOM */
+:host .p-1 { padding: calc(var(--spacing) * 1) !important; }
+:host .p-2 { padding: calc(var(--spacing) * 2) !important; }
+:host .p-3 { padding: calc(var(--spacing) * 3) !important; }
+:host .p-4 { padding: calc(var(--spacing) * 4) !important; }
+:host .px-1 { padding-inline: calc(var(--spacing) * 1) !important; }
+:host .px-2 { padding-inline: calc(var(--spacing) * 2) !important; }
+:host .px-3 { padding-inline: calc(var(--spacing) * 3) !important; }
+:host .px-4 { padding-inline: calc(var(--spacing) * 4) !important; }
+:host .py-1 { padding-block: calc(var(--spacing) * 1) !important; }
+:host .py-2 { padding-block: calc(var(--spacing) * 2) !important; }
+:host .py-3 { padding-block: calc(var(--spacing) * 3) !important; }
+:host .py-4 { padding-block: calc(var(--spacing) * 4) !important; }
 
-:host img {
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  background: transparent !important;
-  vertical-align: middle !important;
-}
+/* Ensure background utilities work */
+:host .bg-gray-50 { background-color: var(--color-gray-50) !important; }
+:host .bg-gray-100 { background-color: var(--color-gray-100) !important; }
+:host .bg-gray-200 { background-color: var(--color-gray-200) !important; }
+:host .bg-white { background-color: var(--color-white) !important; }
+:host .bg-transparent { background-color: transparent !important; }
+
+/* Ensure hover states work */
+:host .hover\:bg-gray-50:hover { background-color: var(--color-gray-50) !important; }
+:host .hover\:bg-gray-100:hover { background-color: var(--color-gray-100) !important; }
+
+/* Fix other common utilities that might be affected */
+:host .rounded-md { border-radius: var(--radius-md) !important; }
+:host .rounded-lg { border-radius: var(--radius-lg) !important; }
 
 
 

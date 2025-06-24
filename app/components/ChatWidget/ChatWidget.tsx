@@ -467,7 +467,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
       <div className={`${isTargetedInjection ? 'relative top-0 left-0 mx-auto' : 'fixed top-4 left-1/2'} z-50 ${
         hasRendered ? (isTargetedInjection ? 'animate-fade-in' : 'animate-slide-in-from-top') : 'opacity-0 -translate-x-1/2'
       }`}>
-        <div className={`bg-white/98 action-bar-blur shadow-lg border border-gray-300 px-2 sm:px-4 py-2 flex flex-col gap-2 ${
+        <div className={`bg-white/98 action-bar-blur shadow-lg border border-gray-300 py-2 flex flex-col gap-2 ${
           currentContent === "audio" ? 'container-audio' : 'container-action'
         } ${
           isPlaying ? 'animate-audio-border' : ''
@@ -525,7 +525,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
             <div className={`w-full ${contentFadeClass}`}>
               {currentContentMode !== "original" && summaries && !mainContentElement ? (
                 // Show summary content only if no content-selector is available
-                <div className="px-2 py-1">
+                <div className="px-2 sm:px-4 py-1">
                   {currentContentMode === "short" && summaries.short ? (
                     <div 
                       className="prose prose-sm max-w-none text-gray-700 prose-headings:text-gray-800 prose-headings:font-semibold prose-p:mb-2 prose-ul:mb-2 prose-ol:mb-2 prose-li:mb-1" 

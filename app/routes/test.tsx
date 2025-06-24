@@ -353,6 +353,16 @@ export default function Test() {
             </header>
 
             <div style={{ color: "#444", lineHeight: "1.8", fontSize: "1.1rem" }}>
+              {/* Target element for inline widget placement */}
+              <div id="chat-widget-target" style={{
+                border: renderMode === "target" ? "2px dashed #ddd" : "none",
+                borderRadius: renderMode === "target" ? "8px" : "0",
+                minHeight: renderMode === "target" ? "400px" : "0",
+                backgroundColor: renderMode === "target" ? "#fafafa" : "transparent",
+                marginBottom: "1.5rem",
+                padding: renderMode === "target" ? "1rem" : "0"
+              }}></div>
+
               <p style={{ marginBottom: "1.5rem" }}>
                 Sam Altman's latest venture looks like something out of science fiction: a white, basketball-sized 
                 sphere that peers into your eyes with an array of cameras and sensors. The Orb, as it's called, 
@@ -444,25 +454,6 @@ export default function Test() {
           </article>
         </div>
 
-        {/* Target Element Demo */}
-        <div style={{ 
-          backgroundColor: "white", 
-          padding: "2rem", 
-          borderRadius: "8px", 
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-          marginTop: "2rem"
-        }}>
-          <h2 style={{ marginBottom: "1rem", color: "#333" }}>Target Element Example</h2>
-          <p style={{ color: "#666", marginBottom: "1rem" }}>
-            This demonstrates how the widget can be embedded in a specific target element instead of floating.
-          </p>
-          <div id="chat-widget-target" style={{
-            border: "2px dashed #ddd",
-            borderRadius: "8px",
-            minHeight: "400px",
-            backgroundColor: "#fafafa"
-          }}></div>
-        </div>
       </div>
 
       {/* Only render ChatWidget component when using import mode */}
