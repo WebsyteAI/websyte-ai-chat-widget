@@ -47,6 +47,7 @@ This is a production-ready AI chat widget for article websites built with React/
 - **Dynamic Layouts**: Dashboard conditionally applies max-width based on route
 - **Removed Search Tab**: Simplified navigation by removing global search functionality
 - **Analytics Coming Soon**: All analytics sections now show "Coming Soon" placeholder
+- **Chat Panel Scrolling Fix**: Fixed overflow handling to keep input always visible when sources are expanded
 
 ### Custom Widget Embed Script Support ✅
 - **Widget Embed Generation**: One-click embed code generation in WidgetForm.tsx

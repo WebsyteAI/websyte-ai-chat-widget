@@ -157,7 +157,7 @@ export function ChatPanel({
         </CardHeader>
       )}
       
-      <CardContent className="flex-1 flex flex-col p-0">
+      <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
         <ChatMessages
           messages={chat.messages}
           loading={chat.loading}
@@ -166,21 +166,23 @@ export function ChatPanel({
           emptyStateContent={getEmptyStateContent()}
         />
         
-        <ChatInput
-          value={chat.inputValue}
-          onChange={chat.setInputValue}
-          onSend={handleSend}
-          onCancel={chat.cancelMessage}
-          disabled={!config.enabled}
-          loading={chat.loading}
-          placeholder={
-            !config.enabled 
-              ? "Create a widget to enable chat"
-              : config.mode === 'rag'
-              ? "Ask about your documents..."
-              : "Type your message..."
-          }
-        />
+        <div className="flex-shrink-0">
+          <ChatInput
+            value={chat.inputValue}
+            onChange={chat.setInputValue}
+            onSend={handleSend}
+            onCancel={chat.cancelMessage}
+            disabled={!config.enabled}
+            loading={chat.loading}
+            placeholder={
+              !config.enabled 
+                ? "Create a widget to enable chat"
+                : config.mode === 'rag'
+                ? "Ask about your documents..."
+                : "Type your message..."
+            }
+          />
+        </div>
       </CardContent>
     </Card>
   );
