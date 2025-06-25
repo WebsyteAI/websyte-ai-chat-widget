@@ -4,7 +4,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Upload, X, FileText, Trash2, Code, Lock, ArrowLeft, Info, ExternalLink, Copy, Check } from 'lucide-react';
+import { Upload, X, FileText, Trash2, Code, Lock, ArrowLeft, Info, ExternalLink, Copy, Check, Globe, RefreshCw } from 'lucide-react';
 import { useUIStore, type Widget } from '../../stores';
 import { ScriptCopyBtn } from '../ui/script-copy-btn';
 import { toast } from '@/lib/use-toast';
@@ -24,6 +24,11 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
   const [existingFiles, setExistingFiles] = useState(widget?.files || []);
   const [isPublic, setIsPublic] = useState(false);
   const [shareUrlCopied, setShareUrlCopied] = useState(false);
+  const [crawlUrl, setCrawlUrl] = useState(widget?.crawlUrl || '');
+  const [crawling, setCrawling] = useState(false);
+  const [crawlStatus, setCrawlStatus] = useState(widget?.crawlStatus || null);
+  const [crawlPageCount, setCrawlPageCount] = useState(widget?.crawlPageCount || 0);
+  const crawlPollInterval = useRef<NodeJS.Timeout | null>(null);
   const {
     widgetFormData,
     updateWidgetFormField,
@@ -45,12 +50,66 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
       updateWidgetFormField('url', widget.url || '');
       setExistingFiles(widget.files || []);
       setIsPublic(widget.isPublic || false);
+      setCrawlUrl(widget.crawlUrl || '');
+      setCrawlStatus(widget.crawlStatus || null);
+      setCrawlPageCount(widget.crawlPageCount || 0);
     } else {
       resetWidgetForm();
       setExistingFiles([]);
       setIsPublic(false);
+      setCrawlUrl('');
+      setCrawlStatus(null);
+      setCrawlPageCount(0);
     }
   }, [widget, updateWidgetFormField, resetWidgetForm]);
+  
+  // Poll for crawl status when crawling
+  useEffect(() => {
+    if (widget?.id && crawlStatus === 'crawling') {
+      const pollStatus = async () => {
+        try {
+          const response = await fetch(`/api/widgets/${widget.id}/crawl/status`, {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            setCrawlStatus(data.status);
+            setCrawlPageCount(data.pageCount || 0);
+            
+            if (data.status === 'completed' || data.status === 'failed') {
+              // Stop polling
+              if (crawlPollInterval.current) {
+                clearInterval(crawlPollInterval.current);
+                crawlPollInterval.current = null;
+              }
+              
+              // Refresh files if completed
+              if (data.status === 'completed') {
+                // Trigger a refresh of the widget data
+                window.location.reload(); // Simple refresh for now
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error polling crawl status:', error);
+        }
+      };
+      
+      // Poll immediately
+      pollStatus();
+      
+      // Then poll every 5 seconds
+      crawlPollInterval.current = setInterval(pollStatus, 5000);
+      
+      return () => {
+        if (crawlPollInterval.current) {
+          clearInterval(crawlPollInterval.current);
+          crawlPollInterval.current = null;
+        }
+      };
+    }
+  }, [widget?.id, crawlStatus]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -176,6 +235,29 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
     }
   };
 
+  const handleRecrawl = async () => {
+    if (!widget?.id || !crawlUrl) return;
+    
+    setCrawling(true);
+    try {
+      const response = await fetch(`/api/widgets/${widget.id}/crawl`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ crawlUrl })
+      });
+      
+      if (!response.ok) throw new Error('Failed to start crawl');
+      
+      toast.success('Website crawl started');
+      // Could trigger status polling or refresh here
+    } catch (error) {
+      toast.error('Failed to start crawl');
+    } finally {
+      setCrawling(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -185,6 +267,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
     if (description) formData.append('description', description);
     if (url) formData.append('url', url);
     if (content) formData.append('content', content);
+    if (crawlUrl) formData.append('crawlUrl', crawlUrl);
     
     // For creation mode, include files in the main form data
     if (!isEditing) {
@@ -321,6 +404,94 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
             </p>
           </div>
 
+          {/* Website Crawling Section */}
+          <div className="space-y-4">
+            <Label>Website Crawling (optional)</Label>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex gap-3">
+                <Globe className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-blue-900">Crawl Website Content</h4>
+                  <p className="text-sm text-blue-800">
+                    Enter a base URL to automatically crawl and index pages from that website.
+                  </p>
+                  <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside ml-2">
+                    <li>Only the base domain will be crawled (e.g., websyte.ai)</li>
+                    <li>Apify will discover and process accessible pages</li>
+                    <li>Content will be converted to markdown and indexed</li>
+                    <li>One URL per widget allowed</li>
+                    <li><strong>Maximum 25 pages per crawl</strong></li>
+                    <li>Default depth of 2 levels</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="crawlUrl">Base URL</Label>
+              <Input
+                id="crawlUrl"
+                type="url"
+                value={crawlUrl}
+                onChange={(e) => setCrawlUrl(e.target.value)}
+                placeholder="https://example.com"
+                disabled={crawlStatus === 'crawling'}
+              />
+              <p className="text-sm text-gray-600">
+                Enter only the base domain. Up to 25 pages will be crawled automatically.
+              </p>
+            </div>
+            
+            {/* Crawl Status for existing widgets */}
+            {crawlStatus && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">
+                      Crawl Status: {
+                        crawlStatus === 'crawling' ? (
+                          <>
+                            <span className="text-blue-600">In Progress</span>
+                            <span className="ml-2 inline-block animate-spin">⟳</span>
+                          </>
+                        ) : crawlStatus === 'completed' ? (
+                          <span className="text-green-600">Completed</span>
+                        ) : crawlStatus === 'failed' ? (
+                          <span className="text-red-600">Failed</span>
+                        ) : (
+                          crawlStatus
+                        )
+                      }
+                    </p>
+                    {widget?.lastCrawlAt && (
+                      <p className="text-xs text-gray-500">
+                        Last crawled: {new Date(widget.lastCrawlAt).toLocaleString()}
+                      </p>
+                    )}
+                    {crawlPageCount > 0 && (
+                      <p className="text-xs text-gray-500">
+                        Pages indexed: {crawlPageCount} / 25 max
+                      </p>
+                    )}
+                  </div>
+                  {crawlStatus === 'completed' && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRecrawl}
+                      disabled={crawling || !crawlUrl}
+                    >
+                      <RefreshCw className="w-4 h-4 mr-1" />
+                      Re-crawl
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* File Upload */}
           <div className="space-y-4">
             <Label>Upload Files (optional)</Label>
@@ -420,38 +591,56 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
             <div className="space-y-4">
               <Label>Existing Files</Label>
               <div className="space-y-2">
-                {existingFiles.map((file) => (
-                  <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <FileText className="w-4 h-4 text-gray-500" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{file.filename}</p>
-                        <p className="text-xs text-gray-500">
-                          {formatFileSize(file.fileSize)} • {file.fileType}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="text-xs text-gray-500">
-                        {new Date(file.createdAt).toLocaleDateString()}
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDeleteExistingFile(file.id)}
-                        disabled={deletingFileId === file.id}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        {deletingFileId === file.id ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                {existingFiles.map((file) => {
+                  // Check if this is a crawl file
+                  const isCrawlFile = file.filename.includes('.crawl.');
+                  const isCrawlPlaceholder = file.filename.endsWith('.crawl.md');
+                  
+                  return (
+                    <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        {isCrawlFile ? (
+                          <Globe className="w-4 h-4 text-blue-500" />
                         ) : (
-                          <Trash2 className="w-4 h-4" />
+                          <FileText className="w-4 h-4 text-gray-500" />
                         )}
-                      </Button>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {isCrawlPlaceholder ? (
+                              <>Website Crawl Summary</>
+                            ) : isCrawlFile ? (
+                              <>Crawled Page: {file.filename.replace(/^[^.]+\.crawl\.page-\d+\./, '').replace('.md', '')}</>
+                            ) : (
+                              file.filename
+                            )}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {formatFileSize(file.fileSize)} • {isCrawlFile ? 'Web Page' : file.fileType}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-xs text-gray-500">
+                          {new Date(file.createdAt).toLocaleDateString()}
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteExistingFile(file.id)}
+                          disabled={deletingFileId === file.id}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          {deletingFileId === file.id ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

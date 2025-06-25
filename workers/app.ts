@@ -13,6 +13,7 @@ import { FileStorageService } from './services/file-storage';
 import { WidgetService } from './services/widget';
 import { MessageService } from './services/messages';
 import { RAGAgent } from './services/rag-agent';
+import { ApifyCrawlerService } from './services/apify-crawler';
 import { optionalAuthMiddleware, authMiddleware, adminMiddleware, type AuthContext } from './lib/middleware';
 import { rateLimitMiddleware } from './lib/rate-limiter';
 import type { Env } from './types';
@@ -73,7 +74,8 @@ const getServices = (env: Env) => {
       env.MISTRAL_AI_API_KEY, 
       vectorSearch
     );
-    const widget = new WidgetService(database, vectorSearch, fileStorage);
+    const apifyCrawler = new ApifyCrawlerService(env.APIFY_API_TOKEN);
+    const widget = new WidgetService(database, vectorSearch, fileStorage, apifyCrawler);
     const messages = new MessageService(database);
     const ragAgent = new RAGAgent(env.OPENAI_API_KEY, widget);
     
@@ -296,6 +298,7 @@ app.put('/api/widgets/:id', async (c) => {
 
   try {
     const body = await c.req.json();
+    console.log('[API] Updating widget', id, 'with body:', body);
     const widget = await c.get('services').widget.updateWidget(id, auth.user.id, body);
     if (!widget) {
       return c.json({ error: 'Widget not found' }, 404);
@@ -592,6 +595,74 @@ app.get('/api/widgets/:id/public', async (c) => {
   } catch (error) {
     console.error('Error getting public widget:', error);
     return c.json({ error: 'Failed to get widget' }, 500);
+  }
+});
+
+// Start website crawl
+app.post('/api/widgets/:id/crawl', async (c) => {
+  const auth = c.get('auth');
+  if (!auth?.user) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    const { crawlUrl } = await c.req.json();
+    console.log('[API] Crawl endpoint called for widget', id, 'with URL:', crawlUrl);
+    
+    if (!crawlUrl) {
+      return c.json({ error: 'Crawl URL is required' }, 400);
+    }
+
+    const result = await c.get('services').widget.startWebsiteCrawl(id, auth.user.id, crawlUrl);
+    return c.json(result);
+  } catch (error) {
+    console.error('Error starting crawl:', error);
+    return c.json({ error: 'Failed to start crawl' }, 500);
+  }
+});
+
+// Check crawl status
+app.get('/api/widgets/:id/crawl/status', async (c) => {
+  const auth = c.get('auth');
+  if (!auth?.user) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    const widget = await c.get('services').widget.getWidget(id, auth.user.id);
+    if (!widget) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+
+    if (!widget.crawlRunId) {
+      return c.json({ status: 'idle', crawlStatus: widget.crawlStatus });
+    }
+
+    // Check and process crawl status
+    await c.get('services').widget.checkCrawlStatus(id, widget.crawlRunId, auth.user.id);
+    
+    // Get updated widget
+    const updatedWidget = await c.get('services').widget.getWidget(id, auth.user.id);
+    
+    return c.json({ 
+      status: updatedWidget?.crawlStatus || 'unknown',
+      runId: updatedWidget?.crawlRunId,
+      pageCount: updatedWidget?.crawlPageCount,
+      lastCrawlAt: updatedWidget?.lastCrawlAt
+    });
+  } catch (error) {
+    console.error('Error checking crawl status:', error);
+    return c.json({ error: 'Failed to check crawl status' }, 500);
   }
 });
 

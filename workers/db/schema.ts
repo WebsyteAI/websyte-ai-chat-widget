@@ -29,6 +29,11 @@ export const widget = pgTable('widget', {
   }> | null>(),
   cacheEnabled: boolean('cache_enabled').default(false).notNull(),
   isPublic: boolean('is_public').default(false).notNull(), // Allow public embedding
+  crawlUrl: text('crawl_url'),
+  crawlStatus: text('crawl_status'), // 'pending' | 'crawling' | 'completed' | 'failed'
+  crawlRunId: text('crawl_run_id'), // Apify run ID
+  lastCrawlAt: timestamp('last_crawl_at'),
+  crawlPageCount: integer('crawl_page_count').default(0),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({

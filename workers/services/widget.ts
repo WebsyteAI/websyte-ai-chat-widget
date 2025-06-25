@@ -1,7 +1,8 @@
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc, sql, like } from 'drizzle-orm';
 import { DatabaseService } from './database';
 import { VectorSearchService } from './vector-search';
 import { FileStorageService } from './file-storage';
+import { ApifyCrawlerService } from './apify-crawler';
 import { widget, type Widget, type NewWidget } from '../db/schema';
 
 export interface CreateWidgetRequest {
@@ -18,6 +19,7 @@ export interface UpdateWidgetRequest {
   url?: string;
   content?: string;
   isPublic?: boolean;
+  crawlUrl?: string;
 }
 
 export interface WidgetWithFiles extends Widget {
@@ -35,15 +37,18 @@ export class WidgetService {
   private db: DatabaseService;
   private vectorSearch: VectorSearchService;
   private fileStorage: FileStorageService;
+  private apifyCrawler: ApifyCrawlerService;
 
   constructor(
     databaseService: DatabaseService,
     vectorSearchService: VectorSearchService,
-    fileStorageService: FileStorageService
+    fileStorageService: FileStorageService,
+    apifyCrawlerService: ApifyCrawlerService
   ) {
     this.db = databaseService;
     this.vectorSearch = vectorSearchService;
     this.fileStorage = fileStorageService;
+    this.apifyCrawler = apifyCrawlerService;
   }
 
   async createWidget(userId: string, request: CreateWidgetRequest): Promise<WidgetWithFiles> {
@@ -192,12 +197,25 @@ export class WidgetService {
 
 
   async updateWidget(id: string, userId: string, request: UpdateWidgetRequest): Promise<WidgetWithFiles | null> {
+    console.log('[WidgetService] updateWidget called with:', { id, userId, request });
+    
+    // Get the current widget to check if crawlUrl is changing
+    const currentWidget = await this.getWidget(id, userId);
+    if (!currentWidget) {
+      return null;
+    }
+
     const updateData: Partial<NewWidget> = {};
     
     if (request.name !== undefined) updateData.name = request.name;
     if (request.description !== undefined) updateData.description = request.description;
     if (request.url !== undefined) updateData.url = request.url;
     if (request.isPublic !== undefined) updateData.isPublic = request.isPublic;
+    if (request.crawlUrl !== undefined) updateData.crawlUrl = request.crawlUrl || null;
+    
+    console.log('[WidgetService] Current crawlUrl:', currentWidget.crawlUrl);
+    console.log('[WidgetService] New crawlUrl:', request.crawlUrl);
+    console.log('[WidgetService] Update data:', updateData);
 
     const [updatedWidget] = await this.db.getDatabase()
       .update(widget)
@@ -228,11 +246,48 @@ export class WidgetService {
       }
     }
 
+    // Handle crawl URL updates - automatically start crawl if URL is new or changed
+    if (request.crawlUrl !== undefined && request.crawlUrl !== currentWidget.crawlUrl) {
+      console.log('[WidgetService] Crawl URL changed, processing...');
+      if (request.crawlUrl) {
+        console.log('[WidgetService] Starting crawl for URL:', request.crawlUrl);
+        // Start crawl synchronously so the status is updated before returning
+        try {
+          await this.startWebsiteCrawl(id, userId, request.crawlUrl);
+        } catch (error) {
+          console.error('Error starting crawl after widget update:', error);
+        }
+      } else if (!request.crawlUrl && currentWidget.crawlUrl) {
+        console.log('[WidgetService] Crawl URL removed, deleting crawl files');
+        // Crawl URL was removed, delete existing crawl files
+        await this.deleteExistingCrawlFiles(id);
+        // Reset crawl status
+        await this.db.getDatabase()
+          .update(widget)
+          .set({
+            crawlStatus: null,
+            crawlRunId: null,
+            lastCrawlAt: null,
+            crawlPageCount: 0
+          })
+          .where(eq(widget.id, id));
+      }
+    }
+
+    // Fetch the widget again to get the latest status (especially if crawl was started)
+    const finalWidget = await this.db.getDatabase()
+      .select()
+      .from(widget)
+      .where(eq(widget.id, id))
+      .limit(1);
+
     const files = await this.fileStorage.getWidgetFiles(id);
     const embeddingsCount = await this.vectorSearch.getEmbeddingsCount(id);
 
+    console.log('[WidgetService] Returning updated widget:', finalWidget[0]);
+
     return {
-      ...updatedWidget,
+      ...finalWidget[0],
       files: files.map(f => ({
         id: f.id,
         filename: f.filename,
@@ -365,5 +420,207 @@ export class WidgetService {
     }
 
     return deleted;
+  }
+
+  async startWebsiteCrawl(widgetId: string, userId: string, baseUrl: string) {
+    console.log('[WidgetService] startWebsiteCrawl called:', { widgetId, userId, baseUrl });
+    
+    // Validate widget ownership
+    const widgetRecord = await this.getWidget(widgetId, userId);
+    if (!widgetRecord) throw new Error('Widget not found');
+    
+    // Validate URL format
+    const url = new URL(baseUrl);
+    const cleanUrl = `${url.protocol}//${url.hostname}`;
+    const hostname = url.hostname;
+    
+    console.log('[WidgetService] Clean URL:', cleanUrl, 'Hostname:', hostname);
+    
+    // Check if already crawling
+    if (widgetRecord.crawlStatus === 'crawling') {
+      throw new Error('Crawl already in progress');
+    }
+    
+    // Delete any existing crawl files
+    await this.deleteExistingCrawlFiles(widgetId);
+    
+    // Start Apify crawl
+    const { runId } = await this.apifyCrawler.crawlWebsite(cleanUrl, {
+      maxPages: 25,
+      hostname: hostname
+    });
+    
+    // Update widget with crawl info
+    await this.db.getDatabase()
+      .update(widget)
+      .set({
+        crawlUrl: cleanUrl,
+        crawlStatus: 'crawling',
+        crawlRunId: runId,
+        updatedAt: new Date()
+      })
+      .where(eq(widget.id, widgetId));
+      
+    console.log('[WidgetService] Crawl started with runId:', runId);
+    // Note: Background processing doesn't work in Cloudflare Workers
+    // The frontend needs to poll the status endpoint
+    
+    return { runId, status: 'crawling' };
+  }
+
+  async deleteExistingCrawlFiles(widgetId: string) {
+    // Find and delete all crawl-related files
+    const files = await this.fileStorage.getWidgetFiles(widgetId);
+    const crawlFiles = files.filter(f => 
+      f.filename.endsWith('.crawl.md') || 
+      f.filename.includes('.crawl.page-')
+    );
+    
+    for (const file of crawlFiles) {
+      await this.fileStorage.deleteFile(file.id, widgetId);
+    }
+  }
+
+  public async checkCrawlStatus(widgetId: string, runId: string, userId: string) {
+    console.log('[WidgetService] checkCrawlStatus called:', { widgetId, runId });
+    
+    try {
+      const status = await this.apifyCrawler.getCrawlStatus(runId);
+      console.log('[WidgetService] Crawl status:', status);
+      
+      if (status.status === 'SUCCEEDED') {
+        await this.processCrawlResults(widgetId, runId, userId);
+      } else if (status.status === 'FAILED' || status.status === 'ABORTED') {
+        await this.db.getDatabase()
+          .update(widget)
+          .set({ 
+            crawlStatus: 'failed',
+            crawlRunId: null 
+          })
+          .where(eq(widget.id, widgetId));
+      } else {
+        // Still running, check again
+        setTimeout(() => this.checkCrawlStatus(widgetId, runId, userId), 30000);
+      }
+    } catch (error) {
+      console.error('Error checking crawl status:', error);
+      await this.db.getDatabase()
+        .update(widget)
+        .set({ 
+          crawlStatus: 'failed',
+          crawlRunId: null 
+        })
+        .where(eq(widget.id, widgetId));
+    }
+  }
+
+  async processCrawlResults(widgetId: string, runId: string, userId: string) {
+    console.log('[WidgetService] processCrawlResults called:', { widgetId, runId });
+    
+    try {
+      // Get crawl results
+      const results = await this.apifyCrawler.getCrawlResults(runId);
+      console.log('[WidgetService] Got crawl results:', results.length, 'pages');
+      
+      // Get widget for URL
+      const widgetRecord = await this.getWidget(widgetId, userId);
+      if (!widgetRecord || !widgetRecord.crawlUrl) throw new Error('Widget not found');
+      
+      // If no results, mark as completed with 0 pages
+      if (!results || results.length === 0) {
+        console.log('[WidgetService] No pages found in crawl results');
+        await this.db.getDatabase()
+          .update(widget)
+          .set({
+            crawlStatus: 'completed',
+            crawlRunId: null,
+            lastCrawlAt: new Date(),
+            crawlPageCount: 0
+          })
+          .where(eq(widget.id, widgetId));
+        return;
+      }
+      
+      const hostname = new URL(widgetRecord.crawlUrl).hostname;
+      
+      // 1. Create placeholder file with crawl metadata
+      const placeholderContent = this.apifyCrawler.createPlaceholderContent(
+        widgetRecord.crawlUrl,
+        results.length
+      );
+      const placeholderBlob = new Blob([placeholderContent], { type: 'text/markdown' });
+      const placeholderFile = new File([placeholderBlob], `${hostname}.crawl.md`, { 
+        type: 'text/markdown' 
+      });
+      
+      await this.fileStorage.uploadFile({
+        file: placeholderFile,
+        widgetId
+      });
+      
+      // 2. Save each crawled page as a separate file
+      for (let i = 0; i < results.length; i++) {
+        const page = results[i];
+        const pageUrl = new URL(page.url);
+        
+        // Create filename from URL path
+        let filename = pageUrl.pathname
+          .replace(/^\//, '') // Remove leading slash
+          .replace(/\/$/, '') // Remove trailing slash
+          .replace(/[^a-zA-Z0-9-_]/g, '_') // Replace special chars
+          || 'index';
+        
+        // Add page number and crawl identifier
+        filename = `${hostname}.crawl.page-${String(i + 1).padStart(3, '0')}.${filename}.md`;
+        
+        // Create file content with metadata header
+        const pageContent = `---
+url: ${page.url}
+title: ${page.title || 'Untitled'}
+crawled_from: ${widgetRecord.crawlUrl}
+crawled_at: ${new Date().toISOString()}
+page_number: ${i + 1}
+---
+
+# ${page.title || pageUrl.pathname}
+
+${page.markdown}
+`;
+        
+        // Create and upload file
+        const pageBlob = new Blob([pageContent], { type: 'text/markdown' });
+        const pageFile = new File([pageBlob], filename, { type: 'text/markdown' });
+        
+        const storedFile = await this.fileStorage.uploadFile({
+          file: pageFile,
+          widgetId
+        });
+        
+        console.log(`[WIDGET_CRAWL] Saved page ${i + 1}/${results.length}: ${filename}`);
+      }
+      
+      // Update widget status
+      await this.db.getDatabase()
+        .update(widget)
+        .set({
+          crawlStatus: 'completed',
+          crawlRunId: null,
+          lastCrawlAt: new Date(),
+          crawlPageCount: results.length
+        })
+        .where(eq(widget.id, widgetId));
+        
+      console.log(`[WIDGET_CRAWL] Completed crawl for ${widgetRecord.crawlUrl}: ${results.length} pages`);
+        
+    } catch (error) {
+      console.error('Error processing crawl results:', error);
+      await this.db.getDatabase()
+        .update(widget)
+        .set({ 
+          crawlStatus: 'failed',
+          crawlRunId: null 
+        })
+        .where(eq(widget.id, widgetId));
+    }
   }
 }

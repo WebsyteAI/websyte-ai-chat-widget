@@ -37,6 +37,8 @@ export function WidgetEditor({
             data[key] = value;
           }
         }
+        
+        console.log('[WidgetEditor] Updating widget with data:', data);
 
         const response = await fetch(`/api/widgets/${widget.id}`, {
           method: 'PUT',
@@ -53,6 +55,8 @@ export function WidgetEditor({
 
         const result: any = await response.json();
         const updatedWidget = result.widget;
+        
+        console.log('[WidgetEditor] Updated widget response:', updatedWidget);
         
         setCreatedWidget(updatedWidget);
         onWidgetUpdated?.(updatedWidget);

@@ -14,6 +14,11 @@ export interface Widget {
   url?: string;
   cacheEnabled: boolean;
   isPublic: boolean;
+  crawlUrl?: string;
+  crawlStatus?: 'pending' | 'crawling' | 'completed' | 'failed';
+  crawlRunId?: string;
+  lastCrawlAt?: string;
+  crawlPageCount?: number;
   createdAt: string;
   updatedAt: string;
   files: WidgetFile[];

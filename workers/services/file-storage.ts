@@ -50,10 +50,13 @@ export class FileStorageService {
   async uploadFile(upload: FileUpload): Promise<StoredFile> {
     const { file, widgetId } = upload;
     
+    // Generate a temporary unique ID for the r2Key
+    const tempId = crypto.randomUUID();
+    
     // Insert file record first to get the ID
     const fileRecord: NewWidgetFile = {
       widgetId,
-      r2Key: '', // Will be updated after generating with fileId
+      r2Key: `temp_${tempId}`, // Temporary unique key to avoid constraint violations
       filename: file.name,
       fileType: file.type,
       fileSize: file.size
