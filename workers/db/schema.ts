@@ -51,6 +51,11 @@ export const widgetEmbedding = pgTable('widget_embedding', {
   metadata: json('metadata').$type<{
     chunkIndex: number;
     source?: string;
+    fileId?: string;
+    pageNumber?: number;
+    url?: string;
+    title?: string;
+    crawledFrom?: string;
   }>(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({

@@ -472,11 +472,11 @@ export class WidgetService {
     // Find and delete all crawl-related files
     const files = await this.fileStorage.getWidgetFiles(widgetId);
     const crawlFiles = files.filter(f => 
-      f.filename.endsWith('.crawl.md') || 
-      f.filename.includes('.crawl.page-')
+      f.filename.endsWith('.crawl.md')  // Only need to delete the main crawl file
     );
     
     for (const file of crawlFiles) {
+      // This will also delete all page files associated with this file
       await this.fileStorage.deleteFile(file.id, widgetId);
     }
   }
@@ -553,50 +553,62 @@ export class WidgetService {
         type: 'text/markdown' 
       });
       
-      await this.fileStorage.uploadFile({
+      const storedFile = await this.fileStorage.uploadFile({
         file: placeholderFile,
         widgetId
       });
       
-      // 2. Save each crawled page as a separate file
+      // 2. Store each crawled page as a page file (following OCR pattern)
+      const pageData: Array<{ pageNumber: number; markdown: string; metadata?: any }> = [];
+      
       for (let i = 0; i < results.length; i++) {
         const page = results[i];
-        const pageUrl = new URL(page.url);
+        const pageNumber = i + 1;
         
-        // Create filename from URL path
-        let filename = pageUrl.pathname
-          .replace(/^\//, '') // Remove leading slash
-          .replace(/\/$/, '') // Remove trailing slash
-          .replace(/[^a-zA-Z0-9-_]/g, '_') // Replace special chars
-          || 'index';
-        
-        // Add page number and crawl identifier
-        filename = `${hostname}.crawl.page-${String(i + 1).padStart(3, '0')}.${filename}.md`;
-        
-        // Create file content with metadata header
+        // Create page content with metadata header
         const pageContent = `---
 url: ${page.url}
 title: ${page.title || 'Untitled'}
 crawled_from: ${widgetRecord.crawlUrl}
 crawled_at: ${new Date().toISOString()}
-page_number: ${i + 1}
+page_number: ${pageNumber}
 ---
 
-# ${page.title || pageUrl.pathname}
+# ${page.title || new URL(page.url).pathname}
 
 ${page.markdown}
 `;
         
-        // Create and upload file
-        const pageBlob = new Blob([pageContent], { type: 'text/markdown' });
-        const pageFile = new File([pageBlob], filename, { type: 'text/markdown' });
+        // Store as page file using the same pattern as OCR
+        await this.fileStorage.storePageFile(widgetId, storedFile.id, pageNumber, pageContent);
         
-        const storedFile = await this.fileStorage.uploadFile({
-          file: pageFile,
-          widgetId
+        // Collect page data for embeddings (include metadata)
+        pageData.push({
+          pageNumber,
+          markdown: pageContent,
+          metadata: {
+            url: page.url,
+            title: page.title || 'Untitled',
+            crawledFrom: widgetRecord.crawlUrl
+          }
         });
         
-        console.log(`[WIDGET_CRAWL] Saved page ${i + 1}/${results.length}: ${filename}`);
+        console.log(`[WIDGET_CRAWL] Saved page ${pageNumber}/${results.length} as page file`);
+      }
+      
+      // 3. Create embeddings using the same method as OCR files
+      if (this.vectorSearch) {
+        try {
+          await this.vectorSearch.createEmbeddingsFromCrawlPages(
+            widgetId, 
+            storedFile.id, 
+            pageData
+          );
+          console.log(`[WIDGET_CRAWL] Created embeddings for ${pageData.length} crawled pages`);
+        } catch (embeddingError) {
+          console.error('[WIDGET_CRAWL] Error creating embeddings:', embeddingError);
+          // Don't fail the whole process if embeddings fail
+        }
       }
       
       // Update widget status

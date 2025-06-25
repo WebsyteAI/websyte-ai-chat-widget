@@ -10,6 +10,9 @@ export interface EmbeddingChunk {
     source?: string;
     fileId?: string;
     pageNumber?: number;
+    url?: string;
+    title?: string;
+    crawledFrom?: string;
   };
 }
 
@@ -21,6 +24,9 @@ export interface SearchResult {
     source?: string;
     fileId?: string;
     pageNumber?: number;
+    url?: string;
+    title?: string;
+    crawledFrom?: string;
   };
   widgetId: string;
 }
@@ -271,6 +277,48 @@ export class VectorSearchService {
       // Batch insert all embeddings
       await this.db.getDatabase().insert(widgetEmbedding).values(allEmbeddings);
       console.log(`[EMBEDDINGS] Created ${allEmbeddings.length} embeddings for ${pages.length} pages`);
+    }
+  }
+
+  async createEmbeddingsFromCrawlPages(
+    widgetId: string,
+    fileId: string,
+    pages: Array<{ pageNumber: number; markdown: string; metadata?: any }>
+  ): Promise<void> {
+    const allEmbeddings: NewWidgetEmbedding[] = [];
+
+    for (const page of pages) {
+      if (!page.markdown || !page.markdown.trim()) {
+        continue;
+      }
+
+      const chunks = await this.chunkText(page.markdown);
+      
+      for (const chunk of chunks) {
+        const embedding = await this.generateEmbedding(chunk.text);
+        
+        // Merge page metadata with chunk metadata
+        const metadata = {
+          chunkIndex: chunk.metadata.chunkIndex,
+          source: `page_${page.pageNumber}`,
+          pageNumber: page.pageNumber,
+          ...(page.metadata ? page.metadata : {})
+        };
+        
+        allEmbeddings.push({
+          widgetId,
+          fileId,
+          contentChunk: chunk.text,
+          embedding: embedding,
+          metadata
+        });
+      }
+    }
+
+    if (allEmbeddings.length > 0) {
+      // Batch insert all embeddings
+      await this.db.getDatabase().insert(widgetEmbedding).values(allEmbeddings);
+      console.log(`[EMBEDDINGS] Created ${allEmbeddings.length} embeddings for ${pages.length} crawled pages`);
     }
   }
 }
