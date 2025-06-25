@@ -20,7 +20,7 @@ import type {
   Message,
 } from "./types";
 
-export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, advertiserUrl = "https://websyte.ai", isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false, widgetId, saveChatMessages = false }: ChatWidgetProps) {
+export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, advertiserUrl = "https://websyte.ai", isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false, widgetId, saveChatMessages = false, isFullScreen = false }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -108,6 +108,14 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
   }, []);
 
   useEffect(() => {
+    // Skip page content extraction for full-screen mode (standalone widgets)
+    if (isFullScreen) {
+      // For full-screen widgets, just set placeholder and skip recommendations
+      setPlaceholder(widgetId ? "Ask me anything about the knowledge base..." : "Ask me anything...");
+      setIsLoadingRecommendations(false);
+      return;
+    }
+
     // Warm cache, capture original content, and load all data in parallel
     const loadInitialData = async () => {
       console.log('ChatWidget: loadInitialData started');
@@ -280,7 +288,8 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
     setAbortController(controller);
 
     try {
-      const pageContent = await extractPageContent();
+      // For full-screen mode, skip page content extraction
+      const pageContent = isFullScreen ? null : await extractPageContent();
       
       const response = await fetch(`${baseUrl}/api/chat`, {
         method: "POST",
@@ -290,7 +299,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         body: JSON.stringify({
           message: userMessage.content,
           history: messages.slice(-10),
-          context: pageContent,
+          ...(pageContent && { context: pageContent }),
           ...(widgetId && { widgetId }),
           isEmbedded: saveChatMessages, // Only save messages when explicitly enabled
         }),
@@ -412,7 +421,8 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
     setAbortController(controller);
 
     try {
-      const pageContent = await extractPageContent();
+      // For full-screen mode, skip page content extraction
+      const pageContent = isFullScreen ? null : await extractPageContent();
       
       const response = await fetch(`${baseUrl}/api/chat`, {
         method: "POST",
@@ -422,7 +432,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         body: JSON.stringify({
           message: rec.title,
           history: messages.slice(-10),
-          context: pageContent,
+          ...(pageContent && { context: pageContent }),
           ...(widgetId && { widgetId }),
           isEmbedded: saveChatMessages, // Only save messages when explicitly enabled
         }),
@@ -458,6 +468,38 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
       setAbortController(null);
     }
   };
+
+  // Full-screen mode render
+  if (isFullScreen) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        {/* Chat Panel in full-screen mode - always visible */}
+        <ChatPanel
+          currentView="chat"
+          messages={messages}
+          inputValue={inputValue}
+          placeholder={placeholder}
+          isLoading={isLoading}
+          recommendations={recommendations}
+          isLoadingRecommendations={isLoadingRecommendations}
+          advertiserName={advertiserName}
+          hidePoweredBy={hidePoweredBy}
+          advertiserLogo={advertiserLogo}
+          baseUrl={baseUrl}
+          summaries={summaries}
+          currentContentMode={currentContentMode}
+          mainContentElement={mainContentElement}
+          onClose={() => {}} // No close functionality in full-screen mode
+          onInputChange={setInputValue}
+          onKeyDown={handleKeyDown}
+          onSendMessage={sendMessage}
+          onCancelMessage={cancelMessage}
+          onRecommendationClick={handleRecommendationClick}
+          isFullScreen={true}
+        />
+      </div>
+    );
+  }
 
   return (
     <>

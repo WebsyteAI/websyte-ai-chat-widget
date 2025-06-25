@@ -4,7 +4,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Upload, X, FileText, Trash2, Code, Lock, ArrowLeft, Info } from 'lucide-react';
+import { Upload, X, FileText, Trash2, Code, Lock, ArrowLeft, Info, ExternalLink, Copy, Check } from 'lucide-react';
 import { useUIStore, type Widget } from '../../stores';
 import { ScriptCopyBtn } from '../ui/script-copy-btn';
 import { toast } from '@/lib/use-toast';
@@ -23,6 +23,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
   const [existingFiles, setExistingFiles] = useState(widget?.files || []);
   const [isPublic, setIsPublic] = useState(false);
+  const [shareUrlCopied, setShareUrlCopied] = useState(false);
   const {
     widgetFormData,
     updateWidgetFormField,
@@ -154,6 +155,24 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
     } catch (error) {
       console.error('Error updating widget visibility:', error);
       toast.error('Failed to update widget visibility. Please try again.');
+    }
+  };
+
+  const generateShareableUrl = () => {
+    if (!widget?.id) return '';
+    return `${window.location.origin}/share/w/${widget.id}`;
+  };
+
+  const copyShareableUrl = async () => {
+    const url = generateShareableUrl();
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareUrlCopied(true);
+      toast.success('Shareable URL copied to clipboard!');
+      setTimeout(() => setShareUrlCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy URL:', error);
+      toast.error('Failed to copy URL. Please try again.');
     }
   };
 
@@ -479,6 +498,48 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
                     />
                     <p className="text-xs text-gray-600">
                       Paste this code into your website's HTML where you want the widget to appear.
+                    </p>
+                  </div>
+
+                  {/* Shareable URL */}
+                  <div className="space-y-2">
+                    <Label>Shareable URL</Label>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-mono text-gray-700">
+                        {generateShareableUrl()}
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={copyShareableUrl}
+                        className="flex items-center gap-2"
+                      >
+                        {shareUrlCopied ? (
+                          <>
+                            <Check className="w-4 h-4 text-green-600" />
+                            Copied
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" />
+                            Copy
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.open(generateShareableUrl(), '_blank')}
+                        className="flex items-center gap-2"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Open
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-600">
+                      Direct link to your widget that can be shared with anyone. Opens in full-screen chat mode.
                     </p>
                   </div>
 

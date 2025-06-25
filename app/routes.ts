@@ -15,4 +15,5 @@ export default [
   route("/script-test", "routes/script-test.tsx"),
   route("/target-test", "routes/target-test.tsx"),
   route("/summary-test", "routes/summary-test.tsx"),
+  route("/share/w/:id", "routes/share.w.$id.tsx"),
 ] satisfies RouteConfig;

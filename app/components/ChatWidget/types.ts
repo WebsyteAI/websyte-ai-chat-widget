@@ -26,6 +26,7 @@ export interface ChatWidgetProps {
   enableSmartSelector?: boolean;
   widgetId?: string;
   saveChatMessages?: boolean; // Whether to save chat messages to database
+  isFullScreen?: boolean; // Whether to render as full-screen interface
 }
 
 export interface Recommendation {
