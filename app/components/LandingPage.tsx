@@ -32,6 +32,14 @@ import {
   Bot,
   Layers,
   Sparkles,
+  History,
+  ShieldCheck,
+  Timer,
+  Lock,
+  GlobeLock,
+  Share2,
+  MessageSquareQuote,
+  BotMessageSquare,
 } from "lucide-react";
 
 interface EmbedConfig {
@@ -99,7 +107,7 @@ export function LandingPage() {
       icon: <Database className="h-6 w-6" />,
       title: "RAG-Powered Responses",
       description:
-        "Retrieval-Augmented Generation uses vector search to provide accurate answers from your uploaded content.",
+        "Retrieval-Augmented Generation with inline citations provides accurate, sourced answers from your content.",
     },
     {
       icon: <Search className="h-6 w-6" />,
@@ -142,6 +150,42 @@ export function LandingPage() {
       title: "Multi-AI Support", 
       description:
         "Powered by OpenAI GPT-4o-mini and Mistral AI with intelligent fallback and model selection.",
+    },
+    {
+      icon: <History className="h-6 w-6" />,
+      title: "Conversation History",
+      description:
+        "Secure message persistence with session tracking for insights, analytics, and conversation continuity.",
+    },
+    {
+      icon: <ShieldCheck className="h-6 w-6" />,
+      title: "Rate Limiting & Security",
+      description:
+        "Built-in API protection with configurable rate limits and GDPR-compliant data handling.",
+    },
+    {
+      icon: <Timer className="h-6 w-6" />,
+      title: "Auto Data Cleanup",
+      description:
+        "Automatic retention policies with scheduled cleanup of old messages for privacy compliance.",
+    },
+    {
+      icon: <GlobeLock className="h-6 w-6" />,
+      title: "Website Crawler",
+      description:
+        "Crawl entire websites with Apify integration to build comprehensive knowledge bases automatically.",
+    },
+    {
+      icon: <Share2 className="h-6 w-6" />,
+      title: "Direct Widget Sharing",
+      description:
+        "Share widgets via direct URLs with full-screen chat interface and SEO optimization.",
+    },
+    {
+      icon: <MessageSquareQuote className="h-6 w-6" />,
+      title: "Smart Prompts",
+      description:
+        "Dynamic prompt recommendations with animated display to guide user interactions.",
     },
   ];
 
@@ -193,13 +237,13 @@ export function LandingPage() {
           <div className="flex flex-wrap justify-center gap-2 mb-4">
             <Badge variant="secondary" className="flex items-center gap-1">
               <Sparkles className="h-3 w-3" />
-              NEW: Custom AI Widgets
+              NEW: Website Crawler & Widget Sharing
             </Badge>
             <Badge variant="outline" className="flex items-center gap-1">
-              <ArrowUp className="h-3 w-3 animate-bounce" />
-              Try it above!
+              <MessageSquareQuote className="h-3 w-3" />
+              Inline Citations
             </Badge>
-            <Badge variant="outline">Zero Setup Conflicts Guaranteed</Badge>
+            <Badge variant="outline">GDPR Compliant</Badge>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
             Turn Every Page Into an Interactive Conversation
@@ -428,10 +472,13 @@ export function LandingPage() {
                 </div>
                 <CardTitle>1. Upload Content</CardTitle>
                 <CardDescription>
-                  Add PDFs, documents, images, or text content to build your knowledge base
+                  Add PDFs, documents, images, or crawl entire websites to build your knowledge base
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  • Website crawler with Apify integration
+                </p>
                 <p className="text-sm text-muted-foreground">
                   • PDF and document processing
                 </p>
@@ -449,12 +496,15 @@ export function LandingPage() {
                 <div className="mx-auto p-3 bg-green-100 dark:bg-green-900/20 rounded-full w-fit mb-4">
                   <Code className="h-6 w-6 text-green-600" />
                 </div>
-                <CardTitle>2. Generate Embed</CardTitle>
+                <CardTitle>2. Generate & Share</CardTitle>
                 <CardDescription>
-                  One-click embed code generation with customizable branding options
+                  One-click embed code generation or share via direct URL
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  • Direct widget sharing URLs
+                </p>
                 <p className="text-sm text-muted-foreground">
                   • Public/private widget controls
                 </p>
@@ -479,10 +529,13 @@ export function LandingPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  • RAG-powered responses
+                  • RAG responses with inline citations
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  • Vector similarity search
+                  • Smart prompt recommendations
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  • Conversation history & analytics
                 </p>
                 <p className="text-sm text-muted-foreground">
                   • Multi-AI model support
@@ -573,13 +626,13 @@ export function LandingPage() {
                   Cloudflare Workers
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  CORS Protection
+                  Rate Limiting (10/30 req/min)
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  API Key Security
+                  GDPR Compliant
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Rate Limiting
+                  90-Day Auto Cleanup
                 </div>
               </CardContent>
             </Card>

@@ -26,16 +26,20 @@ pnpm deploy           # Deploy to Cloudflare
 ## Essential Files
 - `workers/app.ts` - Main backend with widget APIs
 - `workers/db/schema.ts` - Database schema with public widgets & chat messages
-- `workers/services/rag-agent.ts` - RAG chat agent
+- `workers/services/rag-agent.ts` - RAG chat agent with inline citations
 - `workers/services/vector-search.ts` - Vector search & embeddings
 - `workers/services/widget.ts` - Widget management and public access
 - `workers/services/messages.ts` - Chat message persistence and session management
 - `workers/services/chat.ts` - Chat API with message persistence controls
+- `workers/services/apify-crawler.ts` - Website crawler integration
 - `workers/lib/rate-limiter.ts` - Rate limiting middleware for API protection
+- `workers/cron/cleanup-messages.ts` - Scheduled cleanup of old messages
 - `app/components/widgets/WidgetForm.tsx` - Embed code generation UI
 - `app/components/widgets/WidgetEditor.tsx` - Full-screen widget editor with live preview
+- `app/components/ChatWidget/components/RecommendationsList.tsx` - Smart prompt recommendations
 - `app/widget-entry.tsx` - Custom widget embed script entry
 - `app/routes/test.tsx` - Widget testing playground
+- `app/routes/share.w.$id.tsx` - Direct widget sharing page
 - `app/routes/dashboard.tsx` - Dashboard layout with nested routing
 - `app/routes/dashboard.widgets.*.tsx` - Widget management routes
 - `app/routes.ts` - React Router 7 route configuration
@@ -44,20 +48,28 @@ pnpm deploy           # Deploy to Cloudflare
 
 ## New Features
 - **Custom Widget Embed Scripts**: Generate embeddable AI assistants with custom knowledge bases
-- **RAG Chat Agent**: Context-aware chat with knowledge base retrieval
+- **RAG Chat Agent**: Context-aware chat with knowledge base retrieval and inline citations
 - **Vector Search**: Semantic search with embeddings and similarity matching
+- **Website Crawler**: Apify integration to crawl entire websites for knowledge base building
+- **Direct Widget Sharing**: Share widgets via direct URLs with full-screen chat interface
 - **Chat Message Persistence**: Secure storage of conversations for insights and audits
 - **Smart Message Controls**: Only save messages from embedded widgets, not test environments
-- **Session Management**: Secure session tracking with automatic cleanup
+- **Session Management**: Secure session tracking with server-side ID generation
 - **Rate Limiting**: API protection with configurable limits (10/min anonymous, 30/min authenticated)
+- **Smart Prompt Recommendations**: Dynamic prompt suggestions with animated marquee display
 - **Embed Code Generation**: One-click script generation with public/private controls
 - **Public Widget API**: Anonymous access to public widgets for embedding
 - **OCR Support**: Extract text from images and PDFs for knowledge bases
 - **Multi-AI Support**: OpenAI GPT-4.1-mini and Mistral AI integration
 - **Testing Playground**: Comprehensive widget testing environment at `/test`
 - **Nested Dashboard Routes**: File-based routing with explicit route configuration
-- **Full-Screen Widget Editor**: Split-screen editor with form on left, chat preview on right (OpenAI GPT editor style)
+- **Full-Screen Widget Editor**: Split-screen editor with form on left, chat preview on right
 - **GDPR Compliance**: Configurable IP storage and automatic data cleanup
+- **Inline Citations**: Markdown-formatted citations in chat responses with source references
+- **Auto Data Cleanup**: Scheduled cron jobs for automatic message retention management
+- **Toast Notifications**: User feedback for widget operations
+- **Enhanced Chat UX**: Fixed scrolling behavior when sources are displayed
+- **Full-Screen Chat UI**: Improved layout with fixed positioning and better responsive design
 
 ## Workflow Memories
 - When asked to update docs, update @CLAUDE.md and .claude/ directory
