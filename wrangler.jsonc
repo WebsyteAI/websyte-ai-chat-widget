@@ -52,5 +52,13 @@
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
 	 */
   // "services": [{ "binding": "MY_SERVICE", "service": "my-service" }],
-  "vars": {}
+  "vars": {},
+  /**
+   * Cron Triggers
+   * Run scheduled tasks at specific intervals
+   * https://developers.cloudflare.com/workers/configuration/cron-triggers/
+   */
+  "triggers": {
+    "crons": ["0 2 * * *"]
+  }
 }

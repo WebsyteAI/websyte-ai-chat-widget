@@ -4,7 +4,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Upload, X, FileText, Trash2, Code, Lock, ArrowLeft } from 'lucide-react';
+import { Upload, X, FileText, Trash2, Code, Lock, ArrowLeft, Info } from 'lucide-react';
 import { useUIStore, type Widget } from '../../stores';
 import { ScriptCopyBtn } from '../ui/script-copy-btn';
 import { toast } from '@/lib/use-toast';
@@ -340,6 +340,29 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
                 onChange={handleFileSelect}
                 className="hidden"
               />
+            </div>
+
+            {/* File Naming Tips */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex gap-3">
+                <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-blue-900">File Naming Best Practices</h4>
+                  <p className="text-sm text-blue-800">
+                    For optimal search results, use descriptive file names that indicate content:
+                  </p>
+                  <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside ml-2">
+                    <li>Use descriptive names (e.g., "product-specifications-2024.pdf" instead of "doc1.pdf")</li>
+                    <li>Include dates for time-sensitive content (e.g., "pricing-guide-jan-2024.pdf")</li>
+                    <li>Group related content with prefixes (e.g., "faq-billing.txt", "faq-shipping.txt")</li>
+                    <li>Use hyphens or underscores for readability instead of spaces</li>
+                    <li>Avoid special characters that may be stripped during processing</li>
+                  </ul>
+                  <p className="text-xs text-blue-700 italic">
+                    Files are chunked into ~2000 word segments for vector search, with descriptive names helping identify relevant content sources.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* File List */}

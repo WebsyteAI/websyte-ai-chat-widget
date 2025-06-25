@@ -8,6 +8,13 @@
       "when": 1750736593385,
       "tag": "0000_cool_risque",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1750825833190,
+      "tag": "0001_smooth_supernaut",
+      "breakpoints": true
     }
   ]
 }

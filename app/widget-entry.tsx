@@ -19,6 +19,7 @@ declare global {
         hidePoweredBy?: boolean;
         enableSmartSelector?: boolean;
         widgetId?: string;
+        saveChatMessages?: boolean;
       };
       open?: () => void;
       close?: () => void;
@@ -80,6 +81,9 @@ declare global {
       
       const widgetId = scriptTag.getAttribute('data-widget-id');
       if (widgetId) scriptConfig.widgetId = widgetId;
+      
+      const saveChatMessages = scriptTag.getAttribute('data-save-chat-messages');
+      if (saveChatMessages !== null) scriptConfig.saveChatMessages = saveChatMessages === 'true';
     }
     
     return scriptConfig;
@@ -97,7 +101,8 @@ declare global {
     contentSelector: '',
     hidePoweredBy: true,
     enableSmartSelector: false,
-    widgetId: undefined
+    widgetId: undefined,
+    saveChatMessages: true // Enable message saving by default for external widgets
   };
   
   // Merge configs: defaults < window config < script attributes
@@ -194,7 +199,8 @@ declare global {
         contentSelector: config.contentSelector,
         hidePoweredBy: config.hidePoweredBy,
         enableSmartSelector: config.enableSmartSelector,
-        widgetId: config.widgetId
+        widgetId: config.widgetId,
+        saveChatMessages: config.saveChatMessages
       })
     );
   }

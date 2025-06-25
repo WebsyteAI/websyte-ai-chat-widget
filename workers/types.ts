@@ -13,6 +13,14 @@ export interface ChatRequest {
     content: string;
   };
   widgetId?: string;
+  sessionId?: string;
+  isEmbedded?: boolean;
+}
+
+export interface ChatResponse {
+  message: string;
+  sources?: any[];
+  sessionId?: string;
 }
 
 export interface SummarizeRequest {
@@ -72,4 +80,7 @@ export interface Env {
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
   WIDGET_FILES: R2Bucket;
+  STORE_IP_ADDRESSES?: string;
+  MESSAGE_RETENTION_DAYS?: string;
+  METRICS_ENDPOINT?: string;
 }

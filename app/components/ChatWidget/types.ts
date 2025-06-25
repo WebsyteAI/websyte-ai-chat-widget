@@ -25,6 +25,7 @@ export interface ChatWidgetProps {
   hidePoweredBy?: boolean;
   enableSmartSelector?: boolean;
   widgetId?: string;
+  saveChatMessages?: boolean; // Whether to save chat messages to database
 }
 
 export interface Recommendation {

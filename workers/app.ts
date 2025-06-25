@@ -11,8 +11,10 @@ import { AuthService } from './services/auth';
 import { VectorSearchService } from './services/vector-search';
 import { FileStorageService } from './services/file-storage';
 import { WidgetService } from './services/widget';
+import { MessageService } from './services/messages';
 import { RAGAgent } from './services/rag-agent';
 import { optionalAuthMiddleware, authMiddleware, adminMiddleware, type AuthContext } from './lib/middleware';
+import { rateLimitMiddleware } from './lib/rate-limiter';
 import type { Env } from './types';
 
 declare module "react-router" {
@@ -36,6 +38,7 @@ type AppType = {
       widget: WidgetService;
       vectorSearch: VectorSearchService;
       fileStorage: FileStorageService;
+      messages: MessageService;
     };
     auth?: AuthContext;
   };
@@ -56,6 +59,7 @@ let servicesCache: {
   widget: WidgetService;
   vectorSearch: VectorSearchService;
   fileStorage: FileStorageService;
+  messages: MessageService;
 } | null = null;
 
 const getServices = (env: Env) => {
@@ -70,10 +74,11 @@ const getServices = (env: Env) => {
       vectorSearch
     );
     const widget = new WidgetService(database, vectorSearch, fileStorage);
+    const messages = new MessageService(database);
     const ragAgent = new RAGAgent(env.OPENAI_API_KEY, widget);
     
     servicesCache = {
-      chat: new ChatService(openai, database, ragAgent, widget),
+      chat: new ChatService(openai, database, ragAgent, widget, messages),
       summaries: new SummariesService(openai, database),
       recommendations: new RecommendationsService(openai, database),
       selectorAnalysis: new SelectorAnalysisService(openai, database),
@@ -81,6 +86,7 @@ const getServices = (env: Env) => {
       vectorSearch,
       fileStorage,
       widget,
+      messages,
     };
   }
   return servicesCache;
@@ -120,6 +126,13 @@ app.all('/api/auth/*', async (c) => {
 });
 
 // API Routes
+// Apply rate limiting to chat endpoint
+app.use('/api/chat', rateLimitMiddleware({
+  windowMs: 60 * 1000, // 1 minute window
+  maxRequests: 10, // 10 requests per minute for anonymous
+  maxRequestsAuthenticated: 30, // 30 requests per minute for authenticated
+}));
+
 app.post('/api/chat', async (c) => {
   return c.get('services').chat.handleChat(c);
 });
@@ -144,7 +157,9 @@ app.get('/api/widgets', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const limit = parseInt(c.req.query('limit') || '50');
+  const MAX_LIMIT = 1000;
+  const requestedLimit = parseInt(c.req.query('limit') || '50');
+  const limit = Math.min(requestedLimit, MAX_LIMIT);
   const offset = parseInt(c.req.query('offset') || '0');
 
   try {
@@ -317,6 +332,118 @@ app.post('/api/widgets/:id/search', async (c) => {
   }
 });
 
+// Get chat messages for a widget
+app.get('/api/widgets/:id/messages', async (c) => {
+  const auth = c.get('auth');
+  if (!auth?.user) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const widgetId = c.req.param('id');
+  if (!widgetId) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    // Verify user owns the widget
+    const widget = await c.get('services').widget.getWidget(widgetId, auth.user.id);
+    if (!widget) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+
+    // Get query parameters with validation
+    const sessionId = c.req.query('sessionId');
+    const MAX_LIMIT = 1000;
+    const requestedLimit = parseInt(c.req.query('limit') || '50');
+    const limit = Math.min(requestedLimit, MAX_LIMIT);
+    const offset = parseInt(c.req.query('offset') || '0');
+    const startDate = c.req.query('startDate') ? new Date(c.req.query('startDate')!) : undefined;
+    const endDate = c.req.query('endDate') ? new Date(c.req.query('endDate')!) : undefined;
+
+    const messages = await c.get('services').messages.getMessages({
+      widgetId,
+      sessionId,
+      limit,
+      offset,
+      startDate,
+      endDate,
+    });
+
+    return c.json({ messages });
+  } catch (error) {
+    console.error('Error getting messages:', error);
+    return c.json({ error: 'Failed to get messages' }, 500);
+  }
+});
+
+// Get chat sessions for a widget
+app.get('/api/widgets/:id/sessions', async (c) => {
+  const auth = c.get('auth');
+  if (!auth?.user) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const widgetId = c.req.param('id');
+  if (!widgetId) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    // Verify user owns the widget
+    const widget = await c.get('services').widget.getWidget(widgetId, auth.user.id);
+    if (!widget) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+
+    const sessions = await c.get('services').messages.getSessions(widgetId);
+    return c.json({ sessions });
+  } catch (error) {
+    console.error('Error getting sessions:', error);
+    return c.json({ error: 'Failed to get sessions' }, 500);
+  }
+});
+
+// Delete a chat message
+app.delete('/api/widgets/:widgetId/messages/:messageId', async (c) => {
+  const auth = c.get('auth');
+  if (!auth?.user) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const widgetId = c.req.param('widgetId');
+  const messageId = c.req.param('messageId');
+  
+  if (!widgetId || !messageId) {
+    return c.json({ error: 'Widget ID and Message ID are required' }, 400);
+  }
+
+  try {
+    // Verify user owns the widget
+    const widget = await c.get('services').widget.getWidget(widgetId, auth.user.id);
+    if (!widget) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+
+    // Verify message belongs to this widget
+    const messages = await c.get('services').messages.getMessages({
+      widgetId,
+      limit: 1,
+      offset: 0
+    });
+    
+    const message = messages.find(m => m.id === messageId);
+    if (!message) {
+      return c.json({ error: 'Message not found in this widget' }, 404);
+    }
+
+    await c.get('services').messages.deleteMessage(messageId);
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    return c.json({ error: 'Failed to delete message' }, 500);
+  }
+});
+
 // Search across all user widgets
 app.post('/api/widgets/search', async (c) => {
   const auth = c.get('auth');
@@ -463,4 +590,8 @@ app.all('*', async (c) => {
   });
 });
 
+// Export default app
 export default app;
+
+// Export scheduled handler
+export { cleanupOldMessages as scheduled } from './cron/cleanup-messages';

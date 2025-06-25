@@ -312,6 +312,7 @@ export default function Test() {
                 if (renderMode === "target") {
                   scriptTag += ` data-target-element="#chat-widget-target"`;
                 }
+                scriptTag += ' data-save-chat-messages="true"'; // Enable message saving for external widgets
                 scriptTag += ' async></script>';
                 return scriptTag;
               })()}
@@ -462,6 +463,7 @@ export default function Test() {
           advertiserName={advertiserName}
           advertiserLogo={advertiserLogo || undefined}
           widgetId={testMode === "custom" && widgetId ? widgetId : undefined}
+          saveChatMessages={false} // Don't save messages in test environment
         />
       )}
       

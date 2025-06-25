@@ -160,14 +160,14 @@ describe('ServiceValidation', () => {
 
 describe('ErrorHandler', () => {
   describe('handleAbortError', () => {
-    it('should return 499 status with default abort message', () => {
+    it('should return 400 status with default abort message', () => {
       const context = createMockContext('POST')
       
       const result = ErrorHandler.handleAbortError(context)
       
       expect(context.json).toHaveBeenCalledWith(
         { error: "Request cancelled" },
-        499
+        400
       )
       expect(result).toBeDefined()
     })
@@ -187,7 +187,7 @@ describe('ErrorHandler', () => {
           summary: "Operation was cancelled",
           details: "User aborted the request"
         },
-        499
+        400
       )
       expect(result).toBeDefined()
     })
@@ -200,7 +200,7 @@ describe('ErrorHandler', () => {
       
       expect(context.json).toHaveBeenCalledWith(
         { error: "Request cancelled" },
-        499
+        400
       )
       expect(result).toBeDefined()
     })
@@ -212,7 +212,7 @@ describe('ErrorHandler', () => {
       
       expect(context.json).toHaveBeenCalledWith(
         { error: "Request cancelled" },
-        499
+        400
       )
       expect(result).toBeDefined()
     })
@@ -224,7 +224,7 @@ describe('ErrorHandler', () => {
       
       expect(context.json).toHaveBeenCalledWith(
         { error: "Request cancelled" },
-        499
+        400
       )
       expect(result).toBeDefined()
     })

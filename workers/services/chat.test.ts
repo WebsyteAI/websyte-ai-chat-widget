@@ -10,12 +10,15 @@ const createMockContext = (method: string = 'POST', body: any = {}) => {
     json: vi.fn().mockResolvedValue(body),
     raw: {
       signal: new AbortController().signal
-    }
+    },
+    header: vi.fn().mockReturnValue(undefined)
   }
 
   const mockContext = {
     req: mockRequest,
-    json: vi.fn()
+    json: vi.fn(),
+    get: vi.fn().mockReturnValue(null), // No auth by default
+    env: {}
   }
 
   return mockContext as any
@@ -24,6 +27,7 @@ const createMockContext = (method: string = 'POST', body: any = {}) => {
 describe('ChatService', () => {
   let chatService: ChatService
   let mockOpenAI: OpenAIService
+  let mockDatabase: any
 
   beforeEach(() => {
     mockOpenAI = {
@@ -32,7 +36,13 @@ describe('ChatService', () => {
       generateRecommendations: vi.fn()
     } as any
 
-    chatService = new ChatService(mockOpenAI)
+    mockDatabase = {
+      ensureUrlTracked: vi.fn().mockResolvedValue(undefined)
+    }
+
+    // Create ChatService without RAG agent, widget service, or message service
+    // to test the standard chat functionality
+    chatService = new ChatService(mockOpenAI, mockDatabase)
   })
 
   describe('handleChat', () => {
@@ -96,7 +106,7 @@ describe('ChatService', () => {
       await chatService.handleChat(context)
       
       expect(context.json).toHaveBeenCalledWith(
-        { error: "Content context is required" },
+        { error: "Content context is required for standard chat" },
         400
       )
     })
@@ -256,7 +266,7 @@ describe('ChatService', () => {
           error: "Request cancelled",
           message: "Request was cancelled by the user."
         },
-        499
+        400
       )
     })
 

@@ -199,7 +199,7 @@ describe('RecommendationsService', () => {
           recommendations: [],
           placeholder: "Ask me about this content"
         },
-        499
+        400
       )
     })
 

@@ -37,6 +37,7 @@ export interface ChatConfig {
   enableSources?: boolean;
   enableDebug?: boolean;
   mode?: "standard" | "rag";
+  isEmbedded?: boolean; // True when chat is embedded on external site
 }
 
 export interface ChatState {
@@ -59,6 +60,7 @@ export interface ChatResponse {
   message: string;
   sources?: MessageSource[];
   metadata?: MessageMetadata;
+  sessionId?: string;
 }
 
 export interface ChatRequest {
@@ -73,6 +75,8 @@ export interface ChatRequest {
     content: string;
   };
   widgetId?: string;
+  sessionId?: string;
+  isEmbedded?: boolean; // Track if request is from embedded widget
 }
 
 export type ChatLayout = "widget" | "fullscreen" | "sidebar" | "panel";

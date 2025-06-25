@@ -131,6 +131,30 @@ export type WidgetFile = typeof widgetFile.$inferSelect;
 export type NewWidgetFile = typeof widgetFile.$inferInsert;
 
 
+// Chat message table for storing conversation history
+export const chatMessage = pgTable('chat_message', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  widgetId: uuid('widget_id').notNull().references(() => widget.id, { onDelete: 'cascade' }),
+  sessionId: text('session_id').notNull(), // Group messages by conversation session
+  userId: text('user_id'), // Nullable for anonymous users
+  role: text('role').notNull(), // 'user' | 'assistant'
+  content: text('content').notNull(),
+  metadata: json('metadata').$type<{
+    model?: string;
+    sources?: any[];
+    responseTime?: number;
+    userAgent?: string;
+    ipAddress?: string;
+    error?: string;
+  }>(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  widgetIdIdx: index('chat_message_widget_id_idx').on(table.widgetId),
+  sessionIdIdx: index('chat_message_session_id_idx').on(table.sessionId),
+  createdAtIdx: index('chat_message_created_at_idx').on(table.createdAt),
+  widgetSessionIdx: index('chat_message_widget_session_idx').on(table.widgetId, table.sessionId),
+}));
+
 // Auth types
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;
@@ -140,3 +164,7 @@ export type Account = typeof account.$inferSelect;
 export type NewAccount = typeof account.$inferInsert;
 export type Verification = typeof verification.$inferSelect;
 export type NewVerification = typeof verification.$inferInsert;
+
+// Chat types
+export type ChatMessage = typeof chatMessage.$inferSelect;
+export type NewChatMessage = typeof chatMessage.$inferInsert;
