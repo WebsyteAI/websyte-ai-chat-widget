@@ -408,40 +408,56 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
           <div className="space-y-4">
             <Label>Website Crawling (optional)</Label>
             
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex gap-3">
-                <Globe className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-blue-900">Crawl Website Content</h4>
-                  <p className="text-sm text-blue-800">
-                    Enter a base URL to automatically crawl and index pages from that website.
-                  </p>
-                  <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside ml-2">
-                    <li>Only the base domain will be crawled (e.g., websyte.ai)</li>
-                    <li>Apify will discover and process accessible pages</li>
-                    <li>Content will be converted to markdown and indexed</li>
-                    <li>One URL per widget allowed</li>
-                    <li><strong>Maximum 25 pages per crawl</strong></li>
-                    <li>Default depth of 2 levels</li>
-                  </ul>
+            {!isEditing ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="flex gap-3">
+                  <Lock className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-700">Save Widget to Enable Crawling</h4>
+                    <p className="text-sm text-gray-600">
+                      Website crawling will be available after creating the widget.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex gap-3">
+                  <Globe className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-blue-900">Crawl Website Content</h4>
+                    <p className="text-sm text-blue-800">
+                      Enter a base URL to automatically crawl and index pages from that website.
+                    </p>
+                    <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside ml-2">
+                      <li>Only the base domain will be crawled (e.g., websyte.ai)</li>
+                      <li>Apify will discover and process accessible pages</li>
+                      <li>Content will be converted to markdown and indexed</li>
+                      <li>One URL per widget allowed</li>
+                      <li><strong>Maximum 25 pages per crawl</strong></li>
+                      <li>Default depth of 2 levels</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
             
-            <div className="space-y-2">
-              <Label htmlFor="crawlUrl">Base URL</Label>
-              <Input
-                id="crawlUrl"
-                type="url"
-                value={crawlUrl}
-                onChange={(e) => setCrawlUrl(e.target.value)}
-                placeholder="https://example.com"
-                disabled={crawlStatus === 'crawling'}
-              />
-              <p className="text-sm text-gray-600">
-                Enter only the base domain. Up to 25 pages will be crawled automatically.
-              </p>
-            </div>
+            {isEditing && (
+              <div className="space-y-2">
+                <Label htmlFor="crawlUrl">Base URL</Label>
+                <Input
+                  id="crawlUrl"
+                  type="url"
+                  value={crawlUrl}
+                  onChange={(e) => setCrawlUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  disabled={crawlStatus === 'crawling'}
+                />
+                <p className="text-sm text-gray-600">
+                  Enter only the base domain. Up to 25 pages will be crawled automatically.
+                </p>
+              </div>
+            )}
             
             {/* Crawl Status for existing widgets */}
             {crawlStatus && (
@@ -496,44 +512,58 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
           <div className="space-y-4">
             <Label>Upload Files (optional)</Label>
             
-            {/* Drop Zone */}
-            <div
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                dragActive 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-300 hover:border-gray-400'
-              }`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-            >
-              <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-600 mb-2">
-                Drag and drop files here, or click to browse
-              </p>
-              <p className="text-sm text-gray-500 mb-4">
-                Supported: TXT, PDF, DOC, DOCX, MD
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Browse Files
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept=".txt,.pdf,.doc,.docx,.md,text/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-            </div>
+            {!isEditing ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="flex gap-3">
+                  <Lock className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-700">Save Widget to Enable File Uploads</h4>
+                    <p className="text-sm text-gray-600">
+                      File upload will be available after creating the widget.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Drop Zone */}
+                <div
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                    dragActive 
+                      ? 'border-blue-500 bg-blue-50' 
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
+                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-600 mb-2">
+                    Drag and drop files here, or click to browse
+                  </p>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Supported: TXT, PDF, DOC, DOCX, MD
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    Browse Files
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept=".txt,.pdf,.doc,.docx,.md,text/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                </div>
 
-            {/* File Naming Tips */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                {/* File Naming Tips */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex gap-3">
                 <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div className="space-y-2">
@@ -583,6 +613,8 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
                   ))}
                 </div>
               </div>
+            )}
+              </>
             )}
           </div>
 

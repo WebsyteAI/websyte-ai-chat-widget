@@ -13,7 +13,7 @@ export default function WidgetNew() {
 
   const handleWidgetCreated = (widget: Widget) => {
     fetchWidgets(); // Refresh the widget list
-    navigate('/dashboard/widgets');
+    navigate(`/dashboard/widgets/${widget.id}/edit`);
   };
 
   return (
