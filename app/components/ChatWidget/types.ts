@@ -1,8 +1,18 @@
+export interface Source {
+  chunk: string;
+  similarity: number;
+  metadata: {
+    source?: string;
+    chunkIndex: number;
+  };
+}
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  sources?: Source[];
 }
 
 export interface ChatWidgetProps {

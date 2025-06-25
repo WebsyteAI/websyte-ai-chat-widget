@@ -61,13 +61,15 @@ export class RAGAgent {
 
 1. Use the retrieved information to answer questions accurately
 2. If the retrieved information doesn't contain relevant details, say so clearly
-3. Always cite the source of your information when possible
-4. Be helpful, accurate, and concise`;
+3. When citing sources, use inline superscript numbers like [1] or [2] directly after the relevant information
+4. If you use multiple sources for a single statement, cite them together like [1,2,3]
+5. Be helpful, accurate, and concise
+6. IMPORTANT: Place citations immediately after the information they support, not at the end of paragraphs`;
 
     if (retrievedChunks.length > 0) {
       systemPrompt += `\n\n## Retrieved Knowledge Base Context:\n`;
       retrievedChunks.forEach((chunk, index) => {
-        systemPrompt += `\n### Source ${index + 1}:\n${chunk}\n`;
+        systemPrompt += `\n### Source [${index + 1}]:\n${chunk}\n`;
       });
     }
 

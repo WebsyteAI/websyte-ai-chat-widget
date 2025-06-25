@@ -300,11 +300,12 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         throw new Error("Failed to send message");
       }
 
-      const data = await response.json() as { message?: string };
+      const data = await response.json() as { message?: string; sources?: any[] };
       
       addMessage({
         role: "assistant",
         content: data.message || "Sorry, I couldn't process your request.",
+        sources: data.sources,
       });
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
@@ -429,11 +430,12 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         throw new Error("Failed to send message");
       }
 
-      const data = await response.json() as { message?: string };
+      const data = await response.json() as { message?: string; sources?: any[] };
       
       addMessage({
         role: "assistant",
         content: data.message || "Sorry, I couldn't process your request.",
+        sources: data.sources,
       });
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {

@@ -55,3 +55,6 @@ pnpm deploy           # Deploy to Cloudflare
 - When asked to update docs, update @CLAUDE.md and .claude/ directory
 - Use context7 mcp if you need up to date documentation on tools and libraries
 - Always use pnpm run deploy for deploying
+
+## Competitors
+- Save https://answerhq.co/ as a reference competitor
