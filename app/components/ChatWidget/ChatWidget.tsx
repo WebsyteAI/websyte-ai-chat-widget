@@ -20,7 +20,7 @@ import type {
   Message,
 } from "./types";
 
-export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, advertiserUrl = "https://websyte.ai", isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false, widgetId, saveChatMessages = false, isFullScreen = false }: ChatWidgetProps) {
+export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, advertiserUrl = "https://websyte.ai", isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false, widgetId, widgetName, saveChatMessages = false, isFullScreen = false }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +33,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
   const [contentFadeClass, setContentFadeClass] = useState("");
   const [hasRendered, setHasRendered] = useState(false);
   const [showSummaryDropdown, setShowSummaryDropdown] = useState(false);
+  const [fetchedWidgetName, setFetchedWidgetName] = useState<string | null>(null);
   
   // Extracted hooks for business logic
   const { messages, addMessage, clearMessages } = useChatMessages();
@@ -106,6 +107,24 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
     }, 100);
     return () => clearTimeout(timer);
   }, []);
+
+  // Fetch widget name for full-screen mode
+  useEffect(() => {
+    if (isFullScreen && widgetId && !widgetName) {
+      const fetchWidgetInfo = async () => {
+        try {
+          const response = await fetch(`${baseUrl}/api/public/widget/${widgetId}`);
+          if (response.ok) {
+            const data = await response.json() as { id: string; name: string; description?: string };
+            setFetchedWidgetName(data.name);
+          }
+        } catch (error) {
+          console.error('Failed to fetch widget info:', error);
+        }
+      };
+      fetchWidgetInfo();
+    }
+  }, [isFullScreen, widgetId, widgetName, baseUrl]);
 
   useEffect(() => {
     // Skip page content extraction for full-screen mode (standalone widgets)
@@ -471,33 +490,33 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
 
   // Full-screen mode render
   if (isFullScreen) {
+    // Use fetched widget name or provided widget name, fallback to advertiserName
+    const displayName = fetchedWidgetName || widgetName || advertiserName;
+    
     return (
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        {/* Chat Panel in full-screen mode - always visible */}
-        <ChatPanel
-          currentView="chat"
-          messages={messages}
-          inputValue={inputValue}
-          placeholder={placeholder}
-          isLoading={isLoading}
-          recommendations={recommendations}
-          isLoadingRecommendations={isLoadingRecommendations}
-          advertiserName={advertiserName}
-          hidePoweredBy={hidePoweredBy}
-          advertiserLogo={advertiserLogo}
-          baseUrl={baseUrl}
-          summaries={summaries}
-          currentContentMode={currentContentMode}
-          mainContentElement={mainContentElement}
-          onClose={() => {}} // No close functionality in full-screen mode
-          onInputChange={setInputValue}
-          onKeyDown={handleKeyDown}
-          onSendMessage={sendMessage}
-          onCancelMessage={cancelMessage}
-          onRecommendationClick={handleRecommendationClick}
-          isFullScreen={true}
-        />
-      </div>
+      <ChatPanel
+        currentView="chat"
+        messages={messages}
+        inputValue={inputValue}
+        placeholder={placeholder}
+        isLoading={isLoading}
+        recommendations={recommendations}
+        isLoadingRecommendations={isLoadingRecommendations}
+        advertiserName={displayName}
+        hidePoweredBy={hidePoweredBy}
+        advertiserLogo={advertiserLogo}
+        baseUrl={baseUrl}
+        summaries={summaries}
+        currentContentMode={currentContentMode}
+        mainContentElement={mainContentElement}
+        onClose={() => {}} // No close functionality in full-screen mode
+        onInputChange={setInputValue}
+        onKeyDown={handleKeyDown}
+        onSendMessage={sendMessage}
+        onCancelMessage={cancelMessage}
+        onRecommendationClick={handleRecommendationClick}
+        isFullScreen={true}
+      />
     );
   }
 

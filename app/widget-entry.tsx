@@ -99,7 +99,7 @@ declare global {
     advertiserUrl: 'https://websyte.ai',
     targetElement: '',
     contentSelector: '',
-    hidePoweredBy: true,
+    hidePoweredBy: false,
     enableSmartSelector: false,
     widgetId: undefined,
     saveChatMessages: true // Enable message saving by default for external widgets

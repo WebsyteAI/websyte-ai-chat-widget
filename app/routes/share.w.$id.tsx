@@ -296,7 +296,7 @@ export default function ShareWidget() {
           advertiserUrl="https://websyte.ai"
           isFullScreen={true}
           saveChatMessages={true} // Save messages for public shared widgets
-          hidePoweredBy={true} // Hide since we show it in header
+          hidePoweredBy={false} // Show "Powered by Websyte.ai" in chat header
         />
       </div>
     );

@@ -25,6 +25,7 @@ export interface ChatWidgetProps {
   hidePoweredBy?: boolean;
   enableSmartSelector?: boolean;
   widgetId?: string;
+  widgetName?: string; // Actual widget name from database
   saveChatMessages?: boolean; // Whether to save chat messages to database
   isFullScreen?: boolean; // Whether to render as full-screen interface
 }

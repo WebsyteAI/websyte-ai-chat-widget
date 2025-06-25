@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import { FileText } from "lucide-react";
+import { FileText, ChevronDown, ChevronUp } from "lucide-react";
 import type { Message } from "../types";
 
 interface ChatMessageProps {
@@ -13,6 +13,7 @@ interface ChatMessageProps {
 export function ChatMessage({ message, onSourceClick }: ChatMessageProps) {
   const sourcesRef = useRef<HTMLDivElement>(null);
   const [processedContent, setProcessedContent] = useState<string>("");
+  const [showSources, setShowSources] = useState(false);
   
   // Process content to convert [n] citations to clickable elements
   useEffect(() => {
@@ -27,18 +28,21 @@ export function ChatMessage({ message, onSourceClick }: ChatMessageProps) {
     }
   }, [message.content, message.role, message.sources]);
   
-  // Handle citation clicks - scroll to sources
+  // Handle citation clicks - show sources and scroll to them
   const handleCitationClick = (citation: string) => {
-    if (sourcesRef.current) {
-      sourcesRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
+    setShowSources(true);
+    setTimeout(() => {
+      if (sourcesRef.current) {
+        sourcesRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 100);
     if (onSourceClick) {
       onSourceClick();
     }
   };
 
   return (
-    <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+    <div className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"}`}>
       <div
         className={`max-w-[80%] p-3 rounded-lg ${
           message.role === "user"
@@ -96,31 +100,44 @@ export function ChatMessage({ message, onSourceClick }: ChatMessageProps) {
         </p>
       </div>
       
-      {/* Sources Section */}
+      {/* Sources Section - Now positioned under the message */}
       {message.role === "assistant" && message.sources && message.sources.length > 0 && (
-        <div className="mt-2 ml-12" ref={sourcesRef}>
-          <div className="space-y-2">
-            <div className="flex items-center gap-1 text-xs text-gray-600 font-medium">
-              <FileText className="w-3 h-3" />
-              <span>Sources</span>
+        <div className="mt-2 max-w-[80%] w-full" ref={sourcesRef}>
+          {/* Toggle button */}
+          <button
+            onClick={() => setShowSources(!showSources)}
+            className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-800 transition-colors font-medium mb-2"
+          >
+            <FileText className="w-3 h-3" />
+            <span>Sources ({message.sources.length})</span>
+            {showSources ? (
+              <ChevronUp className="w-3 h-3" />
+            ) : (
+              <ChevronDown className="w-3 h-3" />
+            )}
+          </button>
+          
+          {/* Collapsible sources list */}
+          {showSources && (
+            <div className="space-y-2">
+              {message.sources.map((source, index) => (
+                <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-blue-600">[{index + 1}]</span>
+                    {source.metadata.source && (
+                      <span className="text-gray-600">{source.metadata.source}</span>
+                    )}
+                  </div>
+                  <div className="text-gray-700 leading-relaxed">
+                    {source.chunk.length > 150 
+                      ? `${source.chunk.substring(0, 150)}...` 
+                      : source.chunk
+                    }
+                  </div>
+                </div>
+              ))}
             </div>
-            {message.sources.map((source, index) => (
-              <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-blue-600">[{index + 1}]</span>
-                  {source.metadata.source && (
-                    <span className="text-gray-600">{source.metadata.source}</span>
-                  )}
-                </div>
-                <div className="text-gray-700 leading-relaxed">
-                  {source.chunk.length > 150 
-                    ? `${source.chunk.substring(0, 150)}...` 
-                    : source.chunk
-                  }
-                </div>
-              </div>
-            ))}
-          </div>
+          )}
         </div>
       )}
     </div>

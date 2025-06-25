@@ -463,6 +463,7 @@ export default function Test() {
           advertiserName={advertiserName}
           advertiserLogo={advertiserLogo || undefined}
           widgetId={testMode === "custom" && widgetId ? widgetId : undefined}
+          widgetName={testMode === "custom" && widgetId ? widgets.find(w => w.id === widgetId)?.name : undefined}
           saveChatMessages={false} // Don't save messages in test environment
         />
       )}

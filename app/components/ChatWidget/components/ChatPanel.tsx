@@ -65,9 +65,9 @@ export function ChatPanel({
   // Full-screen mode styling
   if (isFullScreen) {
     return (
-      <div className="flex flex-col h-screen bg-white">
-        {/* Full-screen header - no close button */}
-        <div className="flex items-center justify-center p-4 border-b border-gray-200">
+      <div className="fixed inset-0 flex flex-col bg-gray-50 border border-gray-200">
+        {/* Full-screen header - fixed */}
+        <div className="flex-shrink-0 flex flex-col items-center justify-center p-4 border-b border-gray-200 bg-white">
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             {advertiserName}
             {(advertiserLogo || advertiserName === "Nativo") && (
@@ -77,93 +77,136 @@ export function ChatPanel({
                 className="w-6 h-6 rounded"
               />
             )}
-            AI
           </h1>
+          {!hidePoweredBy && (
+            <p className="text-sm text-gray-500 mt-1">
+              Powered by Websyte.ai
+            </p>
+          )}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4 max-w-4xl mx-auto w-full">
-          {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
-                  Welcome to {advertiserName}
-                  {advertiserLogo && (
-                    <img 
-                      src={advertiserLogo} 
-                      alt={advertiserName} 
-                      className="w-10 h-10 rounded"
-                    />
-                  )}
-                  AI
-                </h2>
-                {!hidePoweredBy && (
-                  <p className="text-lg text-gray-500 flex items-center justify-center gap-2">
-                    Powered by 
-                    <img 
-                      src={`${baseUrl}/nativo-logo.png`} 
-                      alt="Nativo" 
-                      className="w-5 h-5"
-                    />
-                    Nativo
-                  </p>
-                )}
-              </div>
-              
-              <div className="w-full max-w-3xl">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {isLoadingRecommendations ? (
-                    Array.from({ length: 4 }).map((_, index) => (
-                      <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-6 animate-pulse">
-                        <div className="h-5 bg-gray-300 rounded mb-3"></div>
-                        <div className="h-4 bg-gray-200 rounded"></div>
-                      </div>
-                    ))
-                  ) : (
-                    recommendations.map((rec, index) => (
-                      <div 
-                        key={index} 
-                        className="bg-gray-50 border border-gray-200 rounded-lg p-6 cursor-pointer hover:bg-gray-100 transition-colors"
-                        onClick={() => onRecommendationClick(rec)}
-                      >
-                        <h3 className="font-semibold text-gray-900 mb-2">{rec.title}</h3>
-                        <p className="text-gray-600">{rec.description}</p>
-                      </div>
-                    ))
+        {/* Messages area - scrollable */}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="p-6 flex flex-col gap-4 max-w-4xl mx-auto w-full">
+            {messages.length === 0 && (
+              <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
+                    Welcome to {advertiserName}
+                    {advertiserLogo && (
+                      <img 
+                        src={advertiserLogo} 
+                        alt={advertiserName} 
+                        className="w-10 h-10 rounded"
+                      />
+                    )}
+                  </h2>
+                  {!hidePoweredBy && (
+                    <p className="text-lg text-gray-500 flex items-center justify-center gap-2">
+                      Powered by 
+                      <img 
+                        src={`${baseUrl}/nativo-logo.png`} 
+                        alt="Nativo" 
+                        className="w-5 h-5"
+                      />
+                      Nativo
+                    </p>
                   )}
                 </div>
-              </div>
-            </div>
-          )}
-          
-          {messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
-          ))}
-          
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 text-gray-800 p-4 rounded-lg">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                
+                {/* Prompt Recommendations */}
+                <div className="w-full max-w-3xl mb-8">
+                  <p className="text-sm text-gray-500 text-center mb-4">Try asking:</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {/* Static prompts for now - will be dynamic based on widget */}
+                    <button
+                      onClick={() => onInputChange("What can you help me with?")}
+                      className="text-left bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm transition-all"
+                    >
+                      <span className="text-gray-700">What can you help me with?</span>
+                    </button>
+                    <button
+                      onClick={() => onInputChange("Tell me about your features")}
+                      className="text-left bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm transition-all"
+                    >
+                      <span className="text-gray-700">Tell me about your features</span>
+                    </button>
+                    <button
+                      onClick={() => onInputChange("How does this work?")}
+                      className="text-left bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm transition-all"
+                    >
+                      <span className="text-gray-700">How does this work?</span>
+                    </button>
+                    <button
+                      onClick={() => onInputChange("What are the benefits?")}
+                      className="text-left bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm transition-all"
+                    >
+                      <span className="text-gray-700">What are the benefits?</span>
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Existing recommendations */}
+                <div className="w-full max-w-3xl">
+                  <p className="text-sm text-gray-500 text-center mb-4">Or explore these topics:</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {isLoadingRecommendations ? (
+                      Array.from({ length: 4 }).map((_, index) => (
+                        <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-6 animate-pulse">
+                          <div className="h-5 bg-gray-300 rounded mb-3"></div>
+                          <div className="h-4 bg-gray-200 rounded"></div>
+                        </div>
+                      ))
+                    ) : (
+                      recommendations.map((rec, index) => (
+                        <div 
+                          key={index} 
+                          className="bg-gray-50 border border-gray-200 rounded-lg p-6 cursor-pointer hover:bg-gray-100 transition-colors"
+                          onClick={() => onRecommendationClick(rec)}
+                        >
+                          <h3 className="font-semibold text-gray-900 mb-2">{rec.title}</h3>
+                          <p className="text-gray-600">{rec.description}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-          
-          <div ref={messagesEndRef} />
+            )}
+            
+            {messages.map((message) => (
+              <ChatMessage key={message.id} message={message} />
+            ))}
+            
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 text-gray-800 p-4 rounded-lg">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
         </div>
 
-        <div className="border-t border-gray-200 p-4 max-w-4xl mx-auto w-full">
-          <MessageInput
-            inputValue={inputValue}
-            placeholder={placeholder}
-            isLoading={isLoading}
-            onInputChange={onInputChange}
-            onKeyDown={onKeyDown}
-            onSend={onSendMessage}
-            onCancel={onCancelMessage}
-          />
+        {/* Input area - fixed */}
+        <div className="flex-shrink-0 border-t border-gray-200 bg-white">
+          <div className="p-4 max-w-4xl mx-auto w-full">
+            <MessageInput
+              inputValue={inputValue}
+              placeholder={placeholder}
+              isLoading={isLoading}
+              onInputChange={onInputChange}
+              onKeyDown={onKeyDown}
+              onSend={onSendMessage}
+              onCancel={onCancelMessage}
+            />
+          </div>
         </div>
       </div>
     );
