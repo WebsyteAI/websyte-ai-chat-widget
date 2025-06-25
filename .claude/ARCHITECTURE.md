@@ -119,6 +119,131 @@ CREATE TABLE widget_embedding (
 -- Vector similarity index for performance
 CREATE INDEX idx_widget_embedding_vector ON widget_embedding 
 USING ivfflat (embedding vector_cosine_ops);
+
+-- Chat message persistence table
+CREATE TABLE chat_message (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  widget_id UUID NOT NULL REFERENCES widget(id) ON DELETE CASCADE,
+  session_id TEXT NOT NULL,
+  user_id TEXT, -- Nullable for anonymous users
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  metadata JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for message queries
+CREATE INDEX idx_chat_message_widget_id ON chat_message(widget_id);
+CREATE INDEX idx_chat_message_session_id ON chat_message(session_id);
+CREATE INDEX idx_chat_message_created_at ON chat_message(created_at);
+```
+
+## Message Persistence Architecture
+
+### Message Service (`workers/services/messages.ts`)
+```typescript
+class MessageService {
+  // Secure session generation for message tracking
+  generateSessionId(): string
+  
+  // Save user and assistant messages with metadata
+  async saveMessage(data: SaveMessageData): Promise<void>
+  
+  // Retrieve conversation history for a session
+  async getMessagesForSession(widgetId: string, sessionId: string): Promise<ChatMessage[]>
+  
+  // Get all messages for a widget (for analytics/insights)
+  async getMessagesForWidget(widgetId: string, limit?: number, offset?: number): Promise<ChatMessage[]>
+  
+  // Delete old messages based on retention policy
+  async deleteOldMessages(retentionDays: number): Promise<number>
+}
+```
+
+### Smart Message Control Architecture
+The system intelligently controls when messages are saved based on context:
+
+```typescript
+// Widget Configuration with saveChatMessages prop
+interface ChatWidgetProps {
+  saveChatMessages?: boolean; // Whether to save chat messages to database
+  // ... other props
+}
+
+// Chat service checks isEmbedded flag before saving
+class ChatService {
+  async handleChat(c: AppContext): Promise<Response> {
+    const { isEmbedded } = body;
+    
+    // Only save messages if from embedded widget (not test environment)
+    if (isEmbedded) {
+      await this.messageService.saveMessage({
+        widgetId,
+        sessionId: chatSessionId,
+        userId: userId || null,
+        role: 'user',
+        content: message,
+        metadata: { userAgent, ipAddress }
+      });
+    }
+  }
+}
+```
+
+### Widget Embed Script Configuration
+```html
+<!-- External widget saves messages by default -->
+<script src="/dist/widget.js" 
+        data-widget-id="uuid"
+        data-save-chat-messages="true" 
+        async></script>
+
+<!-- Test environment disables message saving -->
+<ChatWidget 
+  widgetId="uuid"
+  saveChatMessages={false} 
+/>
+```
+
+### Security & Privacy Features
+- **Rate Limiting**: 10 requests/minute for anonymous users, 30 for authenticated
+- **GDPR Compliance**: Configurable IP storage with `STORE_IP_ADDRESSES` environment variable
+- **Automatic Cleanup**: Cron job removes messages older than retention period
+- **Session Security**: Cryptographically secure session ID generation
+- **Message Validation**: Input sanitization and length limits (10k characters)
+
+### Rate Limiting Architecture (`workers/lib/rate-limiter.ts`)
+```typescript
+class RateLimiter {
+  // In-memory rate limiting with user identification
+  async checkRateLimit(identifier: string, limit: number, windowMs: number): Promise<boolean>
+  
+  // Configurable limits based on authentication status
+  // Anonymous: 10 requests/minute
+  // Authenticated: 30 requests/minute
+}
+```
+
+### Message Metadata Schema
+```typescript
+interface MessageMetadata {
+  model?: string;           // AI model used (e.g., 'gpt-4.1-mini')
+  sources?: any[];          // RAG sources for assistant responses
+  responseTime?: number;    // Response generation time in ms
+  userAgent?: string;       // Browser user agent
+  ipAddress?: string;       // User IP (if GDPR compliant storage enabled)
+  error?: string;          // Error message if processing failed
+}
+```
+
+### Automatic Cleanup System (`workers/cron/cleanup-messages.ts`)
+```typescript
+// Scheduled cleanup job for message retention
+export async function cleanupOldMessages(env: Env): Promise<void> {
+  const retentionDays = parseInt(env.MESSAGE_RETENTION_DAYS || '30');
+  const deletedCount = await messageService.deleteOldMessages(retentionDays);
+  console.log(`Cleaned up ${deletedCount} old messages`);
+}
 ```
 
 ## Component Architecture

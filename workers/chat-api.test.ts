@@ -1,17 +1,18 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { Hono } from 'hono';
-import { DatabaseService } from '../services/database';
-import { OpenAIService } from '../services/openai';
-import { ChatService } from '../services/chat';
-import { MessageService } from '../services/messages';
-import { WidgetService } from '../services/widget';
-import { VectorSearchService } from '../services/vector-search';
-import { FileStorageService } from '../services/file-storage';
-import { RAGAgent } from '../services/rag-agent';
-import { chatMessage, widget } from '../db/schema';
+import { DatabaseService } from './services/database';
+import { OpenAIService } from './services/openai';
+import { ChatService } from './services/chat';
+import { MessageService } from './services/messages';
+import { WidgetService } from './services/widget';
+import { VectorSearchService } from './services/vector-search';
+import { FileStorageService } from './services/file-storage';
+import { RAGAgent } from './services/rag-agent';
+import { chatMessage, widget } from './db/schema';
 import { eq } from 'drizzle-orm';
-import { v4 as uuidv4 } from 'uuid';
-import type { Env } from '../types';
+// Mock uuid function
+const uuidv4 = () => `test-${Math.random().toString(36).substr(2, 9)}`;
+import type { Env } from './types';
 
 // Mock OpenAI service
 class MockOpenAIService extends OpenAIService {

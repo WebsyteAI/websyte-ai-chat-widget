@@ -28,18 +28,35 @@ This is a production-ready AI chat widget for article websites built with React/
 2. **Embeddable Widget**: Single script tag integration with Shadow DOM isolation
 3. **RAG Chat Agent**: Retrieval-Augmented Generation with knowledge base integration
 4. **Vector Search**: Semantic search using OpenAI embeddings and pgvector
-5. **Embed Code Generation**: One-click script generation with public/private controls
-6. **Public Widget API**: Anonymous access to public widgets for embedding
-7. **Context-Aware Chat**: AI chat with page content context
-8. **Content Summarization**: One-click page summarization with smart content replacement
-9. **OCR Support**: Extract and search text from images and PDF documents
-10. **Multi-AI Support**: OpenAI GPT-4.1-mini and Mistral AI integration
-11. **Content Caching**: Intelligent caching system with TTL and LRU eviction (70-80% performance improvement)
-12. **Testing Playground**: Comprehensive widget testing environment at `/test`
+5. **Chat Message Persistence**: Secure storage of conversations for insights and audits
+6. **Smart Message Controls**: Only save messages from embedded widgets, not test environments
+7. **Session Management**: Secure session tracking with automatic cleanup
+8. **Rate Limiting**: API protection with configurable limits (10/min anonymous, 30/min authenticated)
+9. **Embed Code Generation**: One-click script generation with public/private controls
+10. **Public Widget API**: Anonymous access to public widgets for embedding
+11. **Context-Aware Chat**: AI chat with page content context
+12. **Content Summarization**: One-click page summarization with smart content replacement
+13. **OCR Support**: Extract and search text from images and PDF documents
+14. **Multi-AI Support**: OpenAI GPT-4.1-mini and Mistral AI integration
+15. **Content Caching**: Intelligent caching system with TTL and LRU eviction (70-80% performance improvement)
+16. **Testing Playground**: Comprehensive widget testing environment at `/test`
+17. **GDPR Compliance**: Configurable IP storage and automatic data cleanup
 
 ## Recent Major Implementations
 
-### Dashboard Refactoring & Widget Editor ✅ (Latest)
+### Chat Message Persistence System ✅ (Latest)
+- **Secure Message Storage**: Complete chat message persistence with metadata tracking
+- **Smart Controls**: Messages only saved from embedded widgets, not test environments
+- **Session Management**: Cryptographically secure session IDs with localStorage integration
+- **Rate Limiting**: API protection with 10/min anonymous, 30/min authenticated limits
+- **GDPR Compliance**: Configurable IP storage and automatic data cleanup
+- **Database Schema**: Comprehensive chat_message table with proper indexing
+- **Security Features**: Input validation, rate limiting, and session ownership validation
+- **Automatic Cleanup**: Cron job for message retention (configurable, default 30 days)
+- **Comprehensive Logging**: Debug-friendly logging for message save/skip operations
+- **Privacy by Design**: Anonymous user support and minimal data collection
+
+### Dashboard Refactoring & Widget Editor ✅
 - **Nested Routes**: Converted dashboard tabs to proper nested routes using React Router 7
 - **Route Configuration**: Explicit route configuration in `app/routes.ts` with nested structure
 - **Full-Screen Widget Editor**: Split-screen layout with form (50%) and chat preview (50%)
@@ -104,9 +121,14 @@ app/
 
 workers/
 ├── app.ts                      # Main Cloudflare Workers API endpoints
-├── db/schema.ts               # Database schema with vector embeddings
+├── db/schema.ts               # Database schema with vector embeddings & chat messages
+├── lib/
+│   └── rate-limiter.ts        # Rate limiting middleware for API protection
+├── cron/
+│   └── cleanup-messages.ts    # Automatic message cleanup job
 └── services/
-    ├── chat.ts                 # Chat service with context handling
+    ├── chat.ts                 # Chat service with message persistence controls
+    ├── messages.ts             # Chat message persistence and session management
     ├── recommendations.ts      # AI-generated article recommendations  
     ├── summarize.ts           # Page summarization service
     ├── openai.ts              # OpenAI API integration
@@ -118,7 +140,7 @@ workers/
 ```
 
 ## API Endpoints
-- `POST /api/chat` - Context-aware chat with message history (supports widgetId for RAG)
+- `POST /api/chat` - Context-aware chat with message persistence (supports widgetId for RAG)
 - `POST /api/recommendations` - AI-generated article discussion questions
 - `POST /api/summarize` - Page content summarization
 - `POST /api/analyze-selector` - Smart content selector analysis
@@ -127,6 +149,8 @@ workers/
 - `POST /api/search` - Vector similarity search across widget content
 - `POST /api/embeddings` - Create embeddings for documents and content
 - `POST /api/ocr` - Extract text from images and PDFs for embedding
+- `GET /api/widgets/:id/messages` - Retrieve chat messages for a widget (future)
+- `GET /api/widgets/:id/sessions/:sessionId/messages` - Get session messages (future)
 
 ## Configuration Options
 
@@ -143,11 +167,12 @@ workers/
 </script>
 ```
 
-### Custom Widget (RAG-Powered with Knowledge Base)
+### Custom Widget (RAG-Powered with Knowledge Base & Message Persistence)
 ```html
 <script 
   src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js"
   data-widget-id="your-widget-uuid-here"
+  data-save-chat-messages="true"
   data-advertiser-name="My Company"
   data-advertiser-logo="https://logo.clearbit.com/mycompany.com"
   async>

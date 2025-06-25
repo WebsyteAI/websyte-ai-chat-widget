@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { DatabaseService } from '../database';
-import { MessageService } from '../messages';
-import { WidgetService } from '../widget';
-import { VectorSearchService } from '../vector-search';
-import { FileStorageService } from '../file-storage';
-import { chatMessage, widget } from '../../db/schema';
+import { DatabaseService } from './database';
+import { MessageService } from './messages';
+import { WidgetService } from './widget';
+import { VectorSearchService } from './vector-search';
+import { FileStorageService } from './file-storage';
+import { chatMessage, widget } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 
