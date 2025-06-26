@@ -11,9 +11,17 @@ export default function WidgetNew() {
     navigate('/dashboard/widgets');
   };
 
-  const handleWidgetCreated = (widget: Widget) => {
-    fetchWidgets(); // Refresh the widget list
-    navigate(`/dashboard/widgets/${widget.id}/edit`);
+  const handleWidgetCreated = async (widget: Widget) => {
+    console.log('[WidgetNew] Widget created:', widget);
+    
+    // Refresh the widget list first
+    await fetchWidgets();
+    
+    // Small delay to ensure state is settled and avoid navigation conflicts
+    setTimeout(() => {
+      console.log('[WidgetNew] Navigating to edit page for widget:', widget.id);
+      navigate(`/dashboard/widgets/${widget.id}/edit`);
+    }, 100);
   };
 
   return (

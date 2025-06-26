@@ -76,8 +76,15 @@ export function WidgetEditor({
         const result: any = await response.json();
         const newWidget = result.widget;
         
+        console.log('[WidgetEditor] Widget created successfully:', newWidget);
         setCreatedWidget(newWidget);
-        onWidgetCreated?.(newWidget);
+        
+        // Only call the callback, don't navigate here
+        if (onWidgetCreated) {
+          console.log('[WidgetEditor] Calling onWidgetCreated callback');
+          onWidgetCreated(newWidget);
+        }
+        
         toast.success('Widget created successfully');
       }
     } catch (error) {
