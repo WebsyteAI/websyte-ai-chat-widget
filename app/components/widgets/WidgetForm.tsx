@@ -440,27 +440,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <Globe className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-blue-900">Crawl Website Content</h4>
-                    <p className="text-sm text-blue-800">
-                      Enter a base URL to automatically crawl and index pages from that website.
-                    </p>
-                    <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside ml-2">
-                      <li>Only the base domain will be crawled (e.g., websyte.ai)</li>
-                      <li>Crawler will discover and process accessible pages</li>
-                      <li>Content will be converted to markdown and indexed</li>
-                      <li>One URL per widget allowed</li>
-                      <li><strong>Maximum 25 pages per crawl</strong></li>
-                      <li>Default depth of 2 levels</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
+            ) : null}
             
             {isEditing && (
               <>
@@ -477,84 +457,81 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
                   <p className="text-sm text-gray-600">
                     Enter only the base domain. Up to 25 pages will be crawled automatically.
                   </p>
+                  
+                  {/* Crawl Status */}
+                  {(crawlStatus || crawlStarting) && (
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">
+                            Crawl Status: {
+                              crawlStarting ? (
+                                <>
+                                  <span className="text-blue-600">Starting...</span>
+                                  <span className="ml-2 inline-block animate-spin">⟳</span>
+                                </>
+                              ) : crawlStatus === 'crawling' ? (
+                                <>
+                                  <span className="text-blue-600">In Progress</span>
+                                  <span className="ml-2 inline-block animate-spin">⟳</span>
+                                </>
+                              ) : crawlStatus === 'completed' ? (
+                                <span className="text-green-600">Completed</span>
+                              ) : crawlStatus === 'failed' ? (
+                                <span className="text-red-600">Failed</span>
+                              ) : (
+                                crawlStatus
+                              )
+                            }
+                          </p>
+                          {widget?.lastCrawlAt && (
+                            <p className="text-xs text-gray-500">
+                              Last crawled: {new Date(widget.lastCrawlAt).toLocaleString()}
+                            </p>
+                          )}
+                          {crawlPageCount > 0 && (
+                            <p className="text-xs text-gray-500">
+                              Pages indexed: {crawlPageCount} / 25 max
+                            </p>
+                          )}
+                        </div>
+                        {crawlStatus === 'completed' && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleRecrawl}
+                            disabled={crawling || !crawlUrl}
+                          >
+                            <RefreshCw className="w-4 h-4 mr-1" />
+                            Re-crawl
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-blue-900">Crawling Best Practices</h4>
-                    <p className="text-sm text-blue-800">
-                      For optimal results when crawling websites:
-                    </p>
-                    <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside ml-2">
-                      <li>Use the main domain URL (e.g., "https://docs.example.com" not subpages)</li>
-                      <li>Ensure the website is publicly accessible (no login required)</li>
-                      <li>Check robots.txt compliance - some pages may be blocked</li>
-                      <li>Crawling respects a depth of 2 levels from the base URL</li>
-                      <li>Large sites will be limited to the most relevant 25 pages</li>
-                      <li>Re-crawl periodically to capture content updates</li>
-                    </ul>
-                    <p className="text-xs text-blue-700 italic">
-                      Crawled content is converted to markdown and chunked for semantic search. Each page becomes a searchable document with its URL as the source reference.
-                    </p>
+                  <div className="flex gap-3">
+                    <Globe className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-blue-900">Crawl Website Content</h4>
+                      <p className="text-sm text-blue-800">
+                        Enter a base URL to automatically crawl and index pages from that website.
+                      </p>
+                      <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside ml-2">
+                        <li>Only the base domain will be crawled (e.g., websyte.ai)</li>
+                        <li>Crawler will discover and process accessible pages</li>
+                        <li>Content will be converted to markdown and indexed</li>
+                        <li>One URL per widget allowed</li>
+                        <li><strong>Maximum 25 pages per crawl</strong></li>
+                        <li>Default depth of 2 levels</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
-              </div>
               </>
-            )}
-            
-            {/* Crawl Status for existing widgets */}
-            {(crawlStatus || crawlStarting) && (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">
-                      Crawl Status: {
-                        crawlStarting ? (
-                          <>
-                            <span className="text-blue-600">Starting...</span>
-                            <span className="ml-2 inline-block animate-spin">⟳</span>
-                          </>
-                        ) : crawlStatus === 'crawling' ? (
-                          <>
-                            <span className="text-blue-600">In Progress</span>
-                            <span className="ml-2 inline-block animate-spin">⟳</span>
-                          </>
-                        ) : crawlStatus === 'completed' ? (
-                          <span className="text-green-600">Completed</span>
-                        ) : crawlStatus === 'failed' ? (
-                          <span className="text-red-600">Failed</span>
-                        ) : (
-                          crawlStatus
-                        )
-                      }
-                    </p>
-                    {widget?.lastCrawlAt && (
-                      <p className="text-xs text-gray-500">
-                        Last crawled: {new Date(widget.lastCrawlAt).toLocaleString()}
-                      </p>
-                    )}
-                    {crawlPageCount > 0 && (
-                      <p className="text-xs text-gray-500">
-                        Pages indexed: {crawlPageCount} / 25 max
-                      </p>
-                    )}
-                  </div>
-                  {crawlStatus === 'completed' && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleRecrawl}
-                      disabled={crawling || !crawlUrl}
-                    >
-                      <RefreshCw className="w-4 h-4 mr-1" />
-                      Re-crawl
-                    </Button>
-                  )}
-                </div>
-              </div>
             )}
           </div>
 
