@@ -292,7 +292,10 @@ export class VectorSearchService {
         continue;
       }
 
-      const chunks = await this.chunkText(page.markdown);
+      // Use smaller chunks to avoid btree index size limits
+      // The error shows we exceed the 2704 byte limit, so we need smaller chunks
+      // 500 words should keep us well under the limit even with metadata
+      const chunks = await this.chunkText(page.markdown, 500, 50);
       
       for (const chunk of chunks) {
         const embedding = await this.generateEmbedding(chunk.text);

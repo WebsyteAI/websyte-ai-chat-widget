@@ -48,6 +48,7 @@ export class ApifyCrawlerService {
       expandIframes: true,
       ignoreCanonicalUrl: false,
       ignoreHttpsErrors: false,
+      initialConcurrency: 5,
       keepUrlFragments: false,
       proxyConfiguration: {
         useApifyProxy: true

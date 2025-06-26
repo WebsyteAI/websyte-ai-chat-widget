@@ -613,7 +613,7 @@ ${page.markdown}
         }
       }
       
-      // Update widget status
+      // Update widget status - only after embeddings are attempted
       await this.db.getDatabase()
         .update(widget)
         .set({
