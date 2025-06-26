@@ -50,7 +50,8 @@ export function WidgetEditor({
         });
 
         if (!response.ok) {
-          throw new Error('Failed to update widget');
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to update widget');
         }
 
         const result: any = await response.json();
@@ -70,7 +71,8 @@ export function WidgetEditor({
         });
 
         if (!response.ok) {
-          throw new Error('Failed to create widget');
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create widget');
         }
 
         const result: any = await response.json();
@@ -89,7 +91,8 @@ export function WidgetEditor({
       }
     } catch (error) {
       console.error('Error submitting widget:', error);
-      toast.error(`Failed to ${isEditing ? 'update' : 'create'} widget. Please try again.`);
+      const errorMessage = error instanceof Error ? error.message : `Failed to ${isEditing ? 'update' : 'create'} widget`;
+      toast.error(errorMessage);
     } finally {
       setFormLoading(false);
     }

@@ -306,7 +306,8 @@ app.put('/api/widgets/:id', async (c) => {
     return c.json({ widget });
   } catch (error) {
     console.error('Error updating widget:', error);
-    return c.json({ error: 'Failed to update widget' }, 500);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to update widget';
+    return c.json({ error: errorMessage }, 500);
   }
 });
 

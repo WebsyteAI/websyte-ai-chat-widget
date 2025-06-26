@@ -256,6 +256,8 @@ export class WidgetService {
           await this.startWebsiteCrawl(id, userId, request.crawlUrl);
         } catch (error) {
           console.error('Error starting crawl after widget update:', error);
+          // Re-throw the error so it can be handled by the API endpoint
+          throw new Error(`Failed to start website crawl: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       } else if (!request.crawlUrl && currentWidget.crawlUrl) {
         console.log('[WidgetService] Crawl URL removed, deleting crawl files');

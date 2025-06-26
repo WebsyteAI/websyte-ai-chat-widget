@@ -28,6 +28,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
   const [crawling, setCrawling] = useState(false);
   const [crawlStatus, setCrawlStatus] = useState(widget?.crawlStatus || null);
   const [crawlPageCount, setCrawlPageCount] = useState(widget?.crawlPageCount || 0);
+  const [crawlStarting, setCrawlStarting] = useState(false);
   const crawlPollInterval = useRef<NodeJS.Timeout | null>(null);
   const {
     widgetFormData,
@@ -276,7 +277,26 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
       });
     }
 
-    await onSubmit(formData);
+    // Show a notification if crawl URL is being added/changed
+    const isNewCrawlUrl = crawlUrl && crawlUrl !== widget?.crawlUrl;
+    if (isNewCrawlUrl && isEditing) {
+      toast.info('Starting website crawl... This may take a few minutes.');
+      setCrawlStarting(true);
+    }
+
+    try {
+      await onSubmit(formData);
+      
+      // If crawl was started, update the status
+      if (isNewCrawlUrl && isEditing) {
+        setCrawlStatus('crawling');
+        setCrawlStarting(false);
+      }
+    } catch (error) {
+      // Reset crawl starting state on error
+      setCrawlStarting(false);
+      throw error; // Re-throw to be handled by parent
+    }
 
     // For editing mode, handle file uploads separately after the main update
     if (isEditing && files.length > 0 && widget) {
@@ -431,7 +451,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
                     </p>
                     <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside ml-2">
                       <li>Only the base domain will be crawled (e.g., websyte.ai)</li>
-                      <li>Apify will discover and process accessible pages</li>
+                      <li>Crawler will discover and process accessible pages</li>
                       <li>Content will be converted to markdown and indexed</li>
                       <li>One URL per widget allowed</li>
                       <li><strong>Maximum 25 pages per crawl</strong></li>
@@ -443,30 +463,60 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
             )}
             
             {isEditing && (
-              <div className="space-y-2">
-                <Label htmlFor="crawlUrl">Base URL</Label>
-                <Input
-                  id="crawlUrl"
-                  type="url"
-                  value={crawlUrl}
-                  onChange={(e) => setCrawlUrl(e.target.value)}
-                  placeholder="https://example.com"
-                  disabled={crawlStatus === 'crawling'}
-                />
-                <p className="text-sm text-gray-600">
-                  Enter only the base domain. Up to 25 pages will be crawled automatically.
-                </p>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="crawlUrl">Base URL</Label>
+                  <Input
+                    id="crawlUrl"
+                    type="url"
+                    value={crawlUrl}
+                    onChange={(e) => setCrawlUrl(e.target.value)}
+                    placeholder="https://example.com"
+                    disabled={crawlStatus === 'crawling' || crawlStarting}
+                  />
+                  <p className="text-sm text-gray-600">
+                    Enter only the base domain. Up to 25 pages will be crawled automatically.
+                  </p>
+                </div>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex gap-3">
+                  <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-blue-900">Crawling Best Practices</h4>
+                    <p className="text-sm text-blue-800">
+                      For optimal results when crawling websites:
+                    </p>
+                    <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside ml-2">
+                      <li>Use the main domain URL (e.g., "https://docs.example.com" not subpages)</li>
+                      <li>Ensure the website is publicly accessible (no login required)</li>
+                      <li>Check robots.txt compliance - some pages may be blocked</li>
+                      <li>Crawling respects a depth of 2 levels from the base URL</li>
+                      <li>Large sites will be limited to the most relevant 25 pages</li>
+                      <li>Re-crawl periodically to capture content updates</li>
+                    </ul>
+                    <p className="text-xs text-blue-700 italic">
+                      Crawled content is converted to markdown and chunked for semantic search. Each page becomes a searchable document with its URL as the source reference.
+                    </p>
+                  </div>
+                </div>
               </div>
+              </>
             )}
             
             {/* Crawl Status for existing widgets */}
-            {crawlStatus && (
+            {(crawlStatus || crawlStarting) && (
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-700">
                       Crawl Status: {
-                        crawlStatus === 'crawling' ? (
+                        crawlStarting ? (
+                          <>
+                            <span className="text-blue-600">Starting...</span>
+                            <span className="ml-2 inline-block animate-spin">⟳</span>
+                          </>
+                        ) : crawlStatus === 'crawling' ? (
                           <>
                             <span className="text-blue-600">In Progress</span>
                             <span className="ml-2 inline-block animate-spin">⟳</span>
