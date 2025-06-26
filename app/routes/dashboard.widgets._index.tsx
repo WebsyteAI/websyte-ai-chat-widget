@@ -16,6 +16,10 @@ export default function WidgetsIndex() {
   };
 
   const handleDeleteWidget = async (widget: any) => {
+    if (!confirm(`Are you sure you want to delete "${widget.name}"? This action cannot be undone.`)) {
+      return;
+    }
+    
     try {
       const widgetStore = useWidgetStore.getState();
       await widgetStore.deleteWidget(widget.id);
