@@ -185,7 +185,7 @@ export function ChatMessage({ message, onSourceClick }: ChatMessageProps) {
                           : 'bg-gray-50 border-gray-200'
                       }`}
                     >
-                  <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className={`flex items-center justify-between gap-2 ${isExpanded ? 'mb-1' : ''}`}>
                     <div className="flex items-center gap-2 flex-1">
                       <span className="font-semibold text-blue-600">[{originalIndex + 1}]</span>
                       {(source.metadata.url || source.metadata.crawledFrom) ? (
@@ -245,11 +245,11 @@ export function ChatMessage({ message, onSourceClick }: ChatMessageProps) {
                       </button>
                     </div>
                   </div>
-                  <div className={`text-gray-700 leading-relaxed overflow-hidden transition-all duration-300 whitespace-pre-wrap ${
-                    isExpanded ? 'max-h-[300px] overflow-y-auto' : 'max-h-[3.75rem]'
-                  }`}>
-                    {source.chunk}
-                  </div>
+                  {isExpanded && (
+                    <div className="text-gray-700 leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-wrap mt-2">
+                      {source.chunk}
+                    </div>
+                  )}
                     </div>
                   );
                 })}

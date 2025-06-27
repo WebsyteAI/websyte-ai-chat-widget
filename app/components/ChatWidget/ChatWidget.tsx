@@ -5,6 +5,7 @@ import {
   useChatMessages, 
   useAudioPlayer, 
   useContentSummarization,
+  useIframeMessaging,
 } from "./hooks";
 import {
   ActionBar,
@@ -20,7 +21,7 @@ import type {
   Message,
 } from "./types";
 
-export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, advertiserUrl = "https://websyte.ai", isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false, widgetId, widgetName, saveChatMessages = false, isFullScreen = false }: ChatWidgetProps) {
+export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, advertiserUrl = "https://websyte.ai", isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false, widgetId, widgetName, saveChatMessages = false, isFullScreen = false, isEmbed = false }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -68,6 +69,40 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
   });
   
   const dropdownRef = useRef<HTMLDivElement>(null!);
+  const widgetContainerRef = useRef<HTMLDivElement>(null);
+
+  // Iframe messaging integration
+  const {
+    isInIframe,
+    observeResize,
+    notifyChatStarted,
+    notifyChatClosed,
+    notifyChatResponse,
+    notifyError,
+  } = useIframeMessaging({
+    config: {
+      enableAutoResize: true,
+      resizeDebounceMs: 100,
+    },
+    onConfigReceived: (config) => {
+      // Handle dynamic configuration updates from parent
+      if (config.hidePoweredBy !== undefined) {
+        // Note: This would require making these props stateful in the parent component
+        console.log('Received config update:', config);
+      }
+    },
+    onMessageReceived: (message) => {
+      // Handle message from parent - trigger send
+      setInputValue(message);
+      setTimeout(() => sendMessage(), 100);
+    },
+    onClearChat: () => {
+      clearMessages();
+    },
+    onSetPlaceholder: (newPlaceholder) => {
+      setPlaceholder(newPlaceholder);
+    },
+  });
 
   const handleContentModeChange = (mode: ContentMode) => {
     // Track summary mode change
@@ -107,6 +142,13 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
     }, 100);
     return () => clearTimeout(timer);
   }, []);
+
+  // Set up resize observer for iframe auto-resize
+  useEffect(() => {
+    if (isInIframe && widgetContainerRef.current) {
+      observeResize(widgetContainerRef.current);
+    }
+  }, [isInIframe, observeResize]);
 
   // Fetch widget name for full-screen mode
   useEffect(() => {
@@ -331,11 +373,16 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
 
       const data = await response.json() as { message?: string; sources?: any[] };
       
-      addMessage({
+      const assistantMessage = addMessage({
         role: "assistant",
         content: data.message || "Sorry, I couldn't process your request.",
         sources: data.sources,
       });
+
+      // Notify parent iframe of the response
+      if (isInIframe) {
+        notifyChatResponse(assistantMessage);
+      }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         addMessage({
@@ -344,10 +391,15 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         });
       } else {
         console.error("Error sending message:", error);
-        addMessage({
+        const errorMessage = addMessage({
           role: "assistant",
           content: "Sorry, I'm having trouble connecting right now. Please try again.",
         });
+        
+        // Notify parent iframe of the error
+        if (isInIframe) {
+          notifyError("Connection error");
+        }
       }
     } finally {
       setIsLoading(false);
@@ -464,11 +516,16 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
 
       const data = await response.json() as { message?: string; sources?: any[] };
       
-      addMessage({
+      const assistantMessage = addMessage({
         role: "assistant",
         content: data.message || "Sorry, I couldn't process your request.",
         sources: data.sources,
       });
+
+      // Notify parent iframe of the response
+      if (isInIframe) {
+        notifyChatResponse(assistantMessage);
+      }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         addMessage({
@@ -477,10 +534,15 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         });
       } else {
         console.error("Error sending message:", error);
-        addMessage({
+        const errorMessage = addMessage({
           role: "assistant",
           content: "Sorry, I'm having trouble connecting right now. Please try again.",
         });
+        
+        // Notify parent iframe of the error
+        if (isInIframe) {
+          notifyError("Connection error");
+        }
       }
     } finally {
       setIsLoading(false);
@@ -494,38 +556,41 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
     const displayName = fetchedWidgetName || widgetName || advertiserName;
     
     return (
-      <ChatPanel
-        currentView="chat"
-        messages={messages}
-        inputValue={inputValue}
-        placeholder={placeholder}
-        isLoading={isLoading}
-        recommendations={recommendations}
-        isLoadingRecommendations={isLoadingRecommendations}
-        advertiserName={displayName}
-        hidePoweredBy={hidePoweredBy}
-        advertiserLogo={advertiserLogo}
-        baseUrl={baseUrl}
-        summaries={summaries}
-        currentContentMode={currentContentMode}
-        mainContentElement={mainContentElement}
-        onClose={() => {}} // No close functionality in full-screen mode
-        onInputChange={setInputValue}
-        onKeyDown={handleKeyDown}
-        onSendMessage={sendMessage}
-        onCancelMessage={cancelMessage}
-        onRecommendationClick={handleRecommendationClick}
-        isFullScreen={true}
-      />
+      <div className={isEmbed ? "websyte-embed-container" : ""}>
+        <ChatPanel
+          currentView="chat"
+          messages={messages}
+          inputValue={inputValue}
+          placeholder={placeholder}
+          isLoading={isLoading}
+          recommendations={recommendations}
+          isLoadingRecommendations={isLoadingRecommendations}
+          advertiserName={displayName}
+          hidePoweredBy={hidePoweredBy}
+          advertiserLogo={advertiserLogo}
+          baseUrl={baseUrl}
+          summaries={summaries}
+          currentContentMode={currentContentMode}
+          mainContentElement={mainContentElement}
+          onClose={() => {}} // No close functionality in full-screen mode
+          onInputChange={setInputValue}
+          onKeyDown={handleKeyDown}
+          onSendMessage={sendMessage}
+          onCancelMessage={cancelMessage}
+          onRecommendationClick={handleRecommendationClick}
+          isFullScreen={true}
+          isEmbed={isEmbed}
+        />
+      </div>
     );
   }
 
   return (
-    <>
+    <div ref={widgetContainerRef} className={isEmbed ? "websyte-embed-container" : ""}>
       {/* Action Bar / Audio Player - Single Container */}
       <div className={`${isTargetedInjection ? 'relative top-0 left-0 mx-auto' : 'fixed top-4 left-1/2'} z-50 ${
         hasRendered ? (isTargetedInjection ? 'animate-fade-in' : 'animate-slide-in-from-top') : 'opacity-0 -translate-x-1/2'
-      }`}>
+      } ${isEmbed ? 'websyte-embed-action-bar' : ''}`}>
         <div className={`bg-white/98 action-bar-blur shadow-lg border border-gray-300 py-2 flex flex-col gap-2 ${
           currentContent === "audio" ? 'container-audio' : 'container-action'
         } ${
@@ -559,6 +624,15 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
                   const newView = currentView === "chat" ? "main" : "chat";
                   UmamiTracking.trackButtonClick('chat-toggle', { view: newView });
                   setCurrentView(newView);
+                  
+                  // Notify parent iframe of chat state change
+                  if (isInIframe) {
+                    if (newView === "chat") {
+                      notifyChatStarted();
+                    } else {
+                      notifyChatClosed();
+                    }
+                  }
                 }}
                 dropdownRef={dropdownRef}
               />
@@ -628,13 +702,20 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         summaries={summaries}
         currentContentMode={currentContentMode}
         mainContentElement={mainContentElement}
-        onClose={() => setCurrentView("main")}
+        onClose={() => {
+          setCurrentView("main");
+          // Notify parent iframe of chat close
+          if (isInIframe) {
+            notifyChatClosed();
+          }
+        }}
         onInputChange={setInputValue}
         onKeyDown={handleKeyDown}
         onSendMessage={sendMessage}
         onCancelMessage={cancelMessage}
         onRecommendationClick={handleRecommendationClick}
+        isEmbed={isEmbed}
       />
-    </>
+    </div>
   );
 }

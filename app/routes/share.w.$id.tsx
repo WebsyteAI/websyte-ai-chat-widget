@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 import type { MetaFunction } from "react-router";
 import { ChatWidget } from "../components/ChatWidget";
 
@@ -20,7 +20,16 @@ interface LoadingState {
 }
 
 // Meta function for SEO
-export const meta: MetaFunction = ({ params, data }: any) => {
+export const meta: MetaFunction = ({ params, data, location }: any) => {
+  const searchParams = new URLSearchParams(location.search);
+  const isEmbed = searchParams.get('embed') === 'true';
+  
+  // Prevent search engine indexing for embed URLs
+  const baseMetaTags = isEmbed ? [
+    { name: "robots", content: "noindex, nofollow" },
+    { name: "googlebot", content: "noindex, nofollow" },
+  ] : [];
+  
   if (data?.widget) {
     const widget = data.widget;
     const title = `${widget.name} - WebsyteAI`;
@@ -28,6 +37,7 @@ export const meta: MetaFunction = ({ params, data }: any) => {
     const url = `https://websyte.ai/share/w/${widget.id}`;
     
     return [
+      ...baseMetaTags,
       { title },
       { name: "description", content: description },
       { property: "og:title", content: title },
@@ -42,6 +52,7 @@ export const meta: MetaFunction = ({ params, data }: any) => {
   }
   
   return [
+    ...baseMetaTags,
     { title: "Widget - WebsyteAI" },
     { name: "description", content: "AI-powered chat widget" },
   ];
@@ -49,7 +60,24 @@ export const meta: MetaFunction = ({ params, data }: any) => {
 
 export default function ShareWidget() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const [state, setState] = useState<LoadingState>({ loading: true });
+  
+  // Detect embed mode from URL params or iframe context
+  const isEmbedParam = searchParams.get('embed') === 'true' || searchParams.get('embedded') === 'true';
+  const [isInIframe, setIsInIframe] = useState(false);
+  
+  useEffect(() => {
+    // Check if we're running in an iframe
+    try {
+      setIsInIframe(window.self !== window.top);
+    } catch (e) {
+      // If we can't access window.top due to cross-origin, we're likely in an iframe
+      setIsInIframe(true);
+    }
+  }, []);
+  
+  const isEmbed = isEmbedParam || isInIframe;
 
   useEffect(() => {
     if (!id) {
@@ -120,6 +148,87 @@ export default function ShareWidget() {
     loadWidget();
   }, [id]);
 
+  // Add iframe-specific styles and PostMessage support if in embed mode
+  useEffect(() => {
+    if (isEmbed) {
+      // Add styles to make the iframe content fill the container
+      const style = document.createElement('style');
+      style.textContent = `
+        html, body {
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden;
+        }
+        #root {
+          height: 100%;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // Send ready message to parent
+      if (window.parent !== window) {
+        window.parent.postMessage({ 
+          type: 'widget-ready', 
+          widgetId: id,
+          timestamp: Date.now() 
+        }, '*');
+      }
+      
+      // Listen for messages from parent
+      const handleMessage = (event: MessageEvent) => {
+        // In production, verify origin
+        console.log('Widget received message:', event.data);
+        
+        // Handle different message types
+        switch (event.data.type) {
+          case 'ping':
+            event.source?.postMessage({ 
+              type: 'pong', 
+              timestamp: Date.now() 
+            }, event.origin as any);
+            break;
+          case 'resize':
+            // Handle resize request if needed
+            if (event.data.data?.height) {
+              // Widget could adjust its internal layout
+              console.log('Resize request:', event.data.data.height);
+            }
+            break;
+          case 'theme':
+            // Handle theme changes if supported
+            console.log('Theme change:', event.data.data);
+            break;
+        }
+      };
+      
+      window.addEventListener('message', handleMessage);
+      
+      // Send initial height
+      const sendHeight = () => {
+        const height = document.documentElement.scrollHeight;
+        if (window.parent !== window) {
+          window.parent.postMessage({ 
+            type: 'resize', 
+            height,
+            timestamp: Date.now() 
+          }, '*');
+        }
+      };
+      
+      // Send height on load and resize
+      setTimeout(sendHeight, 100);
+      const resizeObserver = new ResizeObserver(sendHeight);
+      resizeObserver.observe(document.body);
+      
+      return () => {
+        document.head.removeChild(style);
+        window.removeEventListener('message', handleMessage);
+        resizeObserver.disconnect();
+      };
+    }
+  }, [isEmbed, id]);
+
   // Loading state
   if (state.loading) {
     return (
@@ -136,7 +245,8 @@ export default function ShareWidget() {
           display: "flex", 
           justifyContent: "center", 
           alignItems: "center", 
-          minHeight: "100vh",
+          minHeight: isEmbed ? "100%" : "100vh",
+          height: isEmbed ? "100%" : "auto",
           backgroundColor: "#f8fafc",
           fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
         }}>
@@ -170,7 +280,8 @@ export default function ShareWidget() {
         display: "flex", 
         justifyContent: "center", 
         alignItems: "center", 
-        minHeight: "100vh",
+        minHeight: isEmbed ? "100%" : "100vh",
+        height: isEmbed ? "100%" : "auto",
         backgroundColor: "#f8fafc",
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
       }}>
@@ -202,28 +313,30 @@ export default function ShareWidget() {
           <p style={{ 
             fontSize: "1rem", 
             color: "#64748b",
-            margin: "0 0 1.5rem 0"
+            margin: isEmbed ? "0" : "0 0 1.5rem 0"
           }}>
             {state.error}
           </p>
-          <a 
-            href="/" 
-            style={{
-              display: "inline-block",
-              padding: "0.75rem 1.5rem",
-              backgroundColor: "#3b82f6",
-              color: "white",
-              textDecoration: "none",
-              borderRadius: "6px",
-              fontSize: "0.9rem",
-              fontWeight: "500",
-              transition: "background-color 0.2s"
-            }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2563eb"}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#3b82f6"}
-          >
-            Go to WebsyteAI
-          </a>
+          {!isEmbed && (
+            <a 
+              href="/" 
+              style={{
+                display: "inline-block",
+                padding: "0.75rem 1.5rem",
+                backgroundColor: "#3b82f6",
+                color: "white",
+                textDecoration: "none",
+                borderRadius: "6px",
+                fontSize: "0.9rem",
+                fontWeight: "500",
+                transition: "background-color 0.2s"
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2563eb"}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#3b82f6"}
+            >
+              Go to WebsyteAI
+            </a>
+          )}
         </div>
       </div>
     );
@@ -231,6 +344,30 @@ export default function ShareWidget() {
 
   // Success state - render full-screen widget
   if (state.widget) {
+    // Minimal layout for embed mode
+    if (isEmbed) {
+      return (
+        <div style={{ 
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: "#f8fafc",
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        }}>
+          <ChatWidget 
+            widgetId={state.widget.id}
+            advertiserName={state.widget.name}
+            advertiserUrl="https://websyte.ai"
+            isFullScreen={true}
+            saveChatMessages={true} // Save messages for public shared widgets
+            hidePoweredBy={false} // Show "Powered by Websyte.ai" in chat header
+            isEmbed={true} // Pass embed mode to ChatWidget
+          />
+        </div>
+      );
+    }
+    
+    // Regular layout with header for non-embed mode
     return (
       <div style={{ 
         minHeight: "100vh",

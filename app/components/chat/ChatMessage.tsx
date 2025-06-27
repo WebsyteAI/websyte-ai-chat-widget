@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import { FileText, Search, ChevronDown, ChevronUp, Globe } from "lucide-react";
+import { FileText, Search, ChevronDown, ChevronUp, Globe, Maximize2, Minimize2 } from "lucide-react";
 import { Badge } from "../ui/badge";
 import type { ChatMessage as ChatMessageType } from "./types";
 
@@ -17,6 +17,7 @@ export function ChatMessage({ message, showSources = true, showDebug = false }: 
   const [processedContent, setProcessedContent] = useState<string>("");
   const [isSourcesExpanded, setIsSourcesExpanded] = useState(false);
   const [referencedSources, setReferencedSources] = useState<Set<number>>(new Set());
+  const [expandedSources, setExpandedSources] = useState<Set<number>>(new Set());
   
   // Process content to convert [n] citations to clickable elements and track referenced sources
   useEffect(() => {
@@ -155,7 +156,7 @@ export function ChatMessage({ message, showSources = true, showDebug = false }: 
                   .filter(({ originalIndex }) => referencedSources.has(originalIndex))
                   .map(({ source, originalIndex }) => (
                     <div key={originalIndex} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
+                      <div className={`flex items-center justify-between ${expandedSources.has(originalIndex) ? 'mb-2' : ''}`}>
                         <div className="flex items-center gap-2 text-xs text-gray-600">
                           <span className="font-semibold text-blue-600">[{originalIndex + 1}]</span>
                           {(source.metadata.url || source.metadata.crawledFrom) ? (
@@ -196,11 +197,34 @@ export function ChatMessage({ message, showSources = true, showDebug = false }: 
                           >
                             {formatSimilarity(source.similarity)} match
                           </Badge>
+                          <button
+                            onClick={() => {
+                              setExpandedSources(prev => {
+                                const newSet = new Set(prev);
+                                if (newSet.has(originalIndex)) {
+                                  newSet.delete(originalIndex);
+                                } else {
+                                  newSet.add(originalIndex);
+                                }
+                                return newSet;
+                              });
+                            }}
+                            className="text-gray-500 hover:text-gray-700 transition-colors"
+                            title={expandedSources.has(originalIndex) ? "Hide content" : "Show content"}
+                          >
+                            {expandedSources.has(originalIndex) ? (
+                              <Minimize2 className="w-3 h-3" />
+                            ) : (
+                              <Maximize2 className="w-3 h-3" />
+                            )}
+                          </button>
                         </div>
                       </div>
-                      <div className="text-sm text-gray-700 leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-wrap">
-                        {source.chunk}
-                      </div>
+                      {expandedSources.has(originalIndex) && (
+                        <div className="text-sm text-gray-700 leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-wrap mt-2">
+                          {source.chunk}
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>

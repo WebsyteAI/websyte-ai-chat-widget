@@ -27,6 +27,7 @@ interface ChatPanelProps {
   onCancelMessage: () => void;
   onRecommendationClick: (recommendation: Recommendation) => Promise<void>;
   isFullScreen?: boolean;
+  isEmbed?: boolean;
 }
 
 export function ChatPanel({
@@ -51,6 +52,7 @@ export function ChatPanel({
   onCancelMessage,
   onRecommendationClick,
   isFullScreen = false,
+  isEmbed = false,
 }: ChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -65,9 +67,9 @@ export function ChatPanel({
   // Full-screen mode styling
   if (isFullScreen) {
     return (
-      <div className="fixed inset-0 flex flex-col bg-gray-50 border border-gray-200">
+      <div className={`fixed inset-0 flex flex-col bg-gray-50 border border-gray-200 ${isEmbed ? 'websyte-embed-chat-panel' : ''}`}>
         {/* Full-screen header - fixed */}
-        <div className="flex-shrink-0 flex flex-col items-center justify-center p-4 border-b border-gray-200 bg-white">
+        <div className={`flex-shrink-0 flex flex-col items-center justify-center p-4 border-b border-gray-200 bg-white ${isEmbed ? 'websyte-embed-header' : ''}`}>
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             {advertiserName}
             {(advertiserLogo || advertiserName === "Nativo") && (
@@ -87,7 +89,7 @@ export function ChatPanel({
 
         {/* Messages area - scrollable */}
         <div className="flex-1 overflow-y-auto min-h-0">
-          <div className="p-6 flex flex-col gap-4 max-w-4xl mx-auto w-full">
+          <div className={`p-6 flex flex-col gap-4 max-w-4xl mx-auto w-full ${isEmbed ? 'websyte-embed-messages' : ''}`}>
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
                 <div className="text-center mb-8">
@@ -196,7 +198,7 @@ export function ChatPanel({
 
         {/* Input area - fixed */}
         <div className="flex-shrink-0 border-t border-gray-200 bg-white">
-          <div className="p-4 max-w-4xl mx-auto w-full">
+          <div className={`p-4 max-w-4xl mx-auto w-full ${isEmbed ? 'websyte-embed-input' : ''}`}>
             <MessageInput
               inputValue={inputValue}
               placeholder={placeholder}

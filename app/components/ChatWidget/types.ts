@@ -31,6 +31,7 @@ export interface ChatWidgetProps {
   widgetName?: string; // Actual widget name from database
   saveChatMessages?: boolean; // Whether to save chat messages to database
   isFullScreen?: boolean; // Whether to render as full-screen interface
+  isEmbed?: boolean; // Whether widget is running in iframe embed mode
 }
 
 export interface Recommendation {
@@ -44,3 +45,54 @@ export interface Summaries {
 }
 
 export type ContentMode = 'original' | 'short' | 'medium';
+
+// PostMessage API types for parent-iframe communication
+export interface IframeMessageEvent {
+  type: 'websyte-ai-chat-widget';
+  action: string;
+  data?: any;
+}
+
+// Messages sent from widget to parent
+export interface WidgetToParentMessage extends IframeMessageEvent {
+  action: 
+    | 'resize' 
+    | 'ready' 
+    | 'chat-response'
+    | 'error'
+    | 'chat-started'
+    | 'chat-closed';
+  data?: {
+    // For resize action
+    height?: number;
+    width?: number;
+    // For chat-response action
+    message?: Message;
+    // For error action
+    error?: string;
+  };
+}
+
+// Messages sent from parent to widget
+export interface ParentToWidgetMessage extends IframeMessageEvent {
+  action: 
+    | 'configure' 
+    | 'send-message'
+    | 'clear-chat'
+    | 'set-placeholder';
+  data?: {
+    // For configure action
+    config?: Partial<ChatWidgetProps>;
+    // For send-message action
+    message?: string;
+    // For set-placeholder action
+    placeholder?: string;
+  };
+}
+
+// Configuration for iframe messaging
+export interface IframeMessagingConfig {
+  allowedOrigins?: string[]; // If not specified, accepts messages from any origin
+  enableAutoResize?: boolean; // Default: true
+  resizeDebounceMs?: number; // Default: 100ms
+}

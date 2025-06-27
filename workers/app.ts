@@ -16,6 +16,7 @@ import { RAGAgent } from './services/rag-agent';
 import { ApifyCrawlerService } from './services/apify-crawler';
 import { optionalAuthMiddleware, authMiddleware, adminMiddleware, type AuthContext } from './lib/middleware';
 import { rateLimitMiddleware } from './lib/rate-limiter';
+import { iframeMiddleware } from './lib/iframe-middleware';
 import type { Env } from './types';
 
 declare module "react-router" {
@@ -47,8 +48,18 @@ type AppType = {
 
 const app = new Hono<AppType>();
 
-// Apply CORS middleware
-app.use('*', cors());
+// Apply CORS middleware with permissive settings for widget embedding
+app.use('*', cors({
+  origin: '*', // Allow all origins for widget embedding
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Session-ID'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  exposeHeaders: ['Content-Length', 'X-Request-ID'],
+  maxAge: 86400, // 24 hours
+  credentials: true, // Allow cookies for authenticated requests
+}));
+
+// Apply iframe security middleware
+app.use('*', iframeMiddleware);
 
 // Services cache to avoid recreation
 let servicesCache: {

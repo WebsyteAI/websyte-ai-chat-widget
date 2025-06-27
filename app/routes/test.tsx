@@ -130,6 +130,18 @@ export default function Test() {
           <p style={{ color: "#0369a1", margin: 0, fontSize: "0.9rem" }}>
             Welcome, {user?.name}! You have admin access to test all widgets in the system.
           </p>
+          <div style={{ marginTop: "0.5rem" }}>
+            <a 
+              href="/test/iframe" 
+              style={{ 
+                color: "#0369a1", 
+                textDecoration: "underline",
+                fontSize: "0.9rem"
+              }}
+            >
+              → Test iframe implementation
+            </a>
+          </div>
         </div>
 
         {/* Control Panel */}

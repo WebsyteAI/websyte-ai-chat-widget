@@ -4,10 +4,10 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Upload, X, FileText, Trash2, Code, Lock, ArrowLeft, Info, ExternalLink, Copy, Check, Globe, RefreshCw } from 'lucide-react';
+import { Upload, X, FileText, Trash2, Lock, ArrowLeft, Info, Globe, RefreshCw } from 'lucide-react';
 import { useUIStore, type Widget } from '../../stores';
-import { ScriptCopyBtn } from '../ui/script-copy-btn';
 import { toast } from '@/lib/use-toast';
+import { EmbedCodeGenerator } from './EmbedCodeGenerator';
 
 
 interface WidgetFormProps {
@@ -24,7 +24,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
   const [existingFiles, setExistingFiles] = useState(widget?.files || []);
   const [isPublic, setIsPublic] = useState(false);
-  const [shareUrlCopied, setShareUrlCopied] = useState(false);
   const [crawlUrl, setCrawlUrl] = useState(widget?.crawlUrl || '');
   const [crawling, setCrawling] = useState(false);
   const [crawlStatus, setCrawlStatus] = useState(widget?.crawlStatus || null);
@@ -193,18 +192,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const generateEmbedCode = () => {
-    if (!widget?.id) return '';
-    
-    const baseUrl = window.location.origin;
-    const attributes = [
-      `src="${baseUrl}/dist/widget.js"`,
-      widget.id ? `data-widget-id="${widget.id}"` : '',
-      'async'
-    ].filter(Boolean);
-    
-    return `<script ${attributes.join(' ')}></script>`;
-  };
 
 
   const toggleWidgetPublic = async () => {
@@ -234,23 +221,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
     }
   };
 
-  const generateShareableUrl = () => {
-    if (!widget?.id) return '';
-    return `${window.location.origin}/share/w/${widget.id}`;
-  };
-
-  const copyShareableUrl = async () => {
-    const url = generateShareableUrl();
-    try {
-      await navigator.clipboard.writeText(url);
-      setShareUrlCopied(true);
-      toast.success('Shareable URL copied to clipboard!');
-      setTimeout(() => setShareUrlCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy URL:', error);
-      toast.error('Failed to copy URL. Please try again.');
-    }
-  };
 
   const handleRecrawl = async () => {
     if (!widget?.id || !crawlUrl) return;
@@ -746,116 +716,12 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
 
           {/* Embed Code Section - Only show for existing widgets */}
           {widget?.id && (
-            <div className="space-y-4 pt-6 border-t border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900">Embed Widget</h3>
-                  <p className="text-sm text-gray-600">
-                    Copy the script tag below to embed this widget on your website
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">Public</span>
-                  <button
-                    type="button"
-                    onClick={toggleWidgetPublic}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                      isPublic ? 'bg-blue-600' : 'bg-gray-200'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        isPublic ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-              </div>
-
-              {isPublic ? (
-                <div className="space-y-4">
-                  {/* Widget Configuration */}
-
-                  {/* Generated Embed Code */}
-                  <div className="space-y-2">
-                    <Label>Embed Code</Label>
-                    <ScriptCopyBtn
-                      code={generateEmbedCode()}
-                      codeLanguage="html"
-                      className="mt-2"
-                    />
-                    <p className="text-xs text-gray-600">
-                      Paste this code into your website's HTML where you want the widget to appear.
-                    </p>
-                  </div>
-
-                  {/* Shareable URL */}
-                  <div className="space-y-2">
-                    <Label>Shareable URL</Label>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-mono text-gray-700">
-                        {generateShareableUrl()}
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={copyShareableUrl}
-                        className="flex items-center gap-2"
-                      >
-                        {shareUrlCopied ? (
-                          <>
-                            <Check className="w-4 h-4 text-green-600" />
-                            Copied
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-4 h-4" />
-                            Copy
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => window.open(generateShareableUrl(), '_blank')}
-                        className="flex items-center gap-2"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        Open
-                      </Button>
-                    </div>
-                    <p className="text-xs text-gray-600">
-                      Direct link to your widget that can be shared with anyone. Opens in full-screen chat mode.
-                    </p>
-                  </div>
-
-                  {/* Usage Instructions */}
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <Code className="w-5 h-5 text-blue-600 mt-0.5" />
-                      <div>
-                        <h4 className="font-medium text-blue-900 mb-1">Usage Instructions</h4>
-                        <ul className="text-sm text-blue-800 space-y-1">
-                          <li>• Widget will use your uploaded files and content as its knowledge base</li>
-                          <li>• Visitors can chat with AI trained on your specific content</li>
-                          <li>• No authentication required for public widgets</li>
-                          <li>• Fully responsive and works on all devices</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <Lock className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-600 mb-2">Widget is currently private</p>
-                  <p className="text-sm text-gray-500">
-                    Enable public access to generate embed code for your website
-                  </p>
-                </div>
-              )}
+            <div className="pt-6 border-t border-gray-200">
+              <EmbedCodeGenerator
+                widgetId={widget.id}
+                isPublic={isPublic}
+                onTogglePublic={toggleWidgetPublic}
+              />
             </div>
           )}
 

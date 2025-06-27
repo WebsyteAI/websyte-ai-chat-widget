@@ -12,6 +12,7 @@ export default [
     route("widgets/:id/edit", "routes/dashboard.widgets.$id.edit.tsx"),
   ]),
   route("/test", "routes/test.tsx"),
+  route("/test/iframe", "routes/test.iframe.tsx"),
   route("/script-test", "routes/script-test.tsx"),
   route("/target-test", "routes/target-test.tsx"),
   route("/summary-test", "routes/summary-test.tsx"),
