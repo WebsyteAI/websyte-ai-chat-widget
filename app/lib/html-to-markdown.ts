@@ -70,7 +70,7 @@ export class HtmlToMarkdownConverter {
     // Ordered lists
     html = html.replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (match, content) => {
       const items = content.match(/<li[^>]*>([\s\S]*?)<\/li>/gi) || [];
-      const listItems = items.map((item, index) => {
+      const listItems = items.map((item: any, index: number) => {
         const text = this.stripTags(item.replace(/<\/?li[^>]*>/gi, '')).trim();
         return `${index + 1}. ${text}`;
       }).join('\n');
@@ -80,7 +80,7 @@ export class HtmlToMarkdownConverter {
     // Unordered lists
     html = html.replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (match, content) => {
       const items = content.match(/<li[^>]*>([\s\S]*?)<\/li>/gi) || [];
-      const listItems = items.map(item => {
+      const listItems = items.map((item: any) => {
         const text = this.stripTags(item.replace(/<\/?li[^>]*>/gi, '')).trim();
         return `${this.options.bulletListMarker} ${text}`;
       }).join('\n');

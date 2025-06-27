@@ -178,7 +178,9 @@ export function ChatMessage({ message, onSourceClick }: ChatMessageProps) {
                   return (
                     <div 
                       key={originalIndex} 
-                      ref={el => sourceRefs.current[originalIndex] = el}
+                      ref={el => {
+                        sourceRefs.current[originalIndex] = el;
+                      }}
                       className={`border rounded-lg p-2 text-xs transition-all duration-300 ${
                         isHighlighted 
                           ? 'bg-blue-100 border-blue-400 shadow-md' 

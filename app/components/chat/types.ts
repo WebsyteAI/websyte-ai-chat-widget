@@ -14,6 +14,10 @@ export interface MessageSource {
     source?: string;
     chunkIndex: number;
     fileId?: string;
+    url?: string;
+    crawledFrom?: string;
+    title?: string;
+    pageNumber?: number;
   };
   widgetId?: string;
 }

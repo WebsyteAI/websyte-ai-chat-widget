@@ -26,7 +26,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
   const [isPublic, setIsPublic] = useState(false);
   const [crawlUrl, setCrawlUrl] = useState(widget?.crawlUrl || '');
   const [crawling, setCrawling] = useState(false);
-  const [crawlStatus, setCrawlStatus] = useState(widget?.crawlStatus || null);
+  const [crawlStatus, setCrawlStatus] = useState<'pending' | 'crawling' | 'completed' | 'failed' | 'processing' | null>(widget?.crawlStatus || null);
   const [crawlPageCount, setCrawlPageCount] = useState(widget?.crawlPageCount || 0);
   const [crawlStarting, setCrawlStarting] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());

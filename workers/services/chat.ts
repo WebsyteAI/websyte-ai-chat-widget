@@ -141,7 +141,7 @@ export class ChatService {
               await this.messageService.saveMessage({
                 widgetId,
                 sessionId: chatSessionId,
-                userId: null,
+                userId: undefined,
                 role: 'assistant',
                 content: ragResult.response,
                 metadata: {

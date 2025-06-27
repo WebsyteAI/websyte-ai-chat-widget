@@ -3,7 +3,8 @@ import { DatabaseService } from './database';
 import { VectorSearchService } from './vector-search';
 import { FileStorageService } from './file-storage';
 import { ApifyCrawlerService } from './apify-crawler';
-import { widget, type Widget, type NewWidget } from '../db/schema';
+import { OpenAIService } from './openai';
+import { widget, widgetEmbedding, type Widget, type NewWidget } from '../db/schema';
 
 export interface CreateWidgetRequest {
   name: string;
@@ -38,17 +39,20 @@ export class WidgetService {
   private vectorSearch: VectorSearchService;
   private fileStorage: FileStorageService;
   private apifyCrawler: ApifyCrawlerService;
+  private openaiApiKey: string;
 
   constructor(
     databaseService: DatabaseService,
     vectorSearchService: VectorSearchService,
     fileStorageService: FileStorageService,
-    apifyCrawlerService: ApifyCrawlerService
+    apifyCrawlerService: ApifyCrawlerService,
+    openaiApiKey?: string
   ) {
     this.db = databaseService;
     this.vectorSearch = vectorSearchService;
     this.fileStorage = fileStorageService;
     this.apifyCrawler = apifyCrawlerService;
+    this.openaiApiKey = openaiApiKey || '';
   }
 
   async createWidget(userId: string, request: CreateWidgetRequest): Promise<WidgetWithFiles> {
@@ -625,6 +629,15 @@ ${page.markdown}
         }
       }
       
+      // 4. Generate recommendations based on the crawled content
+      try {
+        await this.generateWidgetRecommendations(widgetId);
+        console.log('[WIDGET_CRAWL] Generated recommendations for widget');
+      } catch (recommendationError) {
+        console.error('[WIDGET_CRAWL] Error generating recommendations:', recommendationError);
+        // Don't fail the whole process if recommendations fail
+      }
+      
       // Update widget status - only after embeddings are attempted
       await this.db.getDatabase()
         .update(widget)
@@ -647,6 +660,81 @@ ${page.markdown}
           crawlRunId: null 
         })
         .where(eq(widget.id, widgetId));
+    }
+  }
+
+  async getWidgetSampleContent(widgetId: string, limit: number = 5): Promise<string> {
+    try {
+      // Get a sample of widget embeddings to understand the content
+      const embeddings = await this.db.getDatabase()
+        .select({
+          contentChunk: widgetEmbedding.contentChunk,
+          metadata: widgetEmbedding.metadata
+        })
+        .from(widgetEmbedding)
+        .where(eq(widgetEmbedding.widgetId, widgetId))
+        .limit(limit);
+
+      if (embeddings.length === 0) {
+        return '';
+      }
+
+      // Combine sample content from different sources
+      const contentSamples = embeddings.map(e => {
+        const source = e.metadata?.source || 'unknown';
+        const title = e.metadata?.title || '';
+        const url = e.metadata?.url || '';
+        return `${title ? `Title: ${title}\n` : ''}${url ? `URL: ${url}\n` : ''}Content: ${e.contentChunk}\n`;
+      }).join('\n---\n');
+
+      return contentSamples;
+    } catch (error) {
+      console.error('[WidgetService] Error getting widget sample content:', error);
+      return '';
+    }
+  }
+
+  async generateWidgetRecommendations(widgetId: string): Promise<void> {
+    try {
+      // Get widget details
+      const [widgetRecord] = await this.db.getDatabase()
+        .select()
+        .from(widget)
+        .where(eq(widget.id, widgetId))
+        .limit(1);
+
+      if (!widgetRecord) {
+        throw new Error('Widget not found');
+      }
+
+      // Get sample content from widget embeddings
+      const sampleContent = await this.getWidgetSampleContent(widgetId, 10);
+      
+      if (!sampleContent) {
+        console.log('[WidgetService] No content found for recommendations');
+        return;
+      }
+
+      // Use OpenAI to generate recommendations
+      const openai = new OpenAIService(this.openaiApiKey);
+      const response = await openai.generateRecommendations(
+        sampleContent,
+        widgetRecord.name,
+        widgetRecord.crawlUrl || widgetRecord.url || ''
+      );
+
+      // Store recommendations in widget metadata
+      await this.db.getDatabase()
+        .update(widget)
+        .set({
+          recommendations: response.recommendations
+        })
+        .where(eq(widget.id, widgetId));
+
+      console.log('[WidgetService] Stored recommendations for widget:', widgetId);
+    } catch (error) {
+      console.error('[WidgetService] Error generating recommendations:', error);
+      throw error;
     }
   }
 }

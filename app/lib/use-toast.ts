@@ -24,7 +24,7 @@ export const toast = {
     return sonnerToast.promise(promise, opts)
   },
   custom: (component: React.ReactNode) => {
-    return sonnerToast.custom(component)
+    return sonnerToast.custom(component as any)
   },
   dismiss: (id?: string | number) => {
     return sonnerToast.dismiss(id)

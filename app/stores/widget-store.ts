@@ -129,7 +129,7 @@ export const useWidgetStore = create<WidgetState>()(
       clearError: () => set({ error: null }),
 
       // Selectors
-      getWidgetById: (id: number) => {
+      getWidgetById: (id: string) => {
         return get().widgets.find(w => w.id === id);
       },
     })),

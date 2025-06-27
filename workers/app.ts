@@ -86,7 +86,7 @@ const getServices = (env: Env) => {
       vectorSearch
     );
     const apifyCrawler = new ApifyCrawlerService(env.APIFY_API_TOKEN);
-    const widget = new WidgetService(database, vectorSearch, fileStorage, apifyCrawler);
+    const widget = new WidgetService(database, vectorSearch, fileStorage, apifyCrawler, env.OPENAI_API_KEY);
     const messages = new MessageService(database);
     const ragAgent = new RAGAgent(env.OPENAI_API_KEY, widget);
     
@@ -180,6 +180,7 @@ app.get('/api/public/widget/:id', async (c) => {
       id: widget.id,
       name: widget.name,
       description: widget.description,
+      recommendations: widget.recommendations,
     });
   } catch (error) {
     console.error('Error getting public widget:', error);
@@ -603,7 +604,12 @@ app.get('/api/widgets/:id/public', async (c) => {
     if (!widget) {
       return c.json({ error: 'Widget not found or not public' }, 404);
     }
-    return c.json({ widget });
+    return c.json({ 
+      widget: {
+        ...widget,
+        recommendations: widget.recommendations
+      } 
+    });
   } catch (error) {
     console.error('Error getting public widget:', error);
     return c.json({ error: 'Failed to get widget' }, 500);
@@ -675,6 +681,40 @@ app.get('/api/widgets/:id/crawl/status', async (c) => {
   } catch (error) {
     console.error('Error checking crawl status:', error);
     return c.json({ error: 'Failed to check crawl status' }, 500);
+  }
+});
+
+// Generate recommendations for a widget
+app.post('/api/widgets/:id/recommendations', async (c) => {
+  const auth = c.get('auth');
+  if (!auth?.user) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    const widget = await c.get('services').widget.getWidget(id, auth.user.id);
+    if (!widget) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+
+    // Generate recommendations
+    await c.get('services').widget.generateWidgetRecommendations(id);
+    
+    // Get updated widget with recommendations
+    const updatedWidget = await c.get('services').widget.getWidget(id, auth.user.id);
+    
+    return c.json({ 
+      success: true,
+      recommendations: updatedWidget?.recommendations || []
+    });
+  } catch (error) {
+    console.error('Error generating recommendations:', error);
+    return c.json({ error: 'Failed to generate recommendations' }, 500);
   }
 });
 

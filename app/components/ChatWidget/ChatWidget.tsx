@@ -150,15 +150,26 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
     }
   }, [isInIframe, observeResize]);
 
-  // Fetch widget name for full-screen mode
+  // Fetch widget name and recommendations for full-screen mode
   useEffect(() => {
     if (isFullScreen && widgetId && !widgetName) {
       const fetchWidgetInfo = async () => {
         try {
           const response = await fetch(`${baseUrl}/api/public/widget/${widgetId}`);
           if (response.ok) {
-            const data = await response.json() as { id: string; name: string; description?: string };
+            const data = await response.json() as { 
+              id: string; 
+              name: string; 
+              description?: string;
+              recommendations?: Array<{ title: string; description: string }>;
+            };
             setFetchedWidgetName(data.name);
+            
+            // Set recommendations if available
+            if (data.recommendations && data.recommendations.length > 0) {
+              setRecommendations(data.recommendations);
+              setPlaceholder(`Ask me about ${data.name}...`);
+            }
           }
         } catch (error) {
           console.error('Failed to fetch widget info:', error);
@@ -171,8 +182,10 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
   useEffect(() => {
     // Skip page content extraction for full-screen mode (standalone widgets)
     if (isFullScreen) {
-      // For full-screen widgets, just set placeholder and skip recommendations
-      setPlaceholder(widgetId ? "Ask me anything about the knowledge base..." : "Ask me anything...");
+      // For full-screen widgets, recommendations are loaded separately
+      if (!widgetId) {
+        setPlaceholder("Ask me anything...");
+      }
       setIsLoadingRecommendations(false);
       return;
     }
