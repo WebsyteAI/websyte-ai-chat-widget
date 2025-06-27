@@ -49,7 +49,8 @@ export class VectorSearchService {
     
     const words = text.split(/\s+/);
     const totalWords = words.length;
-    console.log(`[CHUNKING] Input text: ${totalWords} words, maxWords: ${maxWords}`);
+    // Only log for debugging when needed
+    // console.log(`[CHUNKING] Input text: ${totalWords} words, maxWords: ${maxWords}`);
     
     // Calculate safe token limit (more conservative to avoid hitting limits)
     const maxTokensPerChunk = 7000; // Leave buffer for OpenAI's 8192 limit
@@ -58,11 +59,11 @@ export class VectorSearchService {
     if (totalWords <= maxWords) {
       const chunkText = words.join(' ');
       const estimatedTokens = this.estimateTokenCount(chunkText);
-      console.log(`[CHUNKING] Single chunk check: ${totalWords} words, estimated ${estimatedTokens} tokens`);
+      // console.log(`[CHUNKING] Single chunk check: ${totalWords} words, estimated ${estimatedTokens} tokens`);
       
       // If even a single chunk is too large, we need to split it
       if (estimatedTokens > maxTokensPerChunk) {
-        console.log(`[CHUNKING] Single chunk too large, forcing split`);
+        // console.log(`[CHUNKING] Single chunk too large, forcing split`);
         // Calculate appropriate chunk size based on token limit
         const targetWords = Math.floor((maxTokensPerChunk * 3.5) / (chunkText.length / totalWords));
         return this.chunkText(text, targetWords, Math.floor(targetWords * 0.1));
@@ -83,7 +84,10 @@ export class VectorSearchService {
       let chunkText = chunkWords.join(' ');
       let estimatedTokens = this.estimateTokenCount(chunkText);
       
-      console.log(`[CHUNKING] Created chunk ${chunks.length}: ${chunkWords.length} words, estimated ${estimatedTokens} tokens`);
+      // Only log every 100th chunk to reduce noise
+      if (chunks.length % 100 === 0) {
+        console.log(`[CHUNKING] Progress: ${chunks.length} chunks created...`);
+      }
       
       // Iteratively reduce chunk size if still too large
       let currentMaxWords = chunkWords.length;
@@ -92,7 +96,7 @@ export class VectorSearchService {
         const reducedChunkWords = words.slice(i, i + currentMaxWords);
         chunkText = reducedChunkWords.join(' ');
         estimatedTokens = this.estimateTokenCount(chunkText);
-        console.log(`[CHUNKING] Reduced chunk ${chunks.length} to ${currentMaxWords} words, estimated ${estimatedTokens} tokens`);
+        // console.log(`[CHUNKING] Reduced chunk ${chunks.length} to ${currentMaxWords} words, estimated ${estimatedTokens} tokens`);
       }
       
       // Final safety check
@@ -115,7 +119,10 @@ export class VectorSearchService {
       }
     }
 
-    console.log(`[CHUNKING] Total chunks created: ${chunks.length}`);
+    // Final summary log
+    if (chunks.length > 10) {
+      console.log(`[CHUNKING] Completed: ${chunks.length} chunks created from ${words.length} words`);
+    }
     return chunks;
   }
 

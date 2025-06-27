@@ -611,7 +611,10 @@ ${page.markdown}
           }
         });
         
-        console.log(`[WIDGET_CRAWL] Saved page ${pageNumber}/${results.length} as page file`);
+        // Only log every 10 pages to reduce noise
+        if (pageNumber % 10 === 0 || pageNumber === results.length) {
+          console.log(`[WIDGET_CRAWL] Progress: ${pageNumber}/${results.length} pages saved`);
+        }
       }
       
       // 3. Create embeddings using the same method as OCR files
