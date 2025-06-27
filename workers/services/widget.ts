@@ -520,13 +520,25 @@ export class WidgetService {
     console.log('[WidgetService] processCrawlResults called:', { widgetId, runId });
     
     try {
+      // Check if already processing or completed
+      const widgetRecord = await this.getWidget(widgetId, userId);
+      if (!widgetRecord || !widgetRecord.crawlUrl) throw new Error('Widget not found');
+      
+      // If already completed or processing, skip
+      if (widgetRecord.crawlStatus === 'completed' || widgetRecord.crawlStatus === 'processing') {
+        console.log('[WidgetService] Crawl already processed or processing, skipping');
+        return;
+      }
+      
+      // Mark as processing to prevent concurrent calls
+      await this.db.getDatabase()
+        .update(widget)
+        .set({ crawlStatus: 'processing' })
+        .where(eq(widget.id, widgetId));
+      
       // Get crawl results
       const results = await this.apifyCrawler.getCrawlResults(runId);
       console.log('[WidgetService] Got crawl results:', results.length, 'pages');
-      
-      // Get widget for URL
-      const widgetRecord = await this.getWidget(widgetId, userId);
-      if (!widgetRecord || !widgetRecord.crawlUrl) throw new Error('Widget not found');
       
       // If no results, mark as completed with 0 pages
       if (!results || results.length === 0) {

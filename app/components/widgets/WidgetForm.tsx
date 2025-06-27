@@ -15,10 +15,11 @@ interface WidgetFormProps {
   onSubmit: (data: FormData) => Promise<void>;
   onCancel: () => void;
   onDelete?: () => void;
+  onWidgetUpdated?: (widget: Widget) => void;
   loading?: boolean;
 }
 
-export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = false }: WidgetFormProps) {
+export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdated, loading = false }: WidgetFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
   const [existingFiles, setExistingFiles] = useState(widget?.files || []);
@@ -29,6 +30,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
   const [crawlStatus, setCrawlStatus] = useState(widget?.crawlStatus || null);
   const [crawlPageCount, setCrawlPageCount] = useState(widget?.crawlPageCount || 0);
   const [crawlStarting, setCrawlStarting] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
   const crawlPollInterval = useRef<NodeJS.Timeout | null>(null);
   const {
     widgetFormData,
@@ -74,7 +76,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
           });
           
           if (response.ok) {
-            const data = await response.json();
+            const data = await response.json() as { status: 'crawling' | 'pending' | 'completed' | 'failed' | 'processing'; pageCount?: number };
             setCrawlStatus(data.status);
             setCrawlPageCount(data.pageCount || 0);
             
@@ -85,10 +87,24 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
                 crawlPollInterval.current = null;
               }
               
-              // Refresh files if completed
-              if (data.status === 'completed') {
-                // Trigger a refresh of the widget data
-                window.location.reload(); // Simple refresh for now
+              // Refresh widget data if completed
+              if (data.status === 'completed' && widget?.id) {
+                // Fetch updated widget data
+                try {
+                  const widgetResponse = await fetch(`/api/widgets/${widget.id}`, {
+                    credentials: 'include'
+                  });
+                  
+                  if (widgetResponse.ok) {
+                    const { widget: updatedWidget } = await widgetResponse.json() as { widget: Widget };
+                    // Update existing files with the new crawled files
+                    setExistingFiles(updatedWidget.files || []);
+                    // Notify parent component about the update
+                    onWidgetUpdated?.(updatedWidget);
+                  }
+                } catch (error) {
+                  console.error('Error fetching updated widget:', error);
+                }
               }
             }
           }
@@ -301,7 +317,21 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
     // For editing mode, handle file uploads separately after the main update
     if (isEditing && files.length > 0 && widget) {
       try {
-        for (const file of files) {
+        const filesToUpload = files.filter(file => !uploadingFiles.has(file.name));
+        
+        if (filesToUpload.length === 0) {
+          toast.info('Files are already being uploaded');
+          return;
+        }
+        
+        // Mark files as uploading
+        setUploadingFiles(prev => {
+          const newSet = new Set(prev);
+          filesToUpload.forEach(file => newSet.add(file.name));
+          return newSet;
+        });
+        
+        for (const file of filesToUpload) {
           const fileFormData = new FormData();
           fileFormData.append('file', file);
           
@@ -324,10 +354,15 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
         for (let i = files.length - 1; i >= 0; i--) {
           removeFile(i);
         }
-        toast.success(`${files.length} file${files.length > 1 ? 's' : ''} uploaded successfully`);
+        toast.success(`${filesToUpload.length} file${filesToUpload.length > 1 ? 's' : ''} uploaded successfully`);
+        
+        // Clear uploading state
+        setUploadingFiles(new Set());
       } catch (error) {
         console.error('Error uploading files:', error);
         toast.error('Some files failed to upload. Please try again.');
+        // Clear uploading state on error
+        setUploadingFiles(new Set());
       }
     }
   };
@@ -473,6 +508,11 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
                               ) : crawlStatus === 'crawling' ? (
                                 <>
                                   <span className="text-blue-600">In Progress</span>
+                                  <span className="ml-2 inline-block animate-spin">⟳</span>
+                                </>
+                              ) : crawlStatus === 'processing' ? (
+                                <>
+                                  <span className="text-blue-600">Processing Results</span>
                                   <span className="ml-2 inline-block animate-spin">⟳</span>
                                 </>
                               ) : crawlStatus === 'completed' ? (
@@ -821,11 +861,16 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, loading = fal
 
           {/* Form Actions */}
           <div className="flex items-center gap-3 pt-6">
-            <Button type="submit" disabled={loading || !name.trim()}>
+            <Button type="submit" disabled={loading || !name.trim() || uploadingFiles.size > 0}>
               {loading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   {isEditing ? 'Updating...' : 'Creating...'}
+                </>
+              ) : uploadingFiles.size > 0 ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Uploading files...
                 </>
               ) : (
                 isEditing ? 'Update Widget' : 'Create Widget'

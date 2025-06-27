@@ -10,6 +10,7 @@ export default function WidgetEdit() {
   const { widgets, fetchWidgets } = useWidgetStore();
   const [widget, setWidget] = useState<Widget | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     const loadWidget = async () => {
@@ -18,28 +19,48 @@ export default function WidgetEdit() {
         return;
       }
 
-      // First try to find widget in current store
-      const existingWidget = widgets.find(w => String(w.id) === id);
-      if (existingWidget) {
-        setWidget(existingWidget);
-        setLoading(false);
-        return;
-      }
+      setLoading(true);
+      setNotFound(false);
 
-      // If not found, fetch widgets and try again
-      await fetchWidgets();
-      const fetchedWidget = widgets.find(w => String(w.id) === id);
-      if (fetchedWidget) {
-        setWidget(fetchedWidget);
-      } else {
-        // Widget not found, redirect to widgets list
-        navigate('/dashboard/widgets');
+      try {
+        // First, try to fetch the specific widget directly
+        const response = await fetch(`/api/widgets/${id}`, {
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const data = await response.json() as { widget: Widget };
+          setWidget(data.widget);
+          setLoading(false);
+          
+          // Also refresh the widgets list in the background
+          fetchWidgets().catch(console.error);
+          return;
+        }
+
+        if (response.status === 404) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+
+        throw new Error('Failed to fetch widget');
+      } catch (error) {
+        console.error('Error loading widget:', error);
+        
+        // Fallback: try to find in existing widgets
+        const existingWidget = widgets.find(w => String(w.id) === id);
+        if (existingWidget) {
+          setWidget(existingWidget);
+        } else {
+          setNotFound(true);
+        }
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadWidget();
-  }, [id, navigate, widgets, fetchWidgets]);
+  }, [id]);
 
   const handleBack = () => {
     navigate('/dashboard/widgets');
@@ -66,10 +87,16 @@ export default function WidgetEdit() {
     );
   }
 
-  if (!widget) {
+  if (!widget && !loading) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600">Widget not found</p>
+        <p className="text-gray-600">{notFound ? 'Widget not found' : 'Error loading widget'}</p>
+        <button
+          onClick={() => navigate('/dashboard/widgets')}
+          className="mt-4 text-blue-600 hover:text-blue-700 underline"
+        >
+          Back to widgets
+        </button>
       </div>
     );
   }
@@ -77,7 +104,7 @@ export default function WidgetEdit() {
   return (
     <div className="h-full">
       <WidgetEditor
-        widget={widget}
+        widget={widget || undefined}
         onBack={handleBack}
         onWidgetUpdated={handleWidgetUpdated}
         onWidgetDeleted={handleWidgetDeleted}

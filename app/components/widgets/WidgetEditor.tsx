@@ -134,6 +134,10 @@ export function WidgetEditor({
             onSubmit={handleWidgetSubmit}
             onCancel={onBack}
             onDelete={isEditing && createdWidget ? handleDeleteWidget : undefined}
+            onWidgetUpdated={(updatedWidget) => {
+              setCreatedWidget(updatedWidget);
+              onWidgetUpdated?.(updatedWidget);
+            }}
             loading={formLoading}
           />
         </div>
