@@ -4,6 +4,9 @@ export interface Source {
   metadata: {
     source?: string;
     chunkIndex: number;
+    url?: string;
+    title?: string;
+    crawledFrom?: string;
   };
 }
 

@@ -399,3 +399,70 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Selection styles outside of @layer to ensure they have higher specificity */
+/* Global selection for all elements */
+*::selection {
+  background-color: rgb(59, 130, 246) !important; /* Blue-500 */
+  color: rgb(255, 255, 255) !important;
+}
+
+*::-moz-selection {
+  background-color: rgb(59, 130, 246) !important; /* Blue-500 */
+  color: rgb(255, 255, 255) !important;
+}
+
+/* Text selection styles */
+::selection {
+  background-color: rgb(59, 130, 246) !important; /* Blue-500 */
+  color: rgb(255, 255, 255) !important;
+}
+
+::-moz-selection {
+  background-color: rgb(59, 130, 246) !important; /* Blue-500 */
+  color: rgb(255, 255, 255) !important;
+}
+
+/* Dark mode selection */
+.dark *::selection {
+  background-color: rgb(147, 197, 253) !important; /* Blue-300 */
+  color: rgb(30, 41, 59) !important; /* Slate-800 */
+}
+
+.dark *::-moz-selection {
+  background-color: rgb(147, 197, 253) !important; /* Blue-300 */
+  color: rgb(30, 41, 59) !important; /* Slate-800 */
+}
+
+/* For Shadow DOM elements */
+:host *::selection {
+  background-color: rgb(59, 130, 246) !important; /* Blue-500 */
+  color: rgb(255, 255, 255) !important;
+}
+
+:host *::-moz-selection {
+  background-color: rgb(59, 130, 246) !important; /* Blue-500 */
+  color: rgb(255, 255, 255) !important;
+}
+
+/* Prose content selection */
+.prose *::selection {
+  background-color: rgb(59, 130, 246) !important; /* Blue-500 */
+  color: rgb(255, 255, 255) !important;
+}
+
+.prose *::-moz-selection {
+  background-color: rgb(59, 130, 246) !important; /* Blue-500 */
+  color: rgb(255, 255, 255) !important;
+}
+
+/* Dark mode prose selection */
+.dark .prose *::selection {
+  background-color: rgb(147, 197, 253) !important; /* Blue-300 */
+  color: rgb(30, 41, 59) !important; /* Slate-800 */
+}
+
+.dark .prose *::-moz-selection {
+  background-color: rgb(147, 197, 253) !important; /* Blue-300 */
+  color: rgb(30, 41, 59) !important; /* Slate-800 */
+}

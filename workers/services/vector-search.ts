@@ -51,11 +51,22 @@ export class VectorSearchService {
     const totalWords = words.length;
     console.log(`[CHUNKING] Input text: ${totalWords} words, maxWords: ${maxWords}`);
     
-    // If the text is small enough, return as single chunk
+    // Calculate safe token limit (more conservative to avoid hitting limits)
+    const maxTokensPerChunk = 7000; // Leave buffer for OpenAI's 8192 limit
+    
+    // If the text is small enough, check if it fits in a single chunk
     if (totalWords <= maxWords) {
       const chunkText = words.join(' ');
       const estimatedTokens = this.estimateTokenCount(chunkText);
-      console.log(`[CHUNKING] Single chunk: ${totalWords} words, estimated ${estimatedTokens} tokens`);
+      console.log(`[CHUNKING] Single chunk check: ${totalWords} words, estimated ${estimatedTokens} tokens`);
+      
+      // If even a single chunk is too large, we need to split it
+      if (estimatedTokens > maxTokensPerChunk) {
+        console.log(`[CHUNKING] Single chunk too large, forcing split`);
+        // Calculate appropriate chunk size based on token limit
+        const targetWords = Math.floor((maxTokensPerChunk * 3.5) / (chunkText.length / totalWords));
+        return this.chunkText(text, targetWords, Math.floor(targetWords * 0.1));
+      }
       
       return [{
         text: chunkText.trim(),
@@ -69,39 +80,38 @@ export class VectorSearchService {
     // Create overlapping chunks
     for (let i = 0; i < words.length; i += maxWords - overlapWords) {
       const chunkWords = words.slice(i, i + maxWords);
-      const chunkText = chunkWords.join(' ');
-      const estimatedTokens = this.estimateTokenCount(chunkText);
+      let chunkText = chunkWords.join(' ');
+      let estimatedTokens = this.estimateTokenCount(chunkText);
       
       console.log(`[CHUNKING] Created chunk ${chunks.length}: ${chunkWords.length} words, estimated ${estimatedTokens} tokens`);
       
-      // Safety check - if still too many estimated tokens, reduce further
-      if (estimatedTokens > 7500) {
-        console.warn(`[CHUNKING] Chunk ${chunks.length} estimated at ${estimatedTokens} tokens, splitting further`);
-        const reducedMaxWords = Math.floor(maxWords * 0.7); // Reduce by 30%
-        const subChunkWords = words.slice(i, i + reducedMaxWords);
-        const subChunkText = subChunkWords.join(' ');
-        const subEstimatedTokens = this.estimateTokenCount(subChunkText);
-        
-        console.log(`[CHUNKING] Reduced chunk ${chunks.length}: ${subChunkWords.length} words, estimated ${subEstimatedTokens} tokens`);
-        
-        chunks.push({
-          text: subChunkText.trim(),
-          metadata: {
-            chunkIndex: chunks.length,
-            source: 'text'
-          }
-        });
-        
-        // Adjust the loop to continue from the reduced chunk size
-        i = i + reducedMaxWords - overlapWords - (maxWords - overlapWords);
-      } else {
-        chunks.push({
-          text: chunkText.trim(),
-          metadata: {
-            chunkIndex: chunks.length,
-            source: 'text'
-          }
-        });
+      // Iteratively reduce chunk size if still too large
+      let currentMaxWords = chunkWords.length;
+      while (estimatedTokens > maxTokensPerChunk && currentMaxWords > 100) {
+        currentMaxWords = Math.floor(currentMaxWords * 0.8); // Reduce by 20% each iteration
+        const reducedChunkWords = words.slice(i, i + currentMaxWords);
+        chunkText = reducedChunkWords.join(' ');
+        estimatedTokens = this.estimateTokenCount(chunkText);
+        console.log(`[CHUNKING] Reduced chunk ${chunks.length} to ${currentMaxWords} words, estimated ${estimatedTokens} tokens`);
+      }
+      
+      // Final safety check
+      if (estimatedTokens > maxTokensPerChunk) {
+        console.error(`[CHUNKING] Unable to reduce chunk size below token limit. Skipping chunk.`);
+        continue;
+      }
+      
+      chunks.push({
+        text: chunkText.trim(),
+        metadata: {
+          chunkIndex: chunks.length,
+          source: 'text'
+        }
+      });
+      
+      // Adjust loop increment if we had to reduce chunk size
+      if (currentMaxWords < maxWords) {
+        i = i + currentMaxWords - overlapWords - (maxWords - overlapWords);
       }
     }
 
@@ -120,20 +130,14 @@ export class VectorSearchService {
       const cleanText = text.replace(/\n/g, ' ').trim();
       const estimatedTokens = this.estimateTokenCount(cleanText);
       
-      // Safety check: if still too large, truncate
+      // Instead of truncating, throw an error if text is too large
+      // This ensures we never lose data and forces proper chunking upstream
       if (estimatedTokens > 8000) {
-        console.warn(`Text chunk estimated at ${estimatedTokens} tokens, truncating...`);
-        const maxChars = Math.floor(8000 * 3.5); // Conservative truncation
-        const truncatedText = cleanText.substring(0, maxChars);
-        console.warn(`Truncated from ${cleanText.length} to ${truncatedText.length} characters`);
-        
-        const response = await this.openai.embeddings.create({
-          model: 'text-embedding-3-small',
-          input: truncatedText,
-          encoding_format: 'float'
-        });
-
-        return response.data[0].embedding;
+        throw new Error(
+          `Text chunk too large for embedding: ${estimatedTokens} estimated tokens ` +
+          `(${cleanText.length} characters). Maximum is 8000 tokens. ` +
+          `Please use the chunkText method to split the text into smaller chunks.`
+        );
       }
       
       const response = await this.openai.embeddings.create({
@@ -145,6 +149,9 @@ export class VectorSearchService {
       return response.data[0].embedding;
     } catch (error) {
       console.error('Error generating embedding:', error);
+      if (error instanceof Error && error.message.includes('Text chunk too large')) {
+        throw error; // Re-throw our custom error as-is
+      }
       throw new Error('Failed to generate embedding');
     }
   }
@@ -186,7 +193,7 @@ export class VectorSearchService {
     const queryEmbedding = await this.generateEmbedding(query);
     const queryVector = JSON.stringify(queryEmbedding);
 
-    const baseQuery = this.db.getDatabase()
+    const baseSelect = this.db.getDatabase()
       .select({
         id: widgetEmbedding.id,
         widgetId: widgetEmbedding.widgetId,
@@ -194,12 +201,11 @@ export class VectorSearchService {
         metadata: widgetEmbedding.metadata,
         similarity: sql<number>`1 - (${widgetEmbedding.embedding} <=> ${queryVector})`.as('similarity')
       })
-      .from(widgetEmbedding)
-      .where(sql`1 - (${widgetEmbedding.embedding} <=> ${queryVector}) > ${threshold}`);
+      .from(widgetEmbedding);
 
     const searchQuery = widgetId 
-      ? baseQuery.where(eq(widgetEmbedding.widgetId, widgetId))
-      : baseQuery;
+      ? baseSelect.where(sql`1 - (${widgetEmbedding.embedding} <=> ${queryVector}) > ${threshold} AND ${widgetEmbedding.widgetId} = ${widgetId}`)
+      : baseSelect.where(sql`1 - (${widgetEmbedding.embedding} <=> ${queryVector}) > ${threshold}`);
 
     const results = await searchQuery
       .orderBy(desc(sql`1 - (${widgetEmbedding.embedding} <=> ${queryVector})`))

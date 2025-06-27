@@ -22,8 +22,8 @@ export class SelectorAnalysisService {
         return c.json({ error: 'HTML content is required' }, 400);
       }
 
-      // Trim HTML if too large (limit to 10KB)
-      const html = request.html.slice(0, 10000);
+      // Use full HTML without truncation for better accuracy
+      const html = request.html;
       const title = request.title || '';
       const url = request.url || '';
 

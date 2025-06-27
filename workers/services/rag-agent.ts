@@ -62,9 +62,17 @@ export class RAGAgent {
 1. Use the retrieved information to answer questions accurately
 2. If the retrieved information doesn't contain relevant details, say so clearly
 3. When citing sources, use inline superscript numbers like [1] or [2] directly after the relevant information
-4. If you use multiple sources for a single statement, cite them together like [1,2,3]
-5. Be helpful, accurate, and concise
-6. IMPORTANT: Place citations immediately after the information they support, not at the end of paragraphs`;
+4. CRITICAL CITATION RULES:
+   - NEVER combine multiple citations like [1,2,3]
+   - Each sentence or fact should cite ONLY ONE source
+   - If information comes from multiple sources, split it into separate sentences, each with its own citation
+   - Example: "Feature X does Y [1]. Additionally, feature X supports Z [2]." NOT "Feature X does Y and supports Z [1,2]."
+5. Structure your response to ensure single-source attribution:
+   - Break down complex information into discrete facts
+   - Attribute each fact to exactly one source
+   - Use transitional phrases like "Additionally," "Furthermore," "Also," to connect related facts from different sources
+6. Place citations immediately after the specific information they support, not at the end of paragraphs
+7. Be helpful, accurate, and concise while maintaining clear source attribution`;
 
     if (retrievedChunks.length > 0) {
       systemPrompt += `\n\n## Retrieved Knowledge Base Context:\n`;
@@ -74,7 +82,9 @@ export class RAGAgent {
     }
 
     if (webpageContent?.content) {
-      systemPrompt += `\n\n## Current Webpage Context:\nURL: ${webpageContent.url}\nTitle: ${webpageContent.title}\nContent: ${webpageContent.content.slice(0, 10000)}`;
+      // Include full webpage content without truncation
+      // Token limits are handled by the model itself
+      systemPrompt += `\n\n## Current Webpage Context:\nURL: ${webpageContent.url}\nTitle: ${webpageContent.title}\nContent: ${webpageContent.content}`;
     }
 
     if (retrievedChunks.length === 0 && !webpageContent?.content) {

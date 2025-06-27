@@ -183,9 +183,8 @@ export class ContentExtractor {
       // Remove excessive whitespace and empty lines
       .replace(/\n\s*\n\s*\n/g, '\n\n')
       // Remove leading/trailing whitespace
-      .trim()
-      // Limit content size
-      .slice(0, 15000);
+      .trim();
+    // Removed content size limit to avoid truncation
   }
 
   /**

@@ -759,7 +759,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
                   <button
                     type="button"
                     onClick={toggleWidgetPublic}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
                       isPublic ? 'bg-blue-600' : 'bg-gray-200'
                     }`}
                   >

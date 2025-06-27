@@ -57,7 +57,7 @@ export class OpenAIService {
       {
         role: "system",
         content: `You are a helpful assistant that creates concise, informative summaries of web page content. 
-        ${webpageInfo} ${content ? `Page content: ${content.slice(0, 50000)}` : 'No content available.'}
+        ${webpageInfo} ${content ? `Page content: ${content}` : 'No content available.'}
         
         Provide a brief, direct summary in 1-2 short paragraphs based on the provided content. Keep it concise and focused on key points. Start directly with the summary content - do not include any prefacing text, headers, or phrases like "Summary of", "This article discusses", "The content covers", etc. Begin immediately with the substantive information.`
       },
@@ -89,7 +89,7 @@ ${title ? `Page Title: "${title}"` : ''}
 ${url ? `URL: ${url}` : ''}
 
 HTML to analyze:
-${html.slice(0, 8000)}
+${html}
 
 Return a JSON object with:
 - contentSelector: A specific CSS selector that targets only the main content area
@@ -172,7 +172,7 @@ Response format:
       `You are working with${title ? ` the webpage "${title}"` : ''}${url ? ` (${url})` : ''}.` : 
       'You are working with webpage content.';
 
-    const baseContent = `${webpageInfo} ${content ? `Page content: ${content.slice(0, 50000)}` : 'No content available.'}`;
+    const baseContent = `${webpageInfo} ${content ? `Page content: ${content}` : 'No content available.'}`;
 
     // Generate short and medium summaries in parallel
     const [shortSummary, mediumSummary] = await Promise.all([
@@ -241,7 +241,7 @@ Response format:
       {
         role: "system",
         content: `You are a helpful assistant that generates thoughtful questions about webpage content. 
-        You are working with the webpage "${title}" (${url}). ${content ? `Page content: ${content.slice(0, 50000)}` : 'No content available.'}
+        You are working with the webpage "${title}" (${url}). ${content ? `Page content: ${content}` : 'No content available.'}
         
         Generate exactly 6 specific, engaging questions that someone might ask about this article and 1 input placeholder. 
         Each question should be concise (4-8 words) and directly related to the article's content - like "What causes this problem?" or "How does this work?"

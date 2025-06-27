@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import { FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { FileText, ChevronDown, ChevronUp, Globe, Maximize2, Minimize2 } from "lucide-react";
 import type { Message } from "../types";
 
 interface ChatMessageProps {
@@ -14,28 +14,71 @@ export function ChatMessage({ message, onSourceClick }: ChatMessageProps) {
   const sourcesRef = useRef<HTMLDivElement>(null);
   const [processedContent, setProcessedContent] = useState<string>("");
   const [showSources, setShowSources] = useState(false);
+  const [highlightedSource, setHighlightedSource] = useState<number | null>(null);
+  const [referencedSources, setReferencedSources] = useState<Set<number>>(new Set());
+  const [expandedSources, setExpandedSources] = useState<Set<number>>(new Set());
+  const sourceRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
   
-  // Process content to convert [n] citations to clickable elements
+  // Process content to convert [n] citations to clickable elements and track referenced sources
   useEffect(() => {
     if (message.role === "assistant" && message.sources && message.sources.length > 0) {
-      // Replace [n] patterns with markdown links that will be handled by our custom renderer
+      const referenced = new Set<number>();
+      
+      // Replace [n] patterns with markdown links and track which sources are referenced
       const processed = message.content.replace(/\[(\d+(?:,\d+)*)\]/g, (match, nums) => {
+        // Split comma-separated numbers and add to referenced set
+        nums.split(',').forEach((num: string) => {
+          const sourceIndex = parseInt(num.trim()) - 1; // Convert to 0-based index
+          if (sourceIndex >= 0 && sourceIndex < message.sources!.length) {
+            referenced.add(sourceIndex);
+          }
+        });
         return `[${nums}](#cite-${nums})`;
       });
+      
       setProcessedContent(processed);
+      setReferencedSources(referenced);
+      
+      // Debug log
+      console.log('[ChatMessage] Message content:', message.content);
+      console.log('[ChatMessage] Citation matches found:', message.content.match(/\[(\d+(?:,\d+)*)\]/g));
+      console.log('[ChatMessage] Referenced sources:', Array.from(referenced), 'Total sources:', message.sources.length);
+      
+      // If no citations found but sources exist, log a warning
+      if (referenced.size === 0 && message.sources.length > 0) {
+        console.warn('[ChatMessage] No citations found in message but sources exist! Message may not contain [n] format citations.');
+      }
     } else {
       setProcessedContent(message.content);
+      setReferencedSources(new Set());
     }
   }, [message.content, message.role, message.sources]);
   
-  // Handle citation clicks - show sources and scroll to them
+  // Handle citation clicks - show sources, highlight, and scroll to them
   const handleCitationClick = (citation: string) => {
     setShowSources(true);
-    setTimeout(() => {
-      if (sourcesRef.current) {
-        sourcesRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    }, 100);
+    
+    // Get the first number from the citation (in case of comma-separated)
+    const firstNum = citation.split(',')[0];
+    const sourceIndex = parseInt(firstNum) - 1; // Convert to 0-based index
+    
+    if (sourceIndex >= 0 && sourceIndex < (message.sources?.length || 0)) {
+      setHighlightedSource(sourceIndex);
+      
+      // Scroll to the specific source
+      setTimeout(() => {
+        const sourceEl = sourceRefs.current[sourceIndex];
+        if (sourceEl) {
+          sourceEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      
+      // Remove highlight after 2 seconds
+      setTimeout(() => {
+        setHighlightedSource(null);
+      }, 2000);
+    }
+    
     if (onSourceClick) {
       onSourceClick();
     }
@@ -109,7 +152,7 @@ export function ChatMessage({ message, onSourceClick }: ChatMessageProps) {
             className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-800 transition-colors font-medium mb-2"
           >
             <FileText className="w-3 h-3" />
-            <span>Sources ({message.sources.length})</span>
+            <span>Sources ({referencedSources.size} of {message.sources.length} referenced)</span>
             {showSources ? (
               <ChevronUp className="w-3 h-3" />
             ) : (
@@ -120,22 +163,96 @@ export function ChatMessage({ message, onSourceClick }: ChatMessageProps) {
           {/* Collapsible sources list */}
           {showSources && (
             <div className="space-y-2">
-              {message.sources.map((source, index) => (
-                <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-blue-600">[{index + 1}]</span>
-                    {source.metadata.source && (
-                      <span className="text-gray-600">{source.metadata.source}</span>
-                    )}
-                  </div>
-                  <div className="text-gray-700 leading-relaxed">
-                    {source.chunk.length > 150 
-                      ? `${source.chunk.substring(0, 150)}...` 
-                      : source.chunk
-                    }
-                  </div>
+              {referencedSources.size === 0 ? (
+                <div className="text-xs text-gray-500 italic p-2 bg-yellow-50 border border-yellow-200 rounded">
+                  Note: This message contains sources but no citations. All {message.sources.length} sources are shown below.
                 </div>
-              ))}
+              ) : null}
+              {message.sources
+                .map((source, index) => ({ source, originalIndex: index }))
+                .filter(({ originalIndex }) => referencedSources.size === 0 || referencedSources.has(originalIndex))
+                .map(({ source, originalIndex }) => {
+                  const isHighlighted = highlightedSource === originalIndex;
+                  const isExpanded = expandedSources.has(originalIndex);
+                  
+                  return (
+                    <div 
+                      key={originalIndex} 
+                      ref={el => sourceRefs.current[originalIndex] = el}
+                      className={`border rounded-lg p-2 text-xs transition-all duration-300 ${
+                        isHighlighted 
+                          ? 'bg-blue-100 border-blue-400 shadow-md' 
+                          : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="font-semibold text-blue-600">[{originalIndex + 1}]</span>
+                      {(source.metadata.url || source.metadata.crawledFrom) ? (
+                        <a
+                          href={source.metadata.url || source.metadata.crawledFrom}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors truncate"
+                          title={source.metadata.url || source.metadata.crawledFrom}
+                        >
+                          <Globe className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">
+                            {(() => {
+                              const url = source.metadata.url || source.metadata.crawledFrom || '';
+                              try {
+                                const urlObj = new URL(url);
+                                return urlObj.hostname + (urlObj.pathname !== '/' ? urlObj.pathname : '');
+                              } catch {
+                                return url;
+                              }
+                            })()}
+                          </span>
+                        </a>
+                      ) : (
+                        <>
+                          <FileText className="w-3 h-3" />
+                          {source.metadata.title ? (
+                            <span className="text-gray-600 font-medium truncate">{source.metadata.title}</span>
+                          ) : source.metadata.source ? (
+                            <span className="text-gray-600 truncate">{source.metadata.source}</span>
+                          ) : null}
+                        </>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500">Chunk #{source.metadata.chunkIndex + 1}</span>
+                      <button
+                        onClick={() => {
+                          setExpandedSources(prev => {
+                            const newSet = new Set(prev);
+                            if (newSet.has(originalIndex)) {
+                              newSet.delete(originalIndex);
+                            } else {
+                              newSet.add(originalIndex);
+                            }
+                            return newSet;
+                          });
+                        }}
+                        className="text-gray-500 hover:text-gray-700 transition-colors"
+                        title={isExpanded ? "Collapse" : "Expand"}
+                      >
+                        {isExpanded ? (
+                          <Minimize2 className="w-3 h-3" />
+                        ) : (
+                          <Maximize2 className="w-3 h-3" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className={`text-gray-700 leading-relaxed overflow-hidden transition-all duration-300 whitespace-pre-wrap ${
+                    isExpanded ? 'max-h-[300px] overflow-y-auto' : 'max-h-[3.75rem]'
+                  }`}>
+                    {source.chunk}
+                  </div>
+                    </div>
+                  );
+                })}
             </div>
           )}
         </div>
