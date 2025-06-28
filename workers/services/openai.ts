@@ -30,6 +30,8 @@ export class OpenAIService {
       body.max_tokens = maxTokens;
     }
 
+    console.log('[OpenAI] Making chat completion request with model:', model);
+    
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -41,11 +43,15 @@ export class OpenAIService {
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+      const errorBody = await response.text();
+      console.error('[OpenAI] API error response:', response.status, errorBody);
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorBody}`);
     }
 
     const data = await response.json() as OpenAIResponse;
-    return data.choices?.[0]?.message?.content || "I couldn't generate a response.";
+    const content = data.choices?.[0]?.message?.content || "I couldn't generate a response.";
+    console.log('[OpenAI] Chat completion successful, response length:', content.length);
+    return content;
   }
 
   async generateSummary(content: string, title: string, url: string, signal?: AbortSignal): Promise<string> {
@@ -262,10 +268,15 @@ Response format:
       signal
     });
 
+    console.log('[OpenAI] Raw recommendations response:', responseContent);
+
     // Try to parse as JSON, fallback to default response if parsing fails
     try {
-      return JSON.parse(responseContent);
-    } catch {
+      const parsed = JSON.parse(responseContent);
+      console.log('[OpenAI] Parsed recommendations:', parsed);
+      return parsed;
+    } catch (error) {
+      console.error('[OpenAI] Failed to parse recommendations JSON:', error, 'Response:', responseContent);
       return FallbackResponses.getRecommendationsResponse();
     }
   }

@@ -23,6 +23,10 @@ export interface Widget {
   updatedAt: string;
   files: WidgetFile[];
   embeddingsCount: number;
+  recommendations?: Array<{
+    title: string;
+    description: string;
+  }>;
 }
 
 export interface SearchResult {

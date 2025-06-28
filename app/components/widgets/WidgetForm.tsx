@@ -4,7 +4,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Upload, X, FileText, Trash2, Lock, ArrowLeft, Info, Globe, RefreshCw } from 'lucide-react';
+import { Upload, X, FileText, Trash2, Lock, ArrowLeft, Info, Globe, RefreshCw, Sparkles } from 'lucide-react';
 import { useUIStore, type Widget } from '../../stores';
 import { toast } from '@/lib/use-toast';
 import { EmbedCodeGenerator } from './EmbedCodeGenerator';
@@ -30,6 +30,8 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
   const [crawlPageCount, setCrawlPageCount] = useState(widget?.crawlPageCount || 0);
   const [crawlStarting, setCrawlStarting] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
+  const [generatingRecommendations, setGeneratingRecommendations] = useState(false);
+  const [recommendations, setRecommendations] = useState(widget?.recommendations || []);
   const crawlPollInterval = useRef<NodeJS.Timeout | null>(null);
   const {
     widgetFormData,
@@ -55,6 +57,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       setCrawlUrl(widget.crawlUrl || '');
       setCrawlStatus(widget.crawlStatus || null);
       setCrawlPageCount(widget.crawlPageCount || 0);
+      setRecommendations(widget.recommendations || []);
     } else {
       resetWidgetForm();
       setExistingFiles([]);
@@ -62,6 +65,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       setCrawlUrl('');
       setCrawlStatus(null);
       setCrawlPageCount(0);
+      setRecommendations([]);
     }
   }, [widget, updateWidgetFormField, resetWidgetForm]);
   
@@ -334,6 +338,58 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
         // Clear uploading state on error
         setUploadingFiles(new Set());
       }
+    }
+  };
+
+  const handleRegenerateRecommendations = async () => {
+    if (!widget?.id) return;
+    
+    setGeneratingRecommendations(true);
+    
+    try {
+      const response = await fetch(`/api/widgets/${widget.id}/recommendations`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate recommendations');
+      }
+
+      const result = await response.json() as { success: boolean; recommendations: Array<{ title: string; description: string }> };
+      
+      if (result.recommendations) {
+        setRecommendations(result.recommendations);
+        toast.success('Recommendations regenerated successfully');
+        
+        // Fetch the updated widget to ensure we have all the latest data
+        try {
+          const widgetResponse = await fetch(`/api/widgets/${widget.id}`, {
+            credentials: 'include'
+          });
+          
+          if (widgetResponse.ok) {
+            const { widget: updatedWidget } = await widgetResponse.json() as { widget: Widget };
+            console.log('[WidgetForm] Updated widget with recommendations:', updatedWidget);
+            // Notify parent component about the update with full widget data
+            onWidgetUpdated?.(updatedWidget);
+          }
+        } catch (error) {
+          console.error('Error fetching updated widget:', error);
+          // Fallback to updating with just recommendations
+          if (onWidgetUpdated) {
+            onWidgetUpdated({
+              ...widget,
+              recommendations: result.recommendations
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error generating recommendations:', error);
+      toast.error('Failed to generate recommendations. Please ensure your widget has content.');
+    } finally {
+      setGeneratingRecommendations(false);
     }
   };
 
@@ -722,6 +778,65 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
                 isPublic={isPublic}
                 onTogglePublic={toggleWidgetPublic}
               />
+            </div>
+          )}
+
+          {/* Recommendations Section - Only show for existing widgets with content */}
+          {widget?.id && ((widget.embeddingsCount && widget.embeddingsCount > 0) || (widget.crawlPageCount && widget.crawlPageCount > 0)) && (
+            <div className="pt-6 border-t border-gray-200 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Smart Recommendations</h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    AI-generated conversation starters based on your widget content
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRegenerateRecommendations}
+                  disabled={generatingRecommendations}
+                >
+                  {generatingRecommendations ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Regenerate
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {recommendations.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {recommendations.map((rec, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                    >
+                      <h4 className="font-medium text-gray-900 mb-1">{rec.title}</h4>
+                      <p className="text-sm text-gray-600">{rec.description}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex gap-3">
+                    <Info className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-yellow-900">No Recommendations Yet</h4>
+                      <p className="text-sm text-yellow-800">
+                        Click "Regenerate" to create AI-powered conversation starters based on your widget content.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

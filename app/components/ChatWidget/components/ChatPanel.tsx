@@ -81,8 +81,14 @@ export function ChatPanel({
             )}
           </h1>
           {!hidePoweredBy && (
-            <p className="text-sm text-gray-500 mt-1">
-              Powered by Websyte.ai
+            <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
+              Powered by 
+              <img 
+                src={`${baseUrl}/websyte-ai-logo.svg`} 
+                alt="Websyte.ai" 
+                className="w-4 h-4"
+              />
+              Websyte.ai
             </p>
           )}
         </div>
@@ -107,11 +113,11 @@ export function ChatPanel({
                     <p className="text-lg text-gray-500 flex items-center justify-center gap-2">
                       Powered by 
                       <img 
-                        src={`${baseUrl}/nativo-logo.png`} 
-                        alt="Nativo" 
+                        src={`${baseUrl}/websyte-ai-logo.svg`} 
+                        alt="Websyte.ai" 
                         className="w-5 h-5"
                       />
-                      Nativo
+                      Websyte.ai
                     </p>
                   )}
                 </div>
@@ -248,11 +254,11 @@ export function ChatPanel({
                 <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
                   Powered by 
                   <img 
-                    src={`${baseUrl}/nativo-logo.png`} 
-                    alt="Nativo" 
+                    src={`${baseUrl}/websyte-ai-logo.svg`} 
+                    alt="Websyte.ai" 
                     className="w-4 h-4"
                   />
-                  Nativo
+                  Websyte.ai
                 </p>
               )}
             </div>

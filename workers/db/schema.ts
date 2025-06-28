@@ -26,7 +26,7 @@ export const widget = pgTable('widget', {
   recommendations: json('recommendations').$type<Array<{
     title: string;
     description: string;
-  }> | null>(),
+  }>>().default([]),
   cacheEnabled: boolean('cache_enabled').default(false).notNull(),
   isPublic: boolean('is_public').default(false).notNull(), // Allow public embedding
   crawlUrl: text('crawl_url'),

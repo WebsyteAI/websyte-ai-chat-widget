@@ -678,7 +678,10 @@ ${page.markdown}
         .where(eq(widgetEmbedding.widgetId, widgetId))
         .limit(limit);
 
+      console.log('[WidgetService] Found embeddings:', embeddings.length);
+
       if (embeddings.length === 0) {
+        console.log('[WidgetService] No embeddings found for widget:', widgetId);
         return '';
       }
 
@@ -690,6 +693,7 @@ ${page.markdown}
         return `${title ? `Title: ${title}\n` : ''}${url ? `URL: ${url}\n` : ''}Content: ${e.contentChunk}\n`;
       }).join('\n---\n');
 
+      console.log('[WidgetService] Combined content samples length:', contentSamples.length);
       return contentSamples;
     } catch (error) {
       console.error('[WidgetService] Error getting widget sample content:', error);
@@ -713,9 +717,24 @@ ${page.markdown}
       // Get sample content from widget embeddings
       const sampleContent = await this.getWidgetSampleContent(widgetId, 10);
       
+      console.log('[WidgetService] Sample content length:', sampleContent?.length || 0);
+      console.log('[WidgetService] Sample content preview:', sampleContent?.substring(0, 200) || 'No content');
+      
       if (!sampleContent) {
         console.log('[WidgetService] No content found for recommendations');
+        // Set empty recommendations instead of returning
+        await this.db.getDatabase()
+          .update(widget)
+          .set({
+            recommendations: []
+          })
+          .where(eq(widget.id, widgetId));
         return;
+      }
+
+      // Check if API key exists
+      if (!this.openaiApiKey) {
+        throw new Error('OpenAI API key not configured');
       }
 
       // Use OpenAI to generate recommendations
@@ -726,17 +745,38 @@ ${page.markdown}
         widgetRecord.crawlUrl || widgetRecord.url || ''
       );
 
+      console.log('[WidgetService] Generated recommendations response:', JSON.stringify(response, null, 2));
+
+      // Validate response
+      if (!response || !response.recommendations || !Array.isArray(response.recommendations)) {
+        console.error('[WidgetService] Invalid recommendations response:', response);
+        throw new Error('Invalid recommendations response from OpenAI');
+      }
+
       // Store recommendations in widget metadata
-      await this.db.getDatabase()
+      const updateResult = await this.db.getDatabase()
         .update(widget)
         .set({
           recommendations: response.recommendations
         })
-        .where(eq(widget.id, widgetId));
+        .where(eq(widget.id, widgetId))
+        .returning();
 
-      console.log('[WidgetService] Stored recommendations for widget:', widgetId);
+      console.log('[WidgetService] Update result:', updateResult);
+      console.log('[WidgetService] Stored recommendations for widget:', widgetId, 'count:', response.recommendations.length);
     } catch (error) {
       console.error('[WidgetService] Error generating recommendations:', error);
+      // Set empty recommendations on error
+      try {
+        await this.db.getDatabase()
+          .update(widget)
+          .set({
+            recommendations: []
+          })
+          .where(eq(widget.id, widgetId));
+      } catch (updateError) {
+        console.error('[WidgetService] Error setting empty recommendations:', updateError);
+      }
       throw error;
     }
   }
