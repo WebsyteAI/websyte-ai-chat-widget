@@ -684,6 +684,31 @@ app.get('/api/widgets/:id/crawl/status', async (c) => {
   }
 });
 
+// Reset stuck crawl
+app.post('/api/widgets/:id/crawl/reset', async (c) => {
+  const auth = c.get('auth');
+  if (!auth?.user) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    const reset = await c.get('services').widget.resetStuckCrawl(id, auth.user.id);
+    if (!reset) {
+      return c.json({ error: 'Widget not found or not stuck' }, 404);
+    }
+    
+    return c.json({ success: true, message: 'Crawl status reset' });
+  } catch (error) {
+    console.error('Error resetting crawl:', error);
+    return c.json({ error: 'Failed to reset crawl' }, 500);
+  }
+});
+
 // Generate recommendations for a widget
 app.post('/api/widgets/:id/recommendations', async (c) => {
   const auth = c.get('auth');

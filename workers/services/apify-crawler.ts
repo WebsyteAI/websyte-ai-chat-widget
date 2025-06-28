@@ -138,6 +138,19 @@ export class ApifyCrawlerService {
     
     console.log('[ApifyCrawler] Got results:', items.length, 'items');
     
+    // Log first item to debug
+    if (items.length > 0) {
+      const firstItem = items[0];
+      console.log('[ApifyCrawler] First item sample:', {
+        url: firstItem.url,
+        hasText: !!firstItem.text,
+        textLength: firstItem.text?.length || 0,
+        hasMarkdown: !!firstItem.markdown,
+        markdownLength: firstItem.markdown?.length || 0,
+        title: firstItem.title
+      });
+    }
+    
     return items.map((item) => ({
       url: item.url,
       text: item.text || '',

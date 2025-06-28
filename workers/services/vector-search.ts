@@ -298,43 +298,85 @@ export class VectorSearchService {
     fileId: string,
     pages: Array<{ pageNumber: number; markdown: string; metadata?: any }>
   ): Promise<void> {
-    const allEmbeddings: NewWidgetEmbedding[] = [];
+    console.log(`[EMBEDDINGS] Starting createEmbeddingsFromCrawlPages for widget ${widgetId}, fileId ${fileId}, pages: ${pages.length}`);
+    
+    // Test database connection
+    try {
+      const testCount = await this.getEmbeddingsCount(widgetId);
+      console.log(`[EMBEDDINGS] Database test successful - widget currently has ${testCount} embeddings`);
+    } catch (dbTestError) {
+      console.error('[EMBEDDINGS] Database connection test failed:', dbTestError);
+      throw new Error('Database connection failed');
+    }
+    
+    const BATCH_SIZE = 10; // Process 10 embeddings at a time to avoid memory issues
+    let totalEmbeddings = 0;
 
     for (const page of pages) {
       if (!page.markdown || !page.markdown.trim()) {
         continue;
       }
 
-      // Use smaller chunks to avoid btree index size limits
-      // The error shows we exceed the 2704 byte limit, so we need smaller chunks
-      // 500 words should keep us well under the limit even with metadata
-      const chunks = await this.chunkText(page.markdown, 500, 50);
+      // Chunk the page content - using reasonable chunk sizes now that we removed the btree index
+      const chunks = await this.chunkText(page.markdown, 2000, 200);
+      console.log(`[EMBEDDINGS] Page ${page.pageNumber}: ${chunks.length} chunks created from ${page.markdown.length} characters`);
+      
+      const pageEmbeddings: NewWidgetEmbedding[] = [];
       
       for (const chunk of chunks) {
-        const embedding = await this.generateEmbedding(chunk.text);
+        try {
+          const embedding = await this.generateEmbedding(chunk.text);
+          console.log(`[EMBEDDINGS] Generated embedding for chunk ${chunk.metadata.chunkIndex} of page ${page.pageNumber}`);
+          
+          // Merge page metadata with chunk metadata
+          const metadata = {
+            chunkIndex: chunk.metadata.chunkIndex,
+            source: `page_${page.pageNumber}`,
+            pageNumber: page.pageNumber,
+            ...(page.metadata ? page.metadata : {})
+          };
+          
+          pageEmbeddings.push({
+            widgetId,
+            fileId,
+            contentChunk: chunk.text,
+            embedding: embedding,
+            metadata
+          });
+        } catch (embError) {
+          console.error(`[EMBEDDINGS] Error generating embedding for chunk ${chunk.metadata.chunkIndex} of page ${page.pageNumber}:`, embError);
+          throw embError;
+        }
         
-        // Merge page metadata with chunk metadata
-        const metadata = {
-          chunkIndex: chunk.metadata.chunkIndex,
-          source: `page_${page.pageNumber}`,
-          pageNumber: page.pageNumber,
-          ...(page.metadata ? page.metadata : {})
-        };
-        
-        allEmbeddings.push({
-          widgetId,
-          fileId,
-          contentChunk: chunk.text,
-          embedding: embedding,
-          metadata
-        });
+        // Batch insert when we reach the batch size
+        if (pageEmbeddings.length >= BATCH_SIZE) {
+          console.log(`[EMBEDDINGS] Inserting batch of ${pageEmbeddings.length} embeddings for widget ${widgetId}`);
+          try {
+            await this.db.getDatabase().insert(widgetEmbedding).values(pageEmbeddings);
+            totalEmbeddings += pageEmbeddings.length;
+            console.log(`[EMBEDDINGS] Successfully inserted batch, total so far: ${totalEmbeddings}`);
+          } catch (dbError) {
+            console.error('[EMBEDDINGS] Database insert error:', dbError);
+            throw dbError;
+          }
+          pageEmbeddings.length = 0; // Clear array
+        }
+      }
+      
+      // Insert any remaining embeddings for this page
+      if (pageEmbeddings.length > 0) {
+        console.log(`[EMBEDDINGS] Inserting final batch of ${pageEmbeddings.length} embeddings for widget ${widgetId}`);
+        try {
+          await this.db.getDatabase().insert(widgetEmbedding).values(pageEmbeddings);
+          totalEmbeddings += pageEmbeddings.length;
+          console.log(`[EMBEDDINGS] Successfully inserted final batch, total so far: ${totalEmbeddings}`);
+        } catch (dbError) {
+          console.error('[EMBEDDINGS] Database insert error:', dbError);
+          throw dbError;
+        }
       }
     }
 
-    if (allEmbeddings.length > 0) {
-      // Batch insert all embeddings
-      await this.db.getDatabase().insert(widgetEmbedding).values(allEmbeddings);
-      console.log(`[EMBEDDINGS] Created ${allEmbeddings.length} embeddings for ${pages.length} crawled pages`);
-    }
+    console.log(`[EMBEDDINGS] Created ${totalEmbeddings} embeddings for ${pages.length} crawled pages`);
   }
 }

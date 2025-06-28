@@ -229,7 +229,16 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
   const handleRecrawl = async () => {
     if (!widget?.id || !crawlUrl) return;
     
+    // Prevent re-crawling if already in progress
+    if (crawlStatus === 'crawling' || crawlStatus === 'processing') {
+      toast.error('A crawl is already in progress');
+      return;
+    }
+    
     setCrawling(true);
+    setCrawlStatus('crawling');
+    setCrawlPageCount(0);
+    
     try {
       const response = await fetch(`/api/widgets/${widget.id}/crawl`, {
         method: 'POST',
@@ -238,12 +247,47 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
         body: JSON.stringify({ crawlUrl })
       });
       
-      if (!response.ok) throw new Error('Failed to start crawl');
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Failed to start crawl');
+      }
       
       toast.success('Website crawl started');
-      // Could trigger status polling or refresh here
+      // Status polling will start automatically due to useEffect
     } catch (error) {
-      toast.error('Failed to start crawl');
+      toast.error(error instanceof Error ? error.message : 'Failed to start crawl');
+      setCrawlStatus('failed');
+    } finally {
+      setCrawling(false);
+    }
+  };
+
+  const handleResetCrawl = async () => {
+    if (!widget?.id) return;
+    
+    if (!confirm('Are you sure you want to reset this crawl? This will mark it as failed.')) {
+      return;
+    }
+    
+    setCrawling(true);
+    try {
+      const response = await fetch(`/api/widgets/${widget.id}/crawl/reset`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) throw new Error('Failed to reset crawl');
+      
+      setCrawlStatus('failed');
+      toast.success('Crawl status reset. You can try crawling again.');
+      
+      // Clear the polling interval
+      if (crawlPollInterval.current) {
+        clearInterval(crawlPollInterval.current);
+        crawlPollInterval.current = null;
+      }
+    } catch (error) {
+      toast.error('Failed to reset crawl status');
     } finally {
       setCrawling(false);
     }
@@ -561,7 +605,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
                             </p>
                           )}
                         </div>
-                        {crawlStatus === 'completed' && (
+                        {(crawlStatus === 'completed' || crawlStatus === 'failed') && (
                           <Button
                             type="button"
                             variant="outline"
@@ -571,6 +615,19 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
                           >
                             <RefreshCw className="w-4 h-4 mr-1" />
                             Re-crawl
+                          </Button>
+                        )}
+                        {(crawlStatus === 'crawling' || crawlStatus === 'processing') && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleResetCrawl}
+                            disabled={crawling}
+                            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Reset
                           </Button>
                         )}
                       </div>

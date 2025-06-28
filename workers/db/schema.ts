@@ -62,7 +62,6 @@ export const widgetEmbedding = pgTable('widget_embedding', {
   widgetIdIdx: index('widget_embedding_widget_id_idx').on(table.widgetId),
   fileIdIdx: index('widget_embedding_file_id_idx').on(table.fileId),
   embeddingIdx: index('widget_embedding_vector_idx').using('hnsw', table.embedding.op('vector_cosine_ops')),
-  contentSearchIdx: index('widget_embedding_content_search_idx').on(table.contentChunk),
 }));
 
 // Widget files stored in R2

@@ -122,41 +122,10 @@ export function ChatPanel({
                   )}
                 </div>
                 
-                {/* Prompt Recommendations */}
-                <div className="w-full max-w-3xl mb-8">
-                  <p className="text-sm text-gray-500 text-center mb-4">Try asking:</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {/* Static prompts for now - will be dynamic based on widget */}
-                    <button
-                      onClick={() => onInputChange("What can you help me with?")}
-                      className="text-left bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm transition-all"
-                    >
-                      <span className="text-gray-700">What can you help me with?</span>
-                    </button>
-                    <button
-                      onClick={() => onInputChange("Tell me about your features")}
-                      className="text-left bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm transition-all"
-                    >
-                      <span className="text-gray-700">Tell me about your features</span>
-                    </button>
-                    <button
-                      onClick={() => onInputChange("How does this work?")}
-                      className="text-left bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm transition-all"
-                    >
-                      <span className="text-gray-700">How does this work?</span>
-                    </button>
-                    <button
-                      onClick={() => onInputChange("What are the benefits?")}
-                      className="text-left bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm transition-all"
-                    >
-                      <span className="text-gray-700">What are the benefits?</span>
-                    </button>
-                  </div>
-                </div>
                 
-                {/* Existing recommendations */}
+                {/* Recommendations only */}
                 <div className="w-full max-w-3xl">
-                  <p className="text-sm text-gray-500 text-center mb-4">Or explore these topics:</p>
+                  <p className="text-sm text-gray-500 text-center mb-4">Try asking:</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {isLoadingRecommendations ? (
                       Array.from({ length: 4 }).map((_, index) => (
@@ -166,7 +135,7 @@ export function ChatPanel({
                         </div>
                       ))
                     ) : (
-                      recommendations.map((rec, index) => (
+                      recommendations.slice(0, 4).map((rec, index) => (
                         <div 
                           key={index} 
                           className="bg-gray-50 border border-gray-200 rounded-lg p-6 cursor-pointer hover:bg-gray-100 transition-colors"
@@ -278,7 +247,7 @@ export function ChatPanel({
                     </div>
                   ))
                 ) : (
-                  recommendations.map((rec, index) => (
+                  recommendations.slice(0, 4).map((rec, index) => (
                     <div 
                       key={index} 
                       className="bg-gray-50 border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors flex-shrink-0 w-64"

@@ -475,15 +475,22 @@ export class WidgetService {
   }
 
   async deleteExistingCrawlFiles(widgetId: string) {
-    // Find and delete all crawl-related files
-    const files = await this.fileStorage.getWidgetFiles(widgetId);
-    const crawlFiles = files.filter(f => 
-      f.filename.endsWith('.crawl.md')  // Only need to delete the main crawl file
-    );
-    
-    for (const file of crawlFiles) {
-      // This will also delete all page files associated with this file
-      await this.fileStorage.deleteFile(file.id, widgetId);
+    try {
+      // Find and delete all crawl-related files
+      const files = await this.fileStorage.getWidgetFiles(widgetId);
+      const crawlFiles = files.filter(f => 
+        f.filename.endsWith('.crawl.md')  // Only need to delete the main crawl file
+      );
+      
+      console.log(`[WidgetService] Found ${crawlFiles.length} existing crawl files to delete`);
+      
+      for (const file of crawlFiles) {
+        // This will also delete all page files associated with this file
+        await this.fileStorage.deleteFile(file.id, widgetId);
+      }
+    } catch (error) {
+      console.error('[WidgetService] Error deleting existing crawl files:', error);
+      // Continue with crawl even if deletion fails
     }
   }
 
@@ -505,8 +512,16 @@ export class WidgetService {
           })
           .where(eq(widget.id, widgetId));
       } else {
-        // Still running, check again
-        setTimeout(() => this.checkCrawlStatus(widgetId, runId, userId), 30000);
+        // Still running - update page count if available
+        if (status.itemCount !== undefined && status.itemCount > 0) {
+          await this.db.getDatabase()
+            .update(widget)
+            .set({ 
+              crawlPageCount: status.itemCount
+            })
+            .where(eq(widget.id, widgetId));
+        }
+        // Frontend will continue polling
       }
     } catch (error) {
       console.error('Error checking crawl status:', error);
@@ -576,15 +591,22 @@ export class WidgetService {
         widgetId
       });
       
-      // 2. Store each crawled page as a page file (following OCR pattern)
-      const pageData: Array<{ pageNumber: number; markdown: string; metadata?: any }> = [];
+      // 2. Process pages in batches to avoid memory issues
+      const BATCH_SIZE = 5; // Process 5 pages at a time
       
-      for (let i = 0; i < results.length; i++) {
-        const page = results[i];
-        const pageNumber = i + 1;
+      for (let batchStart = 0; batchStart < results.length; batchStart += BATCH_SIZE) {
+        const batchEnd = Math.min(batchStart + BATCH_SIZE, results.length);
+        const batchResults = results.slice(batchStart, batchEnd);
+        const pageData: Array<{ pageNumber: number; markdown: string; metadata?: any }> = [];
         
-        // Create page content with metadata header
-        const pageContent = `---
+        for (let i = 0; i < batchResults.length; i++) {
+          const page = batchResults[i];
+          const pageNumber = batchStart + i + 1;
+          
+          console.log(`[WIDGET_CRAWL] Processing page ${pageNumber}: ${page.url} - content length: ${page.markdown?.length || 0}`);
+          
+          // Create page content with metadata header
+          const pageContent = `---
 url: ${page.url}
 title: ${page.title || 'Untitled'}
 crawled_from: ${widgetRecord.crawlUrl}
@@ -596,39 +618,44 @@ page_number: ${pageNumber}
 
 ${page.markdown}
 `;
-        
-        // Store as page file using the same pattern as OCR
-        await this.fileStorage.storePageFile(widgetId, storedFile.id, pageNumber, pageContent);
-        
-        // Collect page data for embeddings (include metadata)
-        pageData.push({
-          pageNumber,
-          markdown: pageContent,
-          metadata: {
-            url: page.url,
-            title: page.title || 'Untitled',
-            crawledFrom: widgetRecord.crawlUrl
-          }
-        });
-        
-        // Only log every 10 pages to reduce noise
-        if (pageNumber % 10 === 0 || pageNumber === results.length) {
-          console.log(`[WIDGET_CRAWL] Progress: ${pageNumber}/${results.length} pages saved`);
+          
+          // Store as page file using the same pattern as OCR
+          await this.fileStorage.storePageFile(widgetId, storedFile.id, pageNumber, pageContent);
+          
+          // Collect page data for embeddings (include metadata)
+          pageData.push({
+            pageNumber,
+            markdown: pageContent,
+            metadata: {
+              url: page.url,
+              title: page.title || 'Untitled',
+              crawledFrom: widgetRecord.crawlUrl
+            }
+          });
         }
-      }
-      
-      // 3. Create embeddings using the same method as OCR files
-      if (this.vectorSearch) {
-        try {
-          await this.vectorSearch.createEmbeddingsFromCrawlPages(
-            widgetId, 
-            storedFile.id, 
-            pageData
-          );
-          console.log(`[WIDGET_CRAWL] Created embeddings for ${pageData.length} crawled pages`);
-        } catch (embeddingError) {
-          console.error('[WIDGET_CRAWL] Error creating embeddings:', embeddingError);
-          // Don't fail the whole process if embeddings fail
+        
+        // 3. Create embeddings for this batch
+        if (this.vectorSearch && pageData.length > 0) {
+          try {
+            console.log(`[WIDGET_CRAWL] Creating embeddings for batch ${batchStart}-${batchEnd} (${pageData.length} pages)`);
+            await this.vectorSearch.createEmbeddingsFromCrawlPages(
+              widgetId, 
+              storedFile.id, 
+              pageData
+            );
+            console.log(`[WIDGET_CRAWL] Progress: ${batchEnd}/${results.length} pages processed`);
+          } catch (embeddingError) {
+            console.error('[WIDGET_CRAWL] Error creating embeddings for batch:', embeddingError);
+            console.error('[WIDGET_CRAWL] Error details:', {
+              error: embeddingError instanceof Error ? embeddingError.message : 'Unknown error',
+              stack: embeddingError instanceof Error ? embeddingError.stack : undefined,
+              batch: `${batchStart}-${batchEnd}`,
+              pageCount: pageData.length
+            });
+            // Don't fail the whole process if embeddings fail
+          }
+        } else {
+          console.log(`[WIDGET_CRAWL] Skipping embeddings - vectorSearch: ${!!this.vectorSearch}, pageData.length: ${pageData.length}`);
         }
       }
       
@@ -778,6 +805,41 @@ ${page.markdown}
         console.error('[WidgetService] Error setting empty recommendations:', updateError);
       }
       throw error;
+    }
+  }
+
+  async resetStuckCrawl(widgetId: string, userId: string): Promise<boolean> {
+    console.log('[WidgetService] resetStuckCrawl called:', { widgetId, userId });
+    
+    try {
+      // Verify ownership
+      const widgetRecord = await this.getWidget(widgetId, userId);
+      if (!widgetRecord) {
+        return false;
+      }
+      
+      // Reset crawl status if it's stuck
+      if (widgetRecord.crawlStatus === 'crawling' || widgetRecord.crawlStatus === 'processing') {
+        await this.db.getDatabase()
+          .update(widget)
+          .set({
+            crawlStatus: 'failed',
+            crawlRunId: null,
+            updatedAt: new Date()
+          })
+          .where(and(
+            eq(widget.id, widgetId),
+            eq(widget.userId, userId)
+          ));
+        
+        console.log('[WidgetService] Reset stuck crawl for widget:', widgetId);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('[WidgetService] Error resetting stuck crawl:', error);
+      return false;
     }
   }
 }
