@@ -1,6 +1,8 @@
 import { Hono, type Context } from 'hono';
 import { cors } from 'hono/cors';
 import { createRequestHandler } from "react-router";
+import { eq } from 'drizzle-orm';
+import { widget } from './db/schema';
 import { OpenAIService } from './services/openai';
 import { ChatService } from './services/chat';
 import { SummariesService } from './services/summaries';
@@ -636,11 +638,46 @@ app.post('/api/widgets/:id/crawl', async (c) => {
       return c.json({ error: 'Crawl URL is required' }, 400);
     }
 
-    const result = await c.get('services').widget.startWebsiteCrawl(id, auth.user.id, crawlUrl);
-    return c.json(result);
+    // Validate widget ownership
+    const widget = await c.get('services').widget.getWidget(id, auth.user.id);
+    if (!widget) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+
+    // Check if already crawling
+    if (widget.crawlStatus === 'crawling') {
+      return c.json({ error: 'Crawl already in progress' }, 400);
+    }
+
+    // Trigger the workflow
+    const workflow = await c.env.WIDGET_CONTENT_WORKFLOW.create({
+      params: {
+        widgetId: id,
+        crawlUrl: crawlUrl,
+        maxPages: 25,
+        isRecrawl: !!widget.crawlRunId
+      }
+    });
+
+    console.log('[API] Started workflow:', workflow.id);
+
+    // Update widget status to indicate workflow started
+    await c.get('services').db.getDatabase()
+      .update(widget)
+      .set({
+        crawlStatus: 'crawling',
+        lastCrawlAt: new Date()
+      })
+      .where(eq(widget.id, id));
+
+    return c.json({ 
+      workflowId: workflow.id,
+      status: 'crawling',
+      message: 'Crawl workflow started successfully'
+    });
   } catch (error) {
-    console.error('Error starting crawl:', error);
-    return c.json({ error: 'Failed to start crawl' }, 500);
+    console.error('Error starting crawl workflow:', error);
+    return c.json({ error: 'Failed to start crawl workflow' }, 500);
   }
 });
 
@@ -657,17 +694,76 @@ app.get('/api/widgets/:id/crawl/status', async (c) => {
   }
 
   try {
-    const widget = await c.get('services').widget.getWidget(id, auth.user.id);
-    if (!widget) {
+    const widgetRecord = await c.get('services').widget.getWidget(id, auth.user.id);
+    if (!widgetRecord) {
       return c.json({ error: 'Widget not found' }, 404);
     }
 
-    if (!widget.crawlRunId) {
-      return c.json({ status: 'idle', crawlStatus: widget.crawlStatus });
+    // Return current widget status
+    return c.json({ 
+      status: widgetRecord.crawlStatus || 'idle',
+      crawlPageCount: widgetRecord.crawlPageCount || 0,
+      lastCrawlAt: widgetRecord.lastCrawlAt,
+      crawlUrl: widgetRecord.crawlUrl
+    });
+  } catch (error) {
+    console.error('Error getting crawl status:', error);
+    return c.json({ error: 'Failed to get crawl status' }, 500);
+  }
+});
+
+// Check workflow status
+app.get('/api/widgets/:id/workflow/status', async (c) => {
+  const auth = c.get('auth');
+  if (!auth?.user) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const workflowId = c.req.query('workflowId');
+  if (!workflowId) {
+    return c.json({ error: 'Workflow ID is required' }, 400);
+  }
+
+  try {
+    const instance = await c.env.WIDGET_CONTENT_WORKFLOW.get(workflowId);
+    const status = await instance.status();
+    
+    return c.json({
+      workflowId,
+      status: status.status,
+      output: status.output,
+      error: status.error
+    });
+  } catch (error) {
+    console.error('Error getting workflow status:', error);
+    return c.json({ error: 'Failed to get workflow status' }, 500);
+  }
+});
+
+// Legacy crawl status check (for backward compatibility)
+app.get('/api/widgets/:id/crawl/status-legacy', async (c) => {
+  const auth = c.get('auth');
+  if (!auth?.user) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    const widgetRecord = await c.get('services').widget.getWidget(id, auth.user.id);
+    if (!widgetRecord) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+
+    if (!widgetRecord.crawlRunId) {
+      return c.json({ status: 'idle', crawlStatus: widgetRecord.crawlStatus });
     }
 
     // Check and process crawl status
-    await c.get('services').widget.checkCrawlStatus(id, widget.crawlRunId, auth.user.id);
+    await c.get('services').widget.checkCrawlStatus(id, widgetRecord.crawlRunId, auth.user.id);
     
     // Get updated widget
     const updatedWidget = await c.get('services').widget.getWidget(id, auth.user.id);

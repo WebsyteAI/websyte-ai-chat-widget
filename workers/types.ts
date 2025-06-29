@@ -85,4 +85,5 @@ export interface Env {
   STORE_IP_ADDRESSES?: string;
   MESSAGE_RETENTION_DAYS?: string;
   METRICS_ENDPOINT?: string;
+  WIDGET_CONTENT_WORKFLOW: Workflow;
 }

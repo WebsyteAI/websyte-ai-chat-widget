@@ -52,10 +52,14 @@ export class VectorSearchService {
       return chunks;
     }
     
-    const words = text.split(/\s+/);
+    const words = text.split(/\s+/).filter(w => w.length > 0);
     const totalWords = words.length;
-    // Only log for debugging when needed
-    console.log(`[CHUNKING] Input text: ${totalWords} words, maxWords: ${maxWords}`);
+    
+    // Detect if we have unusually long "words" (URLs, base64, etc)
+    const avgWordLength = text.length / totalWords;
+    const hasLongWords = avgWordLength > 20; // Normal English averages 4-5 chars/word
+    
+    console.log(`[CHUNKING] Input: ${totalWords} words, ${text.length} chars, avg ${avgWordLength.toFixed(1)} chars/word`);
     
     // Calculate safe token limit (more conservative to avoid hitting limits)
     const maxTokensPerChunk = CHUNK_CONFIG.MAX_TOKENS_PER_CHUNK;
@@ -68,10 +72,18 @@ export class VectorSearchService {
       
       // If even a single chunk is too large, we need to split it
       if (estimatedTokens > maxTokensPerChunk) {
-        // console.log(`[CHUNKING] Single chunk too large, forcing split`);
+        // For content with long words, use character-based splitting instead
+        if (hasLongWords) {
+          console.log(`[CHUNKING] Content has long words, using character-based chunking`);
+          return this.chunkTextByCharacters(text, maxTokensPerChunk);
+        }
+        
         // Calculate appropriate chunk size based on token limit
-        const targetWords = Math.floor((maxTokensPerChunk * 3.5) / (chunkText.length / totalWords));
-        return this.chunkText(text, targetWords, Math.floor(targetWords * 0.1));
+        const avgCharsPerWord = chunkText.length / totalWords;
+        const maxCharsAllowed = maxTokensPerChunk * CHUNK_CONFIG.TOKEN_ESTIMATE_DIVISOR;
+        const targetWords = Math.floor(maxCharsAllowed / avgCharsPerWord);
+        console.log(`[CHUNKING] Recalculating chunk size: ${targetWords} words`);
+        return this.chunkText(text, Math.max(50, targetWords), Math.floor(targetWords * 0.1));
       }
       
       return [{
@@ -98,20 +110,26 @@ export class VectorSearchService {
       }
       
       // Iteratively reduce chunk size if still too large
+      let reductionCount = 0;
       while (estimatedTokens > maxTokensPerChunk && currentMaxWords > CHUNK_CONFIG.MIN_CHUNK_SIZE) {
         currentMaxWords = Math.floor(currentMaxWords * CHUNK_CONFIG.CHUNK_REDUCTION_FACTOR);
         chunkWords = words.slice(i, i + currentMaxWords);
         chunkText = chunkWords.join(' ');
         estimatedTokens = this.estimateTokenCount(chunkText);
-        // console.log(`[CHUNKING] Reduced chunk ${chunks.length} to ${currentMaxWords} words, estimated ${estimatedTokens} tokens`);
+        reductionCount++;
+        
+        // If we've reduced too many times, the content likely has very long words
+        if (reductionCount > 5) {
+          console.log(`[CHUNKING] Excessive reductions needed, switching to character-based chunking`);
+          return this.chunkTextByCharacters(text, maxTokensPerChunk);
+        }
       }
       
       // Final safety check
       if (estimatedTokens > maxTokensPerChunk) {
-        console.error(`[CHUNKING] Unable to reduce chunk size below token limit. Skipping chunk.`);
-        // Move forward by a minimal amount to avoid infinite loop
-        i += Math.max(1, Math.floor(currentMaxWords / 2));
-        continue;
+        console.error(`[CHUNKING] Unable to reduce chunk size below token limit. Using minimum step.`);
+        // For content that can't be chunked properly, use a larger minimum step
+        currentMaxWords = Math.max(10, Math.floor(maxTokensPerChunk * CHUNK_CONFIG.TOKEN_ESTIMATE_DIVISOR / avgWordLength));
       }
       
       chunks.push({
@@ -123,15 +141,71 @@ export class VectorSearchService {
       });
       
       // Calculate next position with overlap
-      // Always ensure forward progress by at least 1 word
-      const stepSize = Math.max(1, currentMaxWords - overlapWords);
+      // Ensure meaningful progress - at least 10% of chunk size or 10 words
+      const minStepSize = Math.max(10, Math.floor(currentMaxWords * 0.1));
+      const stepSize = Math.max(minStepSize, currentMaxWords - overlapWords);
+      
+      // Debug problematic stepping
+      if (stepSize < 50 && chunks.length < 10) {
+        console.log(`[CHUNKING] Small step detected: chunk ${chunks.length}, currentMaxWords: ${currentMaxWords}, overlap: ${overlapWords}, step: ${stepSize}`);
+      }
+      
       i += stepSize;
     }
 
     // Final summary log
-    if (chunks.length > CHUNK_CONFIG.LARGE_CHUNK_THRESHOLD) {
-      console.log(`[CHUNKING] Completed: ${chunks.length} chunks created from ${words.length} words`);
+    console.log(`[CHUNKING] Completed: ${chunks.length} chunks created from ${words.length} words`);
+    
+    // Warn if we created too many chunks
+    if (chunks.length > totalWords / 50) { // More than 1 chunk per 50 words is suspicious
+      console.warn(`[CHUNKING] Warning: Created ${chunks.length} chunks from ${totalWords} words - this seems excessive`);
     }
+    
+    return chunks;
+  }
+
+  /**
+   * Alternative chunking method for content with very long "words" (URLs, base64, etc)
+   * Splits by character count rather than word boundaries
+   */
+  private async chunkTextByCharacters(
+    text: string,
+    maxTokensPerChunk: number
+  ): Promise<EmbeddingChunk[]> {
+    const chunks: EmbeddingChunk[] = [];
+    const maxCharsPerChunk = Math.floor(maxTokensPerChunk * CHUNK_CONFIG.TOKEN_ESTIMATE_DIVISOR * 0.9); // 90% to be safe
+    const overlapChars = Math.floor(maxCharsPerChunk * 0.1); // 10% overlap
+    
+    console.log(`[CHUNKING] Character-based chunking: ${text.length} chars, max ${maxCharsPerChunk} chars/chunk`);
+    
+    let i = 0;
+    while (i < text.length) {
+      // Extract chunk
+      const chunkEnd = Math.min(i + maxCharsPerChunk, text.length);
+      let chunkText = text.slice(i, chunkEnd);
+      
+      // Try to break at a word boundary if possible
+      if (chunkEnd < text.length) {
+        const lastSpace = chunkText.lastIndexOf(' ');
+        if (lastSpace > maxCharsPerChunk * 0.8) { // Only if we're at least 80% through
+          chunkText = chunkText.slice(0, lastSpace);
+        }
+      }
+      
+      chunks.push({
+        text: chunkText.trim(),
+        metadata: {
+          chunkIndex: chunks.length,
+          source: 'text'
+        }
+      });
+      
+      // Move forward with overlap
+      const actualChunkLength = chunkText.length;
+      i += Math.max(100, actualChunkLength - overlapChars); // At least 100 chars progress
+    }
+    
+    console.log(`[CHUNKING] Character-based complete: ${chunks.length} chunks from ${text.length} chars`);
     return chunks;
   }
 

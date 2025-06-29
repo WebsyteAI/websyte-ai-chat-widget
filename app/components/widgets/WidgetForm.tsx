@@ -30,6 +30,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
   const [crawlStatus, setCrawlStatus] = useState<'pending' | 'crawling' | 'completed' | 'failed' | 'processing' | null>(widget?.crawlStatus || null);
   const [crawlPageCount, setCrawlPageCount] = useState(widget?.crawlPageCount || 0);
   const [crawlStarting, setCrawlStarting] = useState(false);
+  const [workflowId, setWorkflowId] = useState<string | null>(null);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
   const [generatingRecommendations, setGeneratingRecommendations] = useState(false);
   const [recommendations, setRecommendations] = useState(widget?.recommendations || []);
@@ -192,6 +193,11 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
         throw new Error(error || 'Failed to start crawl');
       }
       
+      const result = await response.json();
+      if (result.workflowId) {
+        setWorkflowId(result.workflowId);
+      }
+      
       toast.success('Website crawl started. Click "Refresh Status" to check progress.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to start crawl');
@@ -205,14 +211,39 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
     if (!widget?.id) return;
     
     try {
+      // Check workflow status if we have a workflowId
+      if (workflowId) {
+        const workflowResponse = await fetch(`/api/widgets/${widget.id}/workflow/status?workflowId=${workflowId}`, {
+          credentials: 'include'
+        });
+        
+        if (workflowResponse.ok) {
+          const workflowData = await workflowResponse.json();
+          console.log('[Workflow Status]', workflowData);
+          
+          // Map workflow status to crawl status
+          if (workflowData.status === 'RUNNING') {
+            setCrawlStatus('crawling');
+          } else if (workflowData.status === 'COMPLETED') {
+            setCrawlStatus('completed');
+            if (workflowData.output?.embeddingsCreated) {
+              setCrawlPageCount(workflowData.output.pagesCrawled || 0);
+            }
+          } else if (workflowData.status === 'FAILED') {
+            setCrawlStatus('failed');
+          }
+        }
+      }
+      
+      // Always check widget status as well
       const response = await fetch(`/api/widgets/${widget.id}/crawl/status`, {
         credentials: 'include'
       });
       
       if (response.ok) {
-        const data = await response.json() as { status: 'crawling' | 'pending' | 'completed' | 'failed' | 'processing'; pageCount?: number };
+        const data = await response.json() as { status: 'crawling' | 'pending' | 'completed' | 'failed' | 'processing'; crawlPageCount?: number };
         setCrawlStatus(data.status);
-        setCrawlPageCount(data.pageCount || 0);
+        setCrawlPageCount(data.crawlPageCount || 0);
         
         // Refresh widget data if completed
         if (data.status === 'completed' && widget?.id) {
