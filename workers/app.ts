@@ -743,6 +743,38 @@ app.post('/api/widgets/:id/recommendations', async (c) => {
   }
 });
 
+// Refresh embeddings for a widget
+app.post('/api/widgets/:id/embeddings/refresh', async (c) => {
+  const auth = c.get('auth');
+  if (!auth?.user) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    const widget = await c.get('services').widget.getWidget(id, auth.user.id);
+    if (!widget) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+
+    // Refresh embeddings from existing files
+    const result = await c.get('services').widget.refreshEmbeddings(id, auth.user.id);
+    
+    return c.json({ 
+      success: true,
+      embeddingsCreated: result.embeddingsCreated,
+      filesProcessed: result.filesProcessed
+    });
+  } catch (error) {
+    console.error('Error refreshing embeddings:', error);
+    return c.json({ error: 'Failed to refresh embeddings' }, 500);
+  }
+});
+
 // API Automation Routes with Bearer Token Authentication
 // These routes allow programmatic access for automation tools like Claude Code
 

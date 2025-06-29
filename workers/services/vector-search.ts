@@ -2,6 +2,7 @@ import { OpenAI } from 'openai';
 import { eq, desc, sql } from 'drizzle-orm';
 import { DatabaseService } from './database';
 import { widgetEmbedding, type NewWidgetEmbedding, type WidgetEmbedding } from '../db/schema';
+import { CHUNK_CONFIG } from '../config/chunking';
 
 export interface EmbeddingChunk {
   text: string;
@@ -40,7 +41,11 @@ export class VectorSearchService {
     this.db = databaseService;
   }
 
-  async chunkText(text: string, maxWords: number = 2000, overlapWords: number = 100): Promise<EmbeddingChunk[]> {
+  async chunkText(
+    text: string, 
+    maxWords: number = CHUNK_CONFIG.DEFAULT_CHUNK_SIZE, 
+    overlapWords: number = CHUNK_CONFIG.OVERLAP_SIZE
+  ): Promise<EmbeddingChunk[]> {
     const chunks: EmbeddingChunk[] = [];
     
     if (!text || !text.trim()) {
@@ -50,16 +55,16 @@ export class VectorSearchService {
     const words = text.split(/\s+/);
     const totalWords = words.length;
     // Only log for debugging when needed
-    // console.log(`[CHUNKING] Input text: ${totalWords} words, maxWords: ${maxWords}`);
+    console.log(`[CHUNKING] Input text: ${totalWords} words, maxWords: ${maxWords}`);
     
     // Calculate safe token limit (more conservative to avoid hitting limits)
-    const maxTokensPerChunk = 7000; // Leave buffer for OpenAI's 8192 limit
+    const maxTokensPerChunk = CHUNK_CONFIG.MAX_TOKENS_PER_CHUNK;
     
     // If the text is small enough, check if it fits in a single chunk
     if (totalWords <= maxWords) {
       const chunkText = words.join(' ');
       const estimatedTokens = this.estimateTokenCount(chunkText);
-      // console.log(`[CHUNKING] Single chunk check: ${totalWords} words, estimated ${estimatedTokens} tokens`);
+      console.log(`[CHUNKING] Single chunk check: ${totalWords} words, estimated ${estimatedTokens} tokens`);
       
       // If even a single chunk is too large, we need to split it
       if (estimatedTokens > maxTokensPerChunk) {
@@ -79,22 +84,24 @@ export class VectorSearchService {
     }
     
     // Create overlapping chunks
-    for (let i = 0; i < words.length; i += maxWords - overlapWords) {
-      const chunkWords = words.slice(i, i + maxWords);
+    let i = 0;
+    while (i < words.length) {
+      // Determine chunk size for this iteration
+      let currentMaxWords = Math.min(maxWords, words.length - i);
+      let chunkWords = words.slice(i, i + currentMaxWords);
       let chunkText = chunkWords.join(' ');
       let estimatedTokens = this.estimateTokenCount(chunkText);
       
-      // Only log every 100th chunk to reduce noise
-      if (chunks.length % 100 === 0) {
+      // Only log every Nth chunk to reduce noise
+      if (chunks.length % CHUNK_CONFIG.PROGRESS_LOG_INTERVAL === 0 && chunks.length > 0) {
         console.log(`[CHUNKING] Progress: ${chunks.length} chunks created...`);
       }
       
       // Iteratively reduce chunk size if still too large
-      let currentMaxWords = chunkWords.length;
-      while (estimatedTokens > maxTokensPerChunk && currentMaxWords > 100) {
-        currentMaxWords = Math.floor(currentMaxWords * 0.8); // Reduce by 20% each iteration
-        const reducedChunkWords = words.slice(i, i + currentMaxWords);
-        chunkText = reducedChunkWords.join(' ');
+      while (estimatedTokens > maxTokensPerChunk && currentMaxWords > CHUNK_CONFIG.MIN_CHUNK_SIZE) {
+        currentMaxWords = Math.floor(currentMaxWords * CHUNK_CONFIG.CHUNK_REDUCTION_FACTOR);
+        chunkWords = words.slice(i, i + currentMaxWords);
+        chunkText = chunkWords.join(' ');
         estimatedTokens = this.estimateTokenCount(chunkText);
         // console.log(`[CHUNKING] Reduced chunk ${chunks.length} to ${currentMaxWords} words, estimated ${estimatedTokens} tokens`);
       }
@@ -102,6 +109,8 @@ export class VectorSearchService {
       // Final safety check
       if (estimatedTokens > maxTokensPerChunk) {
         console.error(`[CHUNKING] Unable to reduce chunk size below token limit. Skipping chunk.`);
+        // Move forward by a minimal amount to avoid infinite loop
+        i += Math.max(1, Math.floor(currentMaxWords / 2));
         continue;
       }
       
@@ -113,14 +122,14 @@ export class VectorSearchService {
         }
       });
       
-      // Adjust loop increment if we had to reduce chunk size
-      if (currentMaxWords < maxWords) {
-        i = i + currentMaxWords - overlapWords - (maxWords - overlapWords);
-      }
+      // Calculate next position with overlap
+      // Always ensure forward progress by at least 1 word
+      const stepSize = Math.max(1, currentMaxWords - overlapWords);
+      i += stepSize;
     }
 
     // Final summary log
-    if (chunks.length > 10) {
+    if (chunks.length > CHUNK_CONFIG.LARGE_CHUNK_THRESHOLD) {
       console.log(`[CHUNKING] Completed: ${chunks.length} chunks created from ${words.length} words`);
     }
     return chunks;
@@ -129,7 +138,7 @@ export class VectorSearchService {
   private estimateTokenCount(text: string): number {
     // Rough estimation: 1 token ≈ 3.5 characters for English text
     // This is conservative to stay well under the 8192 limit
-    return Math.ceil(text.length / 3.5);
+    return Math.ceil(text.length / CHUNK_CONFIG.TOKEN_ESTIMATE_DIVISOR);
   }
 
   async generateEmbedding(text: string): Promise<number[]> {
@@ -139,10 +148,10 @@ export class VectorSearchService {
       
       // Instead of truncating, throw an error if text is too large
       // This ensures we never lose data and forces proper chunking upstream
-      if (estimatedTokens > 8000) {
+      if (estimatedTokens > CHUNK_CONFIG.MAX_TOKENS_PER_CHUNK) {
         throw new Error(
           `Text chunk too large for embedding: ${estimatedTokens} estimated tokens ` +
-          `(${cleanText.length} characters). Maximum is 8000 tokens. ` +
+          `(${cleanText.length} characters). Maximum is ${CHUNK_CONFIG.MAX_TOKENS_PER_CHUNK} tokens. ` +
           `Please use the chunkText method to split the text into smaller chunks.`
         );
       }
@@ -297,7 +306,7 @@ export class VectorSearchService {
     widgetId: string,
     fileId: string,
     pages: Array<{ pageNumber: number; markdown: string; metadata?: any }>
-  ): Promise<void> {
+  ): Promise<number> {
     console.log(`[EMBEDDINGS] Starting createEmbeddingsFromCrawlPages for widget ${widgetId}, fileId ${fileId}, pages: ${pages.length}`);
     
     // Test database connection
@@ -317,9 +326,16 @@ export class VectorSearchService {
         continue;
       }
 
-      // Chunk the page content - using reasonable chunk sizes now that we removed the btree index
-      const chunks = await this.chunkText(page.markdown, 2000, 200);
+      // Chunk the page content
+      const chunks = await this.chunkText(page.markdown);
       console.log(`[EMBEDDINGS] Page ${page.pageNumber}: ${chunks.length} chunks created from ${page.markdown.length} characters`);
+      
+      // Debug: Log first chunk to see what's being created
+      if (chunks.length > 0) {
+        const firstChunkPreview = chunks[0].text.substring(0, 200);
+        console.log(`[EMBEDDINGS] First chunk preview: "${firstChunkPreview}..."`);
+        console.log(`[EMBEDDINGS] First chunk word count: ${chunks[0].text.split(/\s+/).length} words`);
+      }
       
       const pageEmbeddings: NewWidgetEmbedding[] = [];
       
@@ -378,5 +394,6 @@ export class VectorSearchService {
     }
 
     console.log(`[EMBEDDINGS] Created ${totalEmbeddings} embeddings for ${pages.length} crawled pages`);
+    return totalEmbeddings;
   }
 }

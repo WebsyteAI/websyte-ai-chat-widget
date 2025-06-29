@@ -8,6 +8,7 @@ import { Upload, X, FileText, Trash2, Lock, ArrowLeft, Info, Globe, RefreshCw, S
 import { useUIStore, type Widget } from '../../stores';
 import { toast } from '@/lib/use-toast';
 import { EmbedCodeGenerator } from './EmbedCodeGenerator';
+import { CHUNK_CONFIG } from '../../constants/chunking';
 
 
 interface WidgetFormProps {
@@ -32,7 +33,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
   const [generatingRecommendations, setGeneratingRecommendations] = useState(false);
   const [recommendations, setRecommendations] = useState(widget?.recommendations || []);
-  const crawlPollInterval = useRef<NodeJS.Timeout | null>(null);
+  const [showCrawlDebug, setShowCrawlDebug] = useState(false);
   const {
     widgetFormData,
     updateWidgetFormField,
@@ -69,67 +70,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
     }
   }, [widget, updateWidgetFormField, resetWidgetForm]);
   
-  // Poll for crawl status when crawling
-  useEffect(() => {
-    if (widget?.id && crawlStatus === 'crawling') {
-      const pollStatus = async () => {
-        try {
-          const response = await fetch(`/api/widgets/${widget.id}/crawl/status`, {
-            credentials: 'include'
-          });
-          
-          if (response.ok) {
-            const data = await response.json() as { status: 'crawling' | 'pending' | 'completed' | 'failed' | 'processing'; pageCount?: number };
-            setCrawlStatus(data.status);
-            setCrawlPageCount(data.pageCount || 0);
-            
-            if (data.status === 'completed' || data.status === 'failed') {
-              // Stop polling
-              if (crawlPollInterval.current) {
-                clearInterval(crawlPollInterval.current);
-                crawlPollInterval.current = null;
-              }
-              
-              // Refresh widget data if completed
-              if (data.status === 'completed' && widget?.id) {
-                // Fetch updated widget data
-                try {
-                  const widgetResponse = await fetch(`/api/widgets/${widget.id}`, {
-                    credentials: 'include'
-                  });
-                  
-                  if (widgetResponse.ok) {
-                    const { widget: updatedWidget } = await widgetResponse.json() as { widget: Widget };
-                    // Update existing files with the new crawled files
-                    setExistingFiles(updatedWidget.files || []);
-                    // Notify parent component about the update
-                    onWidgetUpdated?.(updatedWidget);
-                  }
-                } catch (error) {
-                  console.error('Error fetching updated widget:', error);
-                }
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error polling crawl status:', error);
-        }
-      };
-      
-      // Poll immediately
-      pollStatus();
-      
-      // Then poll every 5 seconds
-      crawlPollInterval.current = setInterval(pollStatus, 5000);
-      
-      return () => {
-        if (crawlPollInterval.current) {
-          clearInterval(crawlPollInterval.current);
-          crawlPollInterval.current = null;
-        }
-      };
-    }
-  }, [widget?.id, crawlStatus]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -252,13 +192,58 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
         throw new Error(error || 'Failed to start crawl');
       }
       
-      toast.success('Website crawl started');
-      // Status polling will start automatically due to useEffect
+      toast.success('Website crawl started. Click "Refresh Status" to check progress.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to start crawl');
       setCrawlStatus('failed');
     } finally {
       setCrawling(false);
+    }
+  };
+
+  const handleRefreshCrawlStatus = async () => {
+    if (!widget?.id) return;
+    
+    try {
+      const response = await fetch(`/api/widgets/${widget.id}/crawl/status`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json() as { status: 'crawling' | 'pending' | 'completed' | 'failed' | 'processing'; pageCount?: number };
+        setCrawlStatus(data.status);
+        setCrawlPageCount(data.pageCount || 0);
+        
+        // Refresh widget data if completed
+        if (data.status === 'completed' && widget?.id) {
+          try {
+            const widgetResponse = await fetch(`/api/widgets/${widget.id}`, {
+              credentials: 'include'
+            });
+            
+            if (widgetResponse.ok) {
+              const { widget: updatedWidget } = await widgetResponse.json() as { widget: Widget };
+              // Update existing files with the new crawled files
+              setExistingFiles(updatedWidget.files || []);
+              // Notify parent component about the update
+              onWidgetUpdated?.(updatedWidget);
+              toast.success('Crawl completed successfully!');
+            }
+          } catch (error) {
+            console.error('Error fetching updated widget:', error);
+          }
+        } else if (data.status === 'failed') {
+          toast.error('Crawl failed. Please try again.');
+        } else if (data.status === 'crawling' || data.status === 'processing') {
+          toast.info(`Still ${data.status === 'processing' ? 'processing' : 'crawling'}... ${data.pageCount || 0} pages found so far.`);
+        }
+      } else {
+        console.error('Error response from crawl status endpoint:', response.status);
+        toast.error('Failed to check crawl status. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error checking crawl status:', error);
+      toast.error('Failed to check crawl status. Please try again.');
     }
   };
 
@@ -280,12 +265,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       
       setCrawlStatus('failed');
       toast.success('Crawl status reset. You can try crawling again.');
-      
-      // Clear the polling interval
-      if (crawlPollInterval.current) {
-        clearInterval(crawlPollInterval.current);
-        crawlPollInterval.current = null;
-      }
     } catch (error) {
       toast.error('Failed to reset crawl status');
     } finally {
@@ -314,7 +293,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
     // Show a notification if crawl URL is being added/changed
     const isNewCrawlUrl = crawlUrl && crawlUrl !== widget?.crawlUrl;
     if (isNewCrawlUrl && isEditing) {
-      toast.info('Starting website crawl... This may take a few minutes.');
+      toast.info('Starting website crawl... Click "Refresh Status" to check progress.');
       setCrawlStarting(true);
     }
 
@@ -382,6 +361,36 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
         // Clear uploading state on error
         setUploadingFiles(new Set());
       }
+    }
+  };
+
+  const handleRefreshEmbeddings = async () => {
+    if (!widget?.id) return;
+    
+    if (!confirm('This will regenerate all embeddings from existing files. Continue?')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/widgets/${widget.id}/embeddings/refresh`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to refresh embeddings');
+      }
+      
+      const result = await response.json();
+      toast.success(`Embeddings refreshed: ${result.embeddingsCreated} embeddings created`);
+      
+      // Refresh widget data
+      if (onWidgetUpdated && widget) {
+        onWidgetUpdated({ ...widget });
+      }
+    } catch (error) {
+      console.error('Error refreshing embeddings:', error);
+      toast.error('Failed to refresh embeddings. Please try again.');
     }
   };
 
@@ -605,32 +614,123 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
                             </p>
                           )}
                         </div>
-                        {(crawlStatus === 'completed' || crawlStatus === 'failed') && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleRecrawl}
-                            disabled={crawling || !crawlUrl}
-                          >
-                            <RefreshCw className="w-4 h-4 mr-1" />
-                            Re-crawl
-                          </Button>
-                        )}
-                        {(crawlStatus === 'crawling' || crawlStatus === 'processing') && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleResetCrawl}
-                            disabled={crawling}
-                            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                          >
-                            <X className="w-4 h-4 mr-1" />
-                            Reset
-                          </Button>
-                        )}
+                        <div className="flex gap-2">
+                          {(crawlStatus === 'completed' || crawlStatus === 'failed') && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleRecrawl}
+                              disabled={crawling || !crawlUrl}
+                            >
+                              <RefreshCw className="w-4 h-4 mr-1" />
+                              Re-crawl
+                            </Button>
+                          )}
+                          {(crawlStatus === 'crawling' || crawlStatus === 'processing') && (
+                            <>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleRefreshCrawlStatus}
+                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              >
+                                <RefreshCw className="w-4 h-4 mr-1" />
+                                Refresh Status
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleResetCrawl}
+                                disabled={crawling}
+                                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                              >
+                                <X className="w-4 h-4 mr-1" />
+                                Reset
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
+                    </div>
+                  )}
+                  
+                  {/* Debug View for Crawled Files */}
+                  {crawlStatus === 'completed' && (
+                    <div className="mt-4">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowCrawlDebug(!showCrawlDebug)}
+                        className="text-gray-600 hover:text-gray-800"
+                      >
+                        <Info className="w-4 h-4 mr-1" />
+                        {showCrawlDebug ? 'Hide' : 'Show'} Debug Info
+                      </Button>
+                      
+                      {showCrawlDebug && (
+                        <div className="mt-4 space-y-4">
+                          <div className="bg-gray-50 rounded-lg p-4">
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">Crawled Files in R2</h4>
+                            <div className="space-y-2">
+                              {existingFiles
+                                .filter(f => f.filename.endsWith('.crawl.md'))
+                                .map(file => (
+                                  <div key={file.id} className="text-sm text-gray-600">
+                                    <div className="font-mono">{file.filename}</div>
+                                    <div className="text-xs text-gray-500">
+                                      Size: {formatFileSize(file.fileSize)} | Created: {new Date(file.createdAt).toLocaleString()}
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                            
+                            <div className="mt-4">
+                              <h5 className="text-sm font-medium text-gray-700 mb-1">Page Files</h5>
+                              <p className="text-xs text-gray-500 mb-2">
+                                Individual pages are stored as separate files but not shown in the main file list.
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                Total pages crawled: {crawlPageCount}
+                              </p>
+                            </div>
+                            
+                            <div className="mt-4 flex gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleRefreshEmbeddings}
+                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              >
+                                <RefreshCw className="w-4 h-4 mr-1" />
+                                Refresh Embeddings
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div className="flex gap-3">
+                              <Info className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                              <div className="space-y-2">
+                                <h4 className="text-sm font-medium text-yellow-900">Debug Information</h4>
+                                <p className="text-sm text-yellow-800">
+                                  Crawled content is chunked into ~{CHUNK_CONFIG.DEFAULT_CHUNK_SIZE} word segments with {CHUNK_CONFIG.OVERLAP_SIZE} word overlap.
+                                </p>
+                                <p className="text-sm text-yellow-800">
+                                  Widget ID: <code className="font-mono text-xs bg-yellow-100 px-1 py-0.5 rounded">{widget?.id}</code>
+                                </p>
+                                <p className="text-sm text-yellow-800">
+                                  Embeddings count: {widget?.embeddingsCount || 0}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -729,7 +829,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
                     <li>Avoid special characters that may be stripped during processing</li>
                   </ul>
                   <p className="text-xs text-blue-700 italic">
-                    Files are chunked into ~2000 word segments for vector search, with descriptive names helping identify relevant content sources.
+                    Files are chunked into ~{CHUNK_CONFIG.DEFAULT_CHUNK_SIZE} word segments for vector search, with descriptive names helping identify relevant content sources.
                   </p>
                 </div>
               </div>

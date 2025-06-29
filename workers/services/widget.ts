@@ -503,7 +503,8 @@ export class WidgetService {
       
       if (status.status === 'SUCCEEDED') {
         await this.processCrawlResults(widgetId, runId, userId);
-      } else if (status.status === 'FAILED' || status.status === 'ABORTED') {
+      } else if (status.status === 'FAILED' || status.status === 'ABORTED' || status.status === 'TIMED-OUT') {
+        console.error('[WidgetService] Crawl failed with status:', status.status);
         await this.db.getDatabase()
           .update(widget)
           .set({ 
@@ -525,6 +526,16 @@ export class WidgetService {
       }
     } catch (error) {
       console.error('Error checking crawl status:', error);
+      // More detailed error logging
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          widgetId,
+          runId
+        });
+      }
+      
       await this.db.getDatabase()
         .update(widget)
         .set({ 
@@ -605,6 +616,16 @@ export class WidgetService {
           
           console.log(`[WIDGET_CRAWL] Processing page ${pageNumber}: ${page.url} - content length: ${page.markdown?.length || 0}`);
           
+          // Don't skip small content - it can have meaningful value
+          if (!page.markdown || page.markdown.trim().length === 0) {
+            console.log(`[WIDGET_CRAWL] Skipping page ${pageNumber} - no content`);
+            continue;
+          }
+          
+          // Log word count for debugging
+          const wordCount = page.markdown.split(/\s+/).length;
+          console.log(`[WIDGET_CRAWL] Page ${pageNumber} word count: ${wordCount} words`);
+          
           // Create page content with metadata header
           const pageContent = `---
 url: ${page.url}
@@ -623,6 +644,9 @@ ${page.markdown}
           await this.fileStorage.storePageFile(widgetId, storedFile.id, pageNumber, pageContent);
           
           // Collect page data for embeddings (include metadata)
+          const fullContentWordCount = pageContent.split(/\s+/).length;
+          console.log(`[WIDGET_CRAWL] Page ${pageNumber} full content (with metadata): ${fullContentWordCount} words`);
+          
           pageData.push({
             pageNumber,
             markdown: pageContent,
@@ -635,6 +659,8 @@ ${page.markdown}
         }
         
         // 3. Create embeddings for this batch
+        console.log(`[WIDGET_CRAWL] Batch ${batchStart}-${batchEnd}: collected ${pageData.length} pages for embedding (from ${batchResults.length} results)`);
+        
         if (this.vectorSearch && pageData.length > 0) {
           try {
             console.log(`[WIDGET_CRAWL] Creating embeddings for batch ${batchStart}-${batchEnd} (${pageData.length} pages)`);
@@ -840,6 +866,102 @@ ${page.markdown}
     } catch (error) {
       console.error('[WidgetService] Error resetting stuck crawl:', error);
       return false;
+    }
+  }
+
+  async refreshEmbeddings(widgetId: string, userId: string): Promise<{ embeddingsCreated: number; filesProcessed: number }> {
+    console.log('[WidgetService] refreshEmbeddings called:', { widgetId, userId });
+    
+    try {
+      // Verify ownership
+      const widgetRecord = await this.getWidget(widgetId, userId);
+      if (!widgetRecord) {
+        throw new Error('Widget not found');
+      }
+      
+      // Delete existing embeddings
+      await this.db.getDatabase()
+        .delete(widgetEmbedding)
+        .where(eq(widgetEmbedding.widgetId, widgetId));
+      
+      console.log('[WidgetService] Deleted existing embeddings for widget:', widgetId);
+      
+      // Get all files for the widget
+      const files = await this.fileStorage.getWidgetFiles(widgetId);
+      console.log(`[WidgetService] Found ${files.length} files to process`);
+      
+      let embeddingsCreated = 0;
+      let filesProcessed = 0;
+      
+      // Process each file
+      for (const file of files) {
+        try {
+          // Get file content
+          const content = await this.fileStorage.getFileContent(file.id, widgetId);
+          if (!content) {
+            console.warn(`[WidgetService] No content found for file: ${file.filename}`);
+            continue;
+          }
+          
+          filesProcessed++;
+          
+          // Check if it's a crawl file
+          if (file.filename.endsWith('.crawl.md')) {
+            console.log(`[WidgetService] Processing crawl file: ${file.filename}`);
+            
+            // For crawl files, we need to manually recreate the page data
+            // This is a simplified version - in production, you might want to
+            // store page metadata separately or parse it from the crawl file
+            console.log(`[WidgetService] Note: Individual page files are not accessible for re-processing`);
+            console.log(`[WidgetService] Consider re-crawling for best results`);
+            
+            // Process the crawl summary file itself
+            if (this.vectorSearch) {
+              await this.vectorSearch.createEmbeddingsForWidget(
+                widgetId,
+                content,
+                file.filename,
+                file.id
+              );
+              
+              // Count chunks created (rough estimate based on content size)
+              const wordCount = content.split(/\s+/).length;
+              const estimatedChunks = Math.ceil(wordCount / 900); // 1000 words - 100 overlap
+              embeddingsCreated += estimatedChunks;
+            }
+          } else {
+            // Regular file - create embeddings directly
+            console.log(`[WidgetService] Processing regular file: ${file.filename}`);
+            
+            if (this.vectorSearch) {
+              await this.vectorSearch.createEmbeddingsForWidget(
+                widgetId,
+                content,
+                file.filename,
+                file.id
+              );
+              
+              // Count chunks created (rough estimate based on content size)
+              const wordCount = content.split(/\s+/).length;
+              const estimatedChunks = Math.ceil(wordCount / 900); // 1000 words - 100 overlap
+              embeddingsCreated += estimatedChunks;
+            }
+          }
+        } catch (error) {
+          console.error(`[WidgetService] Error processing file ${file.filename}:`, error);
+          // Continue with other files
+        }
+      }
+      
+      console.log(`[WidgetService] Refresh complete: ${embeddingsCreated} embeddings created from ${filesProcessed} files`);
+      
+      return {
+        embeddingsCreated,
+        filesProcessed
+      };
+    } catch (error) {
+      console.error('[WidgetService] Error refreshing embeddings:', error);
+      throw error;
     }
   }
 }

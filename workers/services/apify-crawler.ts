@@ -85,22 +85,36 @@ export class ApifyCrawlerService {
   }
   
   async getCrawlStatus(runId: string) {
-    const response = await fetch(`${this.BASE_URL}/actor-runs/${runId}?token=${this.apiToken}`, {
-      method: 'GET'
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to get crawl status: ${response.statusText}`);
+    try {
+      const response = await fetch(`${this.BASE_URL}/actor-runs/${runId}?token=${this.apiToken}`, {
+        method: 'GET'
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[ApifyCrawler] Failed to get crawl status: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Failed to get crawl status: ${response.statusText}`);
+      }
+      
+      const data = await response.json() as { data: { status: string; finishedAt: string; stats?: { itemCount: number } } };
+      const run = data.data;
+      
+      console.log('[ApifyCrawler] Run status:', {
+        runId,
+        status: run.status,
+        itemCount: run.stats?.itemCount || 0,
+        finishedAt: run.finishedAt
+      });
+      
+      return {
+        status: run.status,
+        finishedAt: run.finishedAt,
+        itemCount: run.stats?.itemCount || 0
+      };
+    } catch (error) {
+      console.error('[ApifyCrawler] Error getting crawl status:', error);
+      throw error;
     }
-    
-    const data = await response.json() as { data: { status: string; finishedAt: string; stats?: { itemCount: number } } };
-    const run = data.data;
-    
-    return {
-      status: run.status,
-      finishedAt: run.finishedAt,
-      itemCount: run.stats?.itemCount || 0
-    };
   }
   
   async getCrawlResults(runId: string): Promise<CrawlResult[]> {
