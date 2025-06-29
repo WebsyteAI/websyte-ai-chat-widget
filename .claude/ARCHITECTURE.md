@@ -11,7 +11,7 @@ Full-stack chat widget system with modular component architecture, RAG capabilit
 - **Database**: Neon PostgreSQL + Drizzle ORM with pgvector extension
 - **AI Services**: OpenAI GPT-4.1-mini + text-embedding-3-small, Mistral AI support
 - **Search**: Vector similarity search with embeddings, full-text search
-- **Authentication**: Better Auth for user management
+- **Authentication**: Better Auth for user management + Bearer Token for automation
 - **Storage**: PostgreSQL for persistent data, localStorage for client state
 
 ## Custom Widget Embed Architecture
@@ -636,6 +636,64 @@ export function ChatWidget(props: ChatWidgetProps) {
 - **Simultaneous Calls**: Critical APIs execute in parallel during initialization
 - **Error Resilience**: Individual API failures don't block other operations
 - **Reduced Load Time**: Eliminated sequential bottlenecks
+
+## Authentication Architecture
+
+### Better Auth Integration
+The system uses Better Auth for user session management:
+- **Session-based auth** for web interface users
+- **Cookie-based sessions** with secure httpOnly cookies
+- **OAuth providers** (Google) for easy sign-in
+- **Admin role management** for privileged operations
+
+### Bearer Token Authentication
+For programmatic access and automation:
+
+#### Implementation (`workers/lib/middleware.ts`)
+```typescript
+export const bearerTokenMiddleware = async (c: Context, next: Next) => {
+  const token = c.env.API_BEARER_TOKEN;
+  
+  // Skip if no token configured
+  if (!token) {
+    console.warn('API_BEARER_TOKEN not configured');
+    await next();
+    return;
+  }
+
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return c.json({ error: 'Missing or invalid Authorization header' }, 401);
+  }
+
+  const providedToken = authHeader.substring(7);
+  if (providedToken !== token) {
+    return c.json({ error: 'Invalid bearer token' }, 401);
+  }
+
+  await next();
+};
+```
+
+#### Configuration
+- **Environment Variable**: `API_BEARER_TOKEN` in `.env` or Workers secrets
+- **Token Generation**: `openssl rand -hex 32` for secure tokens
+- **No Database Storage**: Tokens verified against environment config
+- **No Rate Limiting**: Bearer token requests bypass rate limits
+
+#### Automation API Routes
+Protected routes for programmatic access:
+- `GET /api/automation/widgets` - List all widgets
+- `POST /api/automation/widgets` - Create widgets
+- `POST /api/automation/widgets/:id/crawl` - Start crawling
+- `POST /api/automation/widgets/:id/recommendations` - Generate recommendations
+
+### Middleware Stack
+1. **CORS Middleware** - Permissive for widget embedding
+2. **Iframe Security** - CSP headers for iframe contexts
+3. **Rate Limiting** - Applied to public/session endpoints
+4. **Auth Middleware** - Session validation for user routes
+5. **Bearer Token Middleware** - Token validation for automation
 
 ## Architecture Benefits
 

@@ -14,7 +14,7 @@ import { WidgetService } from './services/widget';
 import { MessageService } from './services/messages';
 import { RAGAgent } from './services/rag-agent';
 import { ApifyCrawlerService } from './services/apify-crawler';
-import { optionalAuthMiddleware, authMiddleware, adminMiddleware, type AuthContext } from './lib/middleware';
+import { optionalAuthMiddleware, authMiddleware, adminMiddleware, bearerTokenMiddleware, type AuthContext } from './lib/middleware';
 import { rateLimitMiddleware } from './lib/rate-limiter';
 import { iframeMiddleware } from './lib/iframe-middleware';
 import type { Env } from './types';
@@ -736,6 +736,98 @@ app.post('/api/widgets/:id/recommendations', async (c) => {
     return c.json({ 
       success: true,
       recommendations: updatedWidget?.recommendations || []
+    });
+  } catch (error) {
+    console.error('Error generating recommendations:', error);
+    return c.json({ error: 'Failed to generate recommendations' }, 500);
+  }
+});
+
+// API Automation Routes with Bearer Token Authentication
+// These routes allow programmatic access for automation tools like Claude Code
+
+// List all widgets (automation API)
+app.get('/api/automation/widgets', bearerTokenMiddleware, async (c) => {
+  try {
+    const widgets = await c.get('services').widget.getAllWidgets();
+    return c.json({ widgets });
+  } catch (error) {
+    console.error('Error listing widgets:', error);
+    return c.json({ error: 'Failed to list widgets' }, 500);
+  }
+});
+
+// Create a new widget (automation API)
+app.post('/api/automation/widgets', bearerTokenMiddleware, async (c) => {
+  try {
+    const body = await c.req.json();
+    const { name, description, url, crawlUrl, isPublic } = body;
+
+    if (!name) {
+      return c.json({ error: 'Widget name is required' }, 400);
+    }
+
+    // Create widget with a system user ID (you might want to configure this)
+    const systemUserId = 'system-automation';
+    const widget = await c.get('services').widget.createWidget({
+      name,
+      description: description || '',
+      url: url || null,
+      crawlUrl: crawlUrl || null,
+      isPublic: isPublic ?? false,
+      userId: systemUserId,
+    });
+
+    return c.json({ widget });
+  } catch (error) {
+    console.error('Error creating widget:', error);
+    return c.json({ error: 'Failed to create widget' }, 500);
+  }
+});
+
+// Start crawling for a widget (automation API)
+app.post('/api/automation/widgets/:id/crawl', bearerTokenMiddleware, async (c) => {
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    const widget = await c.get('services').widget.getPublicWidget(id);
+    if (!widget) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+
+    if (!widget.crawlUrl) {
+      return c.json({ error: 'Widget has no crawl URL configured' }, 400);
+    }
+
+    const crawl = await c.get('services').widget.startCrawl(id, widget.crawlUrl, 'system-automation');
+    return c.json({ 
+      success: true, 
+      crawlRunId: crawl.crawlRunId,
+      message: 'Crawl started successfully'
+    });
+  } catch (error) {
+    console.error('Error starting crawl:', error);
+    return c.json({ error: 'Failed to start crawl' }, 500);
+  }
+});
+
+// Generate recommendations for a widget (automation API)
+app.post('/api/automation/widgets/:id/recommendations', bearerTokenMiddleware, async (c) => {
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    await c.get('services').widget.generateWidgetRecommendations(id);
+    const widget = await c.get('services').widget.getPublicWidget(id);
+    
+    return c.json({ 
+      success: true,
+      recommendations: widget?.recommendations || []
     });
   } catch (error) {
     console.error('Error generating recommendations:', error);

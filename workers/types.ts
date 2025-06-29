@@ -81,6 +81,7 @@ export interface Env {
   GOOGLE_CLIENT_SECRET: string;
   WIDGET_FILES: R2Bucket;
   APIFY_API_TOKEN: string;
+  API_BEARER_TOKEN?: string;
   STORE_IP_ADDRESSES?: string;
   MESSAGE_RETENTION_DAYS?: string;
   METRICS_ENDPOINT?: string;

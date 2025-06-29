@@ -5,6 +5,29 @@ Embeddable React-based AI chat widget for websites with content summarization an
 ## 🚨 IMPORTANT - MUST READ FIRST
 **For detailed documentation, architecture details, API references, and development guides, refer to the `.claude/` directory.** This file provides only high-level overview.
 
+## 📚 Documentation Table of Contents
+
+### Core Documentation
+- **[.claude/ARCHITECTURE.md](.claude/ARCHITECTURE.md)** - System architecture, component design, and technical stack
+- **[.claude/PLANNING.md](.claude/PLANNING.md)** - Project planning, phases, and implementation roadmap
+- **[.claude/TESTING.md](.claude/TESTING.md)** - Testing strategy, guidelines, and coverage requirements
+- **[.claude/CONTEXT.md](.claude/CONTEXT.md)** - Project context, goals, and high-level overview
+- **[.claude/API-REFERENCE.md](.claude/API-REFERENCE.md)** - Complete API documentation and endpoints
+
+### Feature Documentation
+- **[.claude/MESSAGE-PERSISTENCE.md](.claude/MESSAGE-PERSISTENCE.md)** - Chat message storage, analytics, and GDPR compliance
+- **[.claude/WEBSITE-CRAWLER.md](.claude/WEBSITE-CRAWLER.md)** - Apify integration for automated content crawling
+- **[.claude/WIDGET-SHARING.md](.claude/WIDGET-SHARING.md)** - Direct URL sharing and public widget access
+- **[.claude/stripe-payment-integration-plan.md](.claude/stripe-payment-integration-plan.md)** - Payment integration planning
+
+### Embedding & Integration
+- **[.claude/IFRAME-API.md](.claude/IFRAME-API.md)** - PostMessage API for iframe communication
+- **[.claude/EMBED-CODE-USAGE.md](.claude/EMBED-CODE-USAGE.md)** - Widget embed code generation and best practices
+
+### Development Guidelines
+- **[.claude/CLAUDE.md](.claude/CLAUDE.md)** - Development notes, coding standards, and Claude-specific instructions
+- **[.claude/README.md](.claude/README.md)** - Documentation index and quick links
+
 ## Quick Start
 ```bash
 pnpm dev              # Development server (port 5173)
@@ -70,6 +93,18 @@ pnpm deploy           # Deploy to Cloudflare
 - **Toast Notifications**: User feedback for widget operations
 - **Enhanced Chat UX**: Fixed scrolling behavior when sources are displayed
 - **Full-Screen Chat UI**: Improved layout with fixed positioning and better responsive design
+- **API Automation**: Bearer token authentication for programmatic access via `/api/automation/*` routes
+
+## API Automation
+Use bearer token authentication for programmatic access:
+- Generate token: `openssl rand -hex 32`
+- Add to environment: `API_BEARER_TOKEN=your-token`
+- Use header: `Authorization: Bearer your-token`
+- Available routes:
+  - `GET /api/automation/widgets` - List all widgets
+  - `POST /api/automation/widgets` - Create widgets
+  - `POST /api/automation/widgets/:id/crawl` - Start crawling
+  - `POST /api/automation/widgets/:id/recommendations` - Generate recommendations
 
 ## Workflow Memories
 - When asked to update docs, update @CLAUDE.md and .claude/ directory

@@ -96,3 +96,29 @@ export const adminMiddleware = async (c: Context<AppContextType>, next: Next) =>
     return c.json({ error: 'Authentication failed' }, 401);
   }
 };
+
+export const bearerTokenMiddleware = async (c: Context<AppContextType>, next: Next) => {
+  const token = c.env.API_BEARER_TOKEN;
+  
+  // Skip if no token is configured
+  if (!token) {
+    console.warn('API_BEARER_TOKEN not configured, skipping bearer token authentication');
+    await next();
+    return;
+  }
+
+  const authHeader = c.req.header('Authorization');
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return c.json({ error: 'Missing or invalid Authorization header' }, 401);
+  }
+
+  const providedToken = authHeader.substring(7); // Remove "Bearer " prefix
+  
+  if (providedToken !== token) {
+    return c.json({ error: 'Invalid bearer token' }, 401);
+  }
+
+  // Token is valid, proceed to next middleware
+  await next();
+};
