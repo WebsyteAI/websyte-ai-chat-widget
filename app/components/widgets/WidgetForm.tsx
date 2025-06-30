@@ -993,7 +993,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
           )}
 
           {/* Recommendations Section - Only show for existing widgets with content */}
-          {widget?.id && ((widget.embeddingsCount && widget.embeddingsCount > 0) || (widget.crawlPageCount && widget.crawlPageCount > 0)) && (
+          {widget?.id && ((widget.embeddingsCount > 0) || (widget.crawlPageCount > 0)) && (
             <div className="pt-6 border-t border-gray-200 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
