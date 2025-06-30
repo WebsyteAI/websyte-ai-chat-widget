@@ -220,11 +220,11 @@ export function ChatPanel({
                 <p className="text-sm text-gray-500 flex items-center justify-center gap-1">
                   Powered by 
                   <img 
-                    src={`${baseUrl}/websyte-ai-logo.svg`} 
-                    alt="Websyte.ai" 
+                    src={`${baseUrl}/nativo-logo.png`} 
+                    alt="Nativo" 
                     className="w-4 h-4"
                   />
-                  Websyte.ai
+                  Nativo
                 </p>
               )}
             </div>
