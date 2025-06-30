@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { createRequestHandler } from "react-router";
 import { eq } from 'drizzle-orm';
-import { widget } from './db/schema';
+import { widget as widgetTable } from './db/schema';
 import { OpenAIService } from './services/openai';
 import { ChatService } from './services/chat';
 import { SummariesService } from './services/summaries';
@@ -357,13 +357,13 @@ app.put('/api/widgets/:id', async (c) => {
           // Update widget with workflowId
           const database = new DatabaseService(c.env.DATABASE_URL);
           await database.getDatabase()
-            .update(widget)
+            .update(widgetTable)
             .set({
               crawlStatus: 'crawling',
               workflowId: workflow.id,
               lastCrawlAt: new Date()
             })
-            .where(eq(widget.id, id));
+            .where(eq(widgetTable.id, id));
           
           // Return updated widget with workflow info
           widget.crawlStatus = 'crawling';
@@ -723,13 +723,13 @@ app.post('/api/widgets/:id/crawl', async (c) => {
     // Update widget status to indicate workflow started and save workflowId
     const database = new DatabaseService(c.env.DATABASE_URL);
     await database.getDatabase()
-      .update(widget)
+      .update(widgetTable)
       .set({
         crawlStatus: 'crawling',
         workflowId: workflow.id,
         lastCrawlAt: new Date()
       })
-      .where(eq(widget.id, id));
+      .where(eq(widgetTable.id, id));
 
     return c.json({ 
       workflowId: workflow.id,
@@ -772,13 +772,13 @@ app.get('/api/widgets/:id/crawl/status', async (c) => {
         if (workflowStatus.status === 'complete') {
           const database = new DatabaseService(c.env.DATABASE_URL);
           await database.getDatabase()
-            .update(widget)
+            .update(widgetTable)
             .set({
               crawlStatus: 'completed',
               crawlPageCount: (workflowStatus.output as any)?.pagesCrawled || 0,
               workflowId: null // Clear workflowId when completed
             })
-            .where(eq(widget.id, id));
+            .where(eq(widgetTable.id, id));
           
           return c.json({ 
             status: 'completed',
@@ -791,12 +791,12 @@ app.get('/api/widgets/:id/crawl/status', async (c) => {
           // Update widget status to failed
           const database = new DatabaseService(c.env.DATABASE_URL);
           await database.getDatabase()
-            .update(widget)
+            .update(widgetTable)
             .set({
               crawlStatus: 'failed',
               workflowId: null // Clear workflowId when failed
             })
-            .where(eq(widget.id, id));
+            .where(eq(widgetTable.id, id));
           
           return c.json({ 
             status: 'failed',
@@ -818,12 +818,12 @@ app.get('/api/widgets/:id/crawl/status', async (c) => {
         if (elapsedTime > 15 * 60 * 1000) {
           const database = new DatabaseService(c.env.DATABASE_URL);
           await database.getDatabase()
-            .update(widget)
+            .update(widgetTable)
             .set({
               crawlStatus: 'failed',
               workflowId: null // Clear workflowId on timeout
             })
-            .where(eq(widget.id, id));
+            .where(eq(widgetTable.id, id));
           
           return c.json({ 
             status: 'failed',
@@ -1087,13 +1087,13 @@ app.post('/api/automation/widgets/:id/crawl', bearerTokenMiddleware, async (c) =
     // Update widget status to indicate workflow started and save workflowId
     const database = new DatabaseService(c.env.DATABASE_URL);
     await database.getDatabase()
-      .update(widget)
+      .update(widgetTable)
       .set({
         crawlStatus: 'crawling',
         workflowId: workflow.id,
         lastCrawlAt: new Date()
       })
-      .where(eq(widget.id, id));
+      .where(eq(widgetTable.id, id));
 
     return c.json({ 
       success: true, 
