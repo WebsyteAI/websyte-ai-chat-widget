@@ -700,6 +700,78 @@ app.get('/api/widgets/:id/crawl/status', async (c) => {
       return c.json({ error: 'Widget not found' }, 404);
     }
 
+    // Check if there's an active workflow and if it's still running
+    const workflowId = c.req.query('workflowId');
+    if (workflowId && widgetRecord.crawlStatus === 'crawling') {
+      try {
+        const instance = await c.env.WIDGET_CONTENT_WORKFLOW.get(workflowId);
+        const workflowStatus = await instance.status();
+        
+        // If workflow completed but widget status wasn't updated, update it now
+        if (workflowStatus.status === 'complete') {
+          const database = new DatabaseService(c.env.DATABASE_URL);
+          await database.getDatabase()
+            .update(widget)
+            .set({
+              crawlStatus: 'completed',
+              crawlPageCount: workflowStatus.output?.pagesCrawled || 0
+            })
+            .where(eq(widget.id, id));
+          
+          return c.json({ 
+            status: 'completed',
+            crawlPageCount: workflowStatus.output?.pagesCrawled || 0,
+            lastCrawlAt: widgetRecord.lastCrawlAt,
+            crawlUrl: widgetRecord.crawlUrl,
+            workflowStatus: workflowStatus.status
+          });
+        } else if (workflowStatus.status === 'failed' || workflowStatus.status === 'terminated') {
+          // Update widget status to failed
+          const database = new DatabaseService(c.env.DATABASE_URL);
+          await database.getDatabase()
+            .update(widget)
+            .set({
+              crawlStatus: 'failed'
+            })
+            .where(eq(widget.id, id));
+          
+          return c.json({ 
+            status: 'failed',
+            crawlPageCount: widgetRecord.crawlPageCount || 0,
+            lastCrawlAt: widgetRecord.lastCrawlAt,
+            crawlUrl: widgetRecord.crawlUrl,
+            workflowStatus: workflowStatus.status,
+            error: workflowStatus.error || 'Workflow failed'
+          });
+        }
+      } catch (workflowError) {
+        console.error('Error checking workflow status:', workflowError);
+        // If we can't get workflow status, check if crawl has been running too long
+        const crawlStartTime = widgetRecord.lastCrawlAt?.getTime() || 0;
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - crawlStartTime;
+        
+        // If crawl has been running for more than 15 minutes, consider it failed
+        if (elapsedTime > 15 * 60 * 1000) {
+          const database = new DatabaseService(c.env.DATABASE_URL);
+          await database.getDatabase()
+            .update(widget)
+            .set({
+              crawlStatus: 'failed'
+            })
+            .where(eq(widget.id, id));
+          
+          return c.json({ 
+            status: 'failed',
+            crawlPageCount: widgetRecord.crawlPageCount || 0,
+            lastCrawlAt: widgetRecord.lastCrawlAt,
+            crawlUrl: widgetRecord.crawlUrl,
+            error: 'Crawl timed out'
+          });
+        }
+      }
+    }
+
     // Return current widget status
     return c.json({ 
       status: widgetRecord.crawlStatus || 'idle',

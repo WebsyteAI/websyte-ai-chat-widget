@@ -242,7 +242,10 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       }
       
       // Always check widget status as well
-      const response = await fetch(`/api/widgets/${widget.id}/crawl/status`, {
+      const statusUrl = workflowId 
+        ? `/api/widgets/${widget.id}/crawl/status?workflowId=${workflowId}`
+        : `/api/widgets/${widget.id}/crawl/status`;
+      const response = await fetch(statusUrl, {
         credentials: 'include'
       });
       
@@ -251,9 +254,16 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
           status: 'crawling' | 'pending' | 'completed' | 'failed' | 'processing' | 'idle'; 
           crawlPageCount?: number;
           pageCount?: number; // legacy field name
+          workflowStatus?: string;
+          error?: string;
         };
         setCrawlStatus(data.status === 'idle' ? null : data.status);
         setCrawlPageCount(data.crawlPageCount || data.pageCount || 0);
+        
+        // If we got an updated status from workflow check, clear workflowId if completed/failed
+        if (data.workflowStatus && (data.workflowStatus === 'complete' || data.workflowStatus === 'failed')) {
+          setWorkflowId(null);
+        }
         
         // Refresh widget data if completed
         if (data.status === 'completed' && widget?.id) {
@@ -305,6 +315,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       if (!response.ok) throw new Error('Failed to reset crawl');
       
       setCrawlStatus('failed');
+      setWorkflowId(null); // Clear workflow ID when resetting
       toast.success('Crawl status reset. You can try crawling again.');
     } catch (error) {
       toast.error('Failed to reset crawl status');

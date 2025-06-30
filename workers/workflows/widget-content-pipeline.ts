@@ -34,6 +34,8 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
     const { widget } = await import('../db/schema');
     const { eq } = await import('drizzle-orm');
     
+    try {
+    
     // Step 1: Update widget status to crawling
     await step.do('update-widget-status-crawling', async () => {
       const db = new DatabaseService(this.env.DATABASE_URL);
@@ -46,9 +48,52 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
         .where(eq(widget.id, widgetId));
     });
 
-    // Step 2: Start Apify crawl and wait for completion
-    const crawlResult = await step.do('start-and-process-crawl', async (): Promise<CrawlResult> => {
-      try {
+    // Step 2: Start Apify crawl
+    const crawlRunId = await step.do('start-crawl', async (): Promise<string> => {
+      const fileStorage = new FileStorageService(this.env.WIDGET_FILES);
+      const db = new DatabaseService(this.env.DATABASE_URL);
+      const { WidgetService } = await import('../services/widget');
+      const widgetService = new WidgetService(
+        db,
+        new VectorSearchService(this.env.OPENAI_API_KEY, db),
+        fileStorage,
+        new ApifyCrawlerService(this.env.APIFY_API_TOKEN, fileStorage)
+      );
+      
+      // Clean URL
+      const url = new URL(crawlUrl);
+      const cleanUrl = `${url.protocol}//${url.hostname}`;
+      
+      // Delete existing crawl files if recrawling
+      if (isRecrawl) {
+        await widgetService.deleteExistingCrawlFiles(widgetId);
+      }
+      
+      // Start crawl using the existing service method
+      const crawler = new ApifyCrawlerService(this.env.APIFY_API_TOKEN, fileStorage);
+      const { runId } = await crawler.crawlWebsite(cleanUrl, {
+        maxPages: maxPages,
+        hostname: url.hostname
+      });
+      
+      // Update widget with crawl runId
+      await db.getDatabase()
+        .update(widget)
+        .set({
+          crawlRunId: runId,
+          crawlUrl: cleanUrl
+        })
+        .where(eq(widget.id, widgetId));
+      
+      return runId;
+    });
+
+    // Step 3: Poll for crawl completion
+    let crawlResult: CrawlResult | null = null;
+    const maxAttempts = 120; // 120 attempts * 5 seconds = 10 minutes
+    
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const checkResult = await step.do(`check-crawl-status-${attempt}`, async (): Promise<CrawlResult | null> => {
         const fileStorage = new FileStorageService(this.env.WIDGET_FILES);
         const db = new DatabaseService(this.env.DATABASE_URL);
         const { WidgetService } = await import('../services/widget');
@@ -58,74 +103,69 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
           fileStorage,
           new ApifyCrawlerService(this.env.APIFY_API_TOKEN, fileStorage)
         );
-        
-        // Clean URL
-        const url = new URL(crawlUrl);
-        const cleanUrl = `${url.protocol}//${url.hostname}`;
-        
-        // Delete existing crawl files if recrawling
-        if (isRecrawl) {
-          await widgetService.deleteExistingCrawlFiles(widgetId);
-        }
-        
-        // Start crawl using the existing service method
         const crawler = new ApifyCrawlerService(this.env.APIFY_API_TOKEN, fileStorage);
-        const { runId } = await crawler.crawlWebsite(cleanUrl, {
-          maxPages: maxPages,
-          hostname: url.hostname
-        });
         
-        // Update widget with crawl runId
-        await db.getDatabase()
-          .update(widget)
-          .set({
-            crawlRunId: runId,
-            crawlUrl: cleanUrl
-          })
-          .where(eq(widget.id, widgetId));
-        
-        // Wait for crawl to complete with timeout
-        const maxWaitTime = 10 * 60 * 1000; // 10 minutes
-        const startTime = Date.now();
-        let pageCount = 0;
-        
-        while (Date.now() - startTime < maxWaitTime) {
-          const status = await crawler.getCrawlStatus(runId);
+        try {
+          const status = await crawler.getCrawlStatus(crawlRunId);
           
           if (status.status === 'SUCCEEDED') {
             // Process the results
-            const processedFiles = await widgetService.processCrawlResults(widgetId, runId);
-            pageCount = processedFiles.filter(f => f.filename.includes('-page-')).length;
-            break;
+            const processedFiles = await widgetService.processCrawlResults(widgetId, crawlRunId);
+            const pageCount = processedFiles.filter(f => f.filename.includes('-page-')).length;
+            
+            return {
+              runId: crawlRunId,
+              pageCount: pageCount,
+              status: 'success'
+            };
           } else if (status.status === 'FAILED' || status.status === 'ABORTED') {
-            throw new Error(`Crawl failed with status: ${status.status}`);
+            return {
+              runId: crawlRunId,
+              pageCount: 0,
+              status: 'failed',
+              error: `Crawl failed with status: ${status.status}`
+            };
           }
           
-          // Wait before checking again
-          await new Promise(resolve => setTimeout(resolve, 5000)); // 5 seconds
+          // Still running, return null to continue polling
+          return null;
+        } catch (error) {
+          console.error(`[WORKFLOW] Error checking crawl status (attempt ${attempt + 1}):`, error);
+          // Return null to continue polling unless it's the last attempt
+          if (attempt >= maxAttempts - 1) {
+            return {
+              runId: crawlRunId,
+              pageCount: 0,
+              status: 'failed',
+              error: error instanceof Error ? error.message : 'Unknown error'
+            };
+          }
+          return null;
         }
-        
-        if (pageCount === 0) {
-          throw new Error('Crawl timed out or produced no results');
-        }
-        
-        return {
-          runId: runId,
-          pageCount: pageCount,
-          status: 'success'
-        };
-      } catch (error) {
-        console.error('[WORKFLOW] Crawl failed:', error);
-        return {
-          runId: '',
-          pageCount: 0,
-          status: 'failed',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        };
+      });
+      
+      if (checkResult !== null) {
+        crawlResult = checkResult;
+        break;
       }
-    });
+      
+      // Sleep before next check (except on last attempt)
+      if (attempt < maxAttempts - 1) {
+        await step.sleep('5 seconds');
+      }
+    }
+    
+    // If we exit the loop without a result, it means we timed out
+    if (!crawlResult) {
+      crawlResult = {
+        runId: crawlRunId,
+        pageCount: 0,
+        status: 'failed',
+        error: 'Crawl timed out after 10 minutes'
+      };
+    }
 
-    // Step 3: Check if crawl was successful
+    // Step 4: Check if crawl was successful
     if (crawlResult.status === 'failed') {
       await step.do('update-widget-status-failed', async () => {
         const db = new DatabaseService(this.env.DATABASE_URL);
@@ -204,9 +244,7 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
           }
           
           // Add delay between batches to avoid rate limits
-          if (i + BATCH_SIZE < pageFiles.length) {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
-          }
+          // Note: We can't use step.sleep inside step.do, so we'll rely on natural processing time
         }
         
         return totalCreated;
@@ -265,5 +303,25 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
       embeddingsCreated: totalEmbeddings,
       status: 'completed'
     };
+    } catch (error) {
+      // Ensure widget status is set to failed if workflow crashes
+      console.error('[WORKFLOW] Widget content pipeline failed:', error);
+      
+      try {
+        await step.do('update-widget-status-error', async () => {
+          const db = new DatabaseService(this.env.DATABASE_URL);
+          await db.getDatabase()
+            .update(widget)
+            .set({
+              crawlStatus: 'failed'
+            })
+            .where(eq(widget.id, widgetId));
+        });
+      } catch (updateError) {
+        console.error('[WORKFLOW] Failed to update widget status on error:', updateError);
+      }
+      
+      throw error; // Re-throw to mark workflow as failed
+    }
   }
 }
