@@ -48,10 +48,8 @@ export class VectorSearchService {
     maxWords: number = CHUNK_CONFIG.DEFAULT_CHUNK_SIZE, 
     overlapWords: number = CHUNK_CONFIG.OVERLAP_SIZE
   ): Promise<EmbeddingChunk[]> {
-    const chunks: EmbeddingChunk[] = [];
-    
     if (!text || !text.trim()) {
-      return chunks;
+      return [];
     }
     
     const words = text.split(/\s+/).filter(w => w.length > 0);
@@ -63,108 +61,79 @@ export class VectorSearchService {
     
     console.log(`[CHUNKING] Input: ${totalWords} words, ${text.length} chars, avg ${avgWordLength.toFixed(1)} chars/word`);
     
-    // Calculate safe token limit (more conservative to avoid hitting limits)
-    const maxTokensPerChunk = CHUNK_CONFIG.MAX_TOKENS_PER_CHUNK;
-    
-    // If the text is small enough, check if it fits in a single chunk
-    if (totalWords <= maxWords) {
-      const chunkText = words.join(' ');
-      const estimatedTokens = this.estimateTokenCount(chunkText);
-      console.log(`[CHUNKING] Single chunk check: ${totalWords} words, estimated ${estimatedTokens} tokens`);
-      
-      // If even a single chunk is too large, we need to split it
-      if (estimatedTokens > maxTokensPerChunk) {
-        // For content with long words, use character-based splitting instead
-        if (hasLongWords) {
-          console.log(`[CHUNKING] Content has long words, using character-based chunking`);
-          return this.chunkTextByCharacters(text, maxTokensPerChunk);
-        }
-        
-        // Calculate appropriate chunk size based on token limit
-        const avgCharsPerWord = chunkText.length / totalWords;
-        const maxCharsAllowed = maxTokensPerChunk * CHUNK_CONFIG.TOKEN_ESTIMATE_DIVISOR;
-        const targetWords = Math.floor(maxCharsAllowed / avgCharsPerWord);
-        console.log(`[CHUNKING] Recalculating chunk size: ${targetWords} words`);
-        return this.chunkText(text, Math.max(50, targetWords), Math.floor(targetWords * 0.1));
-      }
-      
-      return [{
-        text: chunkText.trim(),
-        metadata: {
-          chunkIndex: 0,
-          source: 'text'
-        }
-      }];
+    // For content with long words, use character-based splitting
+    if (hasLongWords) {
+      console.log(`[CHUNKING] Content has long words, using character-based chunking`);
+      return this.chunkTextByCharacters(text, CHUNK_CONFIG.MAX_TOKENS_PER_CHUNK);
     }
     
-    // Create overlapping chunks
-    let i = 0;
-    while (i < words.length) {
-      // Determine chunk size for this iteration
-      let currentMaxWords = Math.min(maxWords, words.length - i);
-      let chunkWords = words.slice(i, i + currentMaxWords);
-      let chunkText = chunkWords.join(' ');
-      let estimatedTokens = this.estimateTokenCount(chunkText);
-      
-      // Only log every Nth chunk to reduce noise
-      if (chunks.length % CHUNK_CONFIG.PROGRESS_LOG_INTERVAL === 0 && chunks.length > 0) {
-        console.log(`[CHUNKING] Progress: ${chunks.length} chunks created...`);
-      }
-      
-      // Iteratively reduce chunk size if still too large
-      let reductionCount = 0;
-      while (estimatedTokens > maxTokensPerChunk && currentMaxWords > 1) {
-        // Split chunk in half
-        currentMaxWords = Math.floor(currentMaxWords / 2);
-        console.log(`[CHUNKING] Chunk too large, splitting to ${currentMaxWords} words`);
-        
-        chunkWords = words.slice(i, i + currentMaxWords);
-        chunkText = chunkWords.join(' ');
-        estimatedTokens = this.estimateTokenCount(chunkText);
-        reductionCount++;
-        
-        // If we've reduced too many times, the content likely has very long words
-        if (reductionCount > 15 || currentMaxWords < 10) {
-          console.log(`[CHUNKING] Excessive reductions needed, switching to character-based chunking`);
-          return this.chunkTextByCharacters(text, maxTokensPerChunk);
-        }
-      }
-      
-      // Final safety check
-      if (estimatedTokens > maxTokensPerChunk) {
-        console.error(`[CHUNKING] Unable to reduce chunk size below token limit. Content may have extremely long words.`);
-        // Switch to character-based chunking for this specific case
-        return this.chunkTextByCharacters(text, maxTokensPerChunk);
-      }
-      
-      chunks.push({
-        text: chunkText.trim(),
-        metadata: {
-          chunkIndex: chunks.length,
-          source: 'text'
-        }
-      });
-      
-      // Calculate next position with overlap
-      const stepSize = Math.max(1, currentMaxWords - overlapWords);
-      
-      // Debug problematic stepping
-      if (stepSize < 50 && chunks.length < 10) {
-        console.log(`[CHUNKING] Small step detected: chunk ${chunks.length}, currentMaxWords: ${currentMaxWords}, overlap: ${overlapWords}, step: ${stepSize}`);
-      }
-      
-      i += stepSize;
-    }
-
-    // Final summary log
-    console.log(`[CHUNKING] Completed: ${chunks.length} chunks created from ${words.length} words`);
+    // Use binary split approach
+    const chunks: EmbeddingChunk[] = [];
+    await this.binarySplitChunking(words, 0, words.length, maxWords, overlapWords, chunks);
     
-    // Warn if we created too many chunks
-    if (chunks.length > totalWords / 50) { // More than 1 chunk per 50 words is suspicious
-      console.warn(`[CHUNKING] Warning: Created ${chunks.length} chunks from ${totalWords} words - this seems excessive`);
-    }
-    
+    console.log(`[CHUNKING] Completed: ${chunks.length} chunks created from ${totalWords} words`);
     return chunks;
+  }
+  
+  private async binarySplitChunking(
+    words: string[], 
+    startIdx: number, 
+    endIdx: number, 
+    maxWords: number, 
+    overlapWords: number,
+    globalChunks: EmbeddingChunk[]
+  ): Promise<void> {
+    const segmentWords = words.slice(startIdx, endIdx);
+    const segmentLength = endIdx - startIdx;
+    
+    // Base case: segment fits within maxWords
+    if (segmentLength <= maxWords) {
+      const chunkText = segmentWords.join(' ');
+      const estimatedTokens = this.estimateTokenCount(chunkText);
+      
+      // Check token limit
+      if (estimatedTokens <= CHUNK_CONFIG.MAX_TOKENS_PER_CHUNK) {
+        globalChunks.push({
+          text: chunkText.trim(),
+          metadata: {
+            chunkIndex: globalChunks.length,
+            source: 'text'
+          }
+        });
+        return;
+      }
+      
+      // If tokens exceed limit but we can't split further by words, use character splitting
+      if (segmentLength <= 100) {
+        console.log(`[CHUNKING] Small segment exceeds token limit, using character-based split`);
+        const charChunks = await this.chunkTextByCharacters(chunkText, CHUNK_CONFIG.MAX_TOKENS_PER_CHUNK);
+        charChunks.forEach(chunk => {
+          globalChunks.push({
+            ...chunk,
+            metadata: {
+              ...chunk.metadata,
+              chunkIndex: globalChunks.length
+            }
+          });
+        });
+        return;
+      }
+    }
+    
+    // Binary split: divide segment in half
+    const midpoint = startIdx + Math.floor(segmentLength / 2);
+    
+    // Add overlap by extending the first chunk and starting the second chunk earlier
+    const firstEndIdx = Math.min(endIdx, midpoint + Math.floor(overlapWords / 2));
+    const secondStartIdx = Math.max(startIdx, midpoint - Math.floor(overlapWords / 2));
+    
+    console.log(`[CHUNKING] Binary split: segment [${startIdx}-${endIdx}] (${segmentLength} words) -> [${startIdx}-${firstEndIdx}] & [${secondStartIdx}-${endIdx}]`);
+    
+    // Recursively process first half
+    await this.binarySplitChunking(words, startIdx, firstEndIdx, maxWords, overlapWords, globalChunks);
+    
+    // Recursively process second half
+    await this.binarySplitChunking(words, secondStartIdx, endIdx, maxWords, overlapWords, globalChunks);
   }
 
   /**
