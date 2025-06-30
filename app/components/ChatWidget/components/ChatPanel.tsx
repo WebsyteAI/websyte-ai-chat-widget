@@ -72,7 +72,7 @@ export function ChatPanel({
         <div className={`flex-shrink-0 flex flex-col items-center justify-center p-4 border-b border-gray-200 bg-white ${isEmbed ? 'websyte-embed-header' : ''}`}>
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <img 
-              src={advertiserLogo || '/websyte-ai-logo.svg'} 
+              src={advertiserLogo || 'https://websyte.ai/websyte-ai-logo.svg'} 
               alt={advertiserName} 
               className="w-6 h-6 rounded"
             />
@@ -157,7 +157,7 @@ export function ChatPanel({
               <div className="flex justify-start gap-2">
                 <div className="flex-shrink-0">
                   <img 
-                    src={advertiserLogo || '/websyte-ai-logo.svg'} 
+                    src={advertiserLogo || 'https://websyte.ai/websyte-ai-logo.svg'} 
                     alt="AI Assistant"
                     className="w-8 h-8 rounded-full"
                   />

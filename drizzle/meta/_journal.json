@@ -50,6 +50,13 @@
       "when": 1751267816410,
       "tag": "0006_foamy_lorna_dane",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1751268013747,
+      "tag": "0007_heavy_master_chief",
+      "breakpoints": true
     }
   ]
 }
