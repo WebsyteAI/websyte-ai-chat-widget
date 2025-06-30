@@ -7,10 +7,11 @@ import type { Message } from "../types";
 
 interface ChatMessageProps {
   message: Message;
+  avatarUrl?: string;
   onSourceClick?: () => void;
 }
 
-export function ChatMessage({ message, onSourceClick }: ChatMessageProps) {
+export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessageProps) {
   const sourcesRef = useRef<HTMLDivElement>(null);
   const [processedContent, setProcessedContent] = useState<string>("");
   const [showSources, setShowSources] = useState(false);
@@ -85,14 +86,26 @@ export function ChatMessage({ message, onSourceClick }: ChatMessageProps) {
   };
 
   return (
-    <div className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"}`}>
-      <div
-        className={`max-w-[80%] p-3 rounded-lg ${
-          message.role === "user"
-            ? "bg-blue-600 text-white"
-            : "text-gray-800"
-        }`}
-      >
+    <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} gap-2`}>
+      {/* Assistant Avatar */}
+      {message.role === "assistant" && (
+        <div className="flex-shrink-0">
+          <img 
+            src={avatarUrl || 'https://websyte.ai/logo.svg'} 
+            alt="AI Assistant"
+            className="w-8 h-8 rounded-full"
+          />
+        </div>
+      )}
+      
+      <div className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"}`}>
+        <div
+          className={`max-w-[80%] p-3 rounded-lg ${
+            message.role === "user"
+              ? "bg-blue-600 text-white"
+              : "text-gray-800"
+          }`}
+        >
         {message.role === "assistant" ? (
           <div className="text-sm prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
             <ReactMarkdown 
@@ -259,6 +272,7 @@ export function ChatMessage({ message, onSourceClick }: ChatMessageProps) {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

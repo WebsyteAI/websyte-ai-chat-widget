@@ -44,7 +44,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
     resetWidgetForm
   } = useUIStore();
   
-  const { name, description, url, content, files, dragActive } = widgetFormData;
+  const { name, description, url, logoUrl, content, files, dragActive } = widgetFormData;
 
   const isEditing = !!widget;
   
@@ -54,6 +54,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       updateWidgetFormField('name', widget.name || '');
       updateWidgetFormField('description', widget.description || '');
       updateWidgetFormField('url', widget.url || '');
+      updateWidgetFormField('logoUrl', widget.logoUrl || '');
       setExistingFiles(widget.files || []);
       setIsPublic(widget.isPublic || false);
       setCrawlUrl(widget.crawlUrl || '');
@@ -566,6 +567,20 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
                 placeholder="https://example.com"
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="logoUrl">Logo URL (optional)</Label>
+            <Input
+              id="logoUrl"
+              type="url"
+              value={logoUrl}
+              onChange={(e) => updateWidgetFormField('logoUrl', e.target.value)}
+              placeholder="https://example.com/logo.png"
+            />
+            <p className="text-sm text-gray-600">
+              Logo will be displayed in the widget header and as the AI avatar. Defaults to Websyte.ai logo if not provided.
+            </p>
           </div>
 
           <div className="space-y-2">

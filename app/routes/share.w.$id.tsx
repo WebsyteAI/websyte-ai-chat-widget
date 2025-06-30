@@ -7,6 +7,7 @@ interface Widget {
   id: string;
   name: string;
   description?: string;
+  logoUrl?: string;
   isPublic: boolean;
   createdAt: string;
   fileCount?: number;
@@ -357,6 +358,7 @@ export default function ShareWidget() {
           <ChatWidget 
             widgetId={state.widget.id}
             advertiserName={state.widget.name}
+            advertiserLogo={state.widget.logoUrl}
             advertiserUrl="https://websyte.ai"
             isFullScreen={true}
             saveChatMessages={true} // Save messages for public shared widgets
@@ -430,6 +432,7 @@ export default function ShareWidget() {
         <ChatWidget 
           widgetId={state.widget.id}
           advertiserName={state.widget.name}
+          advertiserLogo={state.widget.logoUrl}
           advertiserUrl="https://websyte.ai"
           isFullScreen={true}
           saveChatMessages={true} // Save messages for public shared widgets

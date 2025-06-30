@@ -12,6 +12,7 @@ export interface Widget {
   name: string;
   description?: string;
   url?: string;
+  logoUrl?: string;
   cacheEnabled: boolean;
   isPublic: boolean;
   crawlUrl?: string;

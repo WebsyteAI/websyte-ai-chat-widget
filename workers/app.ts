@@ -253,6 +253,7 @@ app.post('/api/widgets', async (c) => {
     const name = formData.get('name') as string;
     const description = formData.get('description') as string || undefined;
     const url = formData.get('url') as string || undefined;
+    const logoUrl = formData.get('logoUrl') as string || undefined;
     const content = formData.get('content') as string || undefined;
     
     const files: File[] = [];
@@ -270,6 +271,7 @@ app.post('/api/widgets', async (c) => {
       name,
       description,
       url,
+      logoUrl,
       content,
       files: files.length > 0 ? files : undefined
     });

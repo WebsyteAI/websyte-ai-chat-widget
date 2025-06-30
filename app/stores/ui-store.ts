@@ -13,6 +13,7 @@ interface UIState {
     name: string;
     description: string;
     url: string;
+    logoUrl: string;
     content: string;
     files: File[];
     dragActive: boolean;
@@ -35,6 +36,7 @@ const initialWidgetFormData = {
   name: '',
   description: '',
   url: '',
+  logoUrl: '',
   content: '',
   files: [],
   dragActive: false,
@@ -62,6 +64,7 @@ export const useUIStore = create<UIState>()(
               name: widget.name || '',
               description: widget.description || '',
               url: widget.url || '',
+              logoUrl: widget.logoUrl || '',
             }
           });
         } else {

@@ -71,14 +71,12 @@ export function ChatPanel({
         {/* Full-screen header - fixed */}
         <div className={`flex-shrink-0 flex flex-col items-center justify-center p-4 border-b border-gray-200 bg-white ${isEmbed ? 'websyte-embed-header' : ''}`}>
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <img 
+              src={advertiserLogo || 'https://websyte.ai/logo.svg'} 
+              alt={advertiserName} 
+              className="w-6 h-6 rounded"
+            />
             {advertiserName}
-            {(advertiserLogo || advertiserName === "Nativo") && (
-              <img 
-                src={advertiserLogo || `${baseUrl}/nativo-logo.png`} 
-                alt={advertiserName} 
-                className="w-6 h-6 rounded"
-              />
-            )}
           </h1>
           {!hidePoweredBy && (
             <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
@@ -152,12 +150,19 @@ export function ChatPanel({
             )}
             
             {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
+              <ChatMessage key={message.id} message={message} avatarUrl={advertiserLogo} />
             ))}
             
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 text-gray-800 p-4 rounded-lg">
+              <div className="flex justify-start gap-2">
+                <div className="flex-shrink-0">
+                  <img 
+                    src={advertiserLogo || 'https://websyte.ai/logo.svg'} 
+                    alt="AI Assistant"
+                    className="w-8 h-8 rounded-full"
+                  />
+                </div>
+                <div className="text-gray-800 p-4 rounded-lg">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>

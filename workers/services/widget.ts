@@ -11,6 +11,7 @@ export interface CreateWidgetRequest {
   name: string;
   description?: string;
   url?: string;
+  logoUrl?: string;
   content?: string;
   files?: File[];
 }
@@ -19,6 +20,7 @@ export interface UpdateWidgetRequest {
   name?: string;
   description?: string;
   url?: string;
+  logoUrl?: string;
   content?: string;
   isPublic?: boolean;
   crawlUrl?: string;
@@ -64,6 +66,7 @@ export class WidgetService {
       name: request.name,
       description: request.description,
       url: request.url,
+      logoUrl: request.logoUrl,
       cacheEnabled: true
     };
 
@@ -216,6 +219,7 @@ export class WidgetService {
     if (request.name !== undefined) updateData.name = request.name;
     if (request.description !== undefined) updateData.description = request.description;
     if (request.url !== undefined) updateData.url = request.url;
+    if (request.logoUrl !== undefined) updateData.logoUrl = request.logoUrl;
     if (request.isPublic !== undefined) updateData.isPublic = request.isPublic;
     if (request.crawlUrl !== undefined) updateData.crawlUrl = request.crawlUrl || null;
     

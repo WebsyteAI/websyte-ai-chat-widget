@@ -1,0 +1,1 @@
+ALTER TABLE "widget" ADD COLUMN "logo_url" text DEFAULT 'https://websyte.ai/logo.svg';
