@@ -278,6 +278,8 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
               const { widget: updatedWidget } = await widgetResponse.json() as { widget: Widget };
               // Update existing files with the new crawled files
               setExistingFiles(updatedWidget.files || []);
+              // Update workflowId from the fetched widget data
+              setWorkflowId(updatedWidget.workflowId || null);
               // Notify parent component about the update
               onWidgetUpdated?.(updatedWidget);
               toast.success('Crawl completed successfully!');
