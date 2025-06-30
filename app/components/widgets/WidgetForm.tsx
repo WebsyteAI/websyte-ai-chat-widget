@@ -193,7 +193,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
         throw new Error(error || 'Failed to start crawl');
       }
       
-      const result = await response.json();
+      const result = await response.json() as { workflowId?: string; status: string; message: string };
       if (result.workflowId) {
         setWorkflowId(result.workflowId);
       }
@@ -218,7 +218,13 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
         });
         
         if (workflowResponse.ok) {
-          const workflowData = await workflowResponse.json();
+          const workflowData = await workflowResponse.json() as { 
+            status: string; 
+            output?: { 
+              embeddingsCreated: number; 
+              pagesCrawled: number; 
+            }; 
+          };
           console.log('[Workflow Status]', workflowData);
           
           // Map workflow status to crawl status
@@ -241,9 +247,13 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       });
       
       if (response.ok) {
-        const data = await response.json() as { status: 'crawling' | 'pending' | 'completed' | 'failed' | 'processing'; crawlPageCount?: number };
-        setCrawlStatus(data.status);
-        setCrawlPageCount(data.crawlPageCount || 0);
+        const data = await response.json() as { 
+          status: 'crawling' | 'pending' | 'completed' | 'failed' | 'processing' | 'idle'; 
+          crawlPageCount?: number;
+          pageCount?: number; // legacy field name
+        };
+        setCrawlStatus(data.status === 'idle' ? null : data.status);
+        setCrawlPageCount(data.crawlPageCount || data.pageCount || 0);
         
         // Refresh widget data if completed
         if (data.status === 'completed' && widget?.id) {

@@ -111,15 +111,18 @@ export class VectorSearchService {
       
       // Iteratively reduce chunk size if still too large
       let reductionCount = 0;
-      while (estimatedTokens > maxTokensPerChunk && currentMaxWords > CHUNK_CONFIG.MIN_CHUNK_SIZE) {
-        currentMaxWords = Math.floor(currentMaxWords * CHUNK_CONFIG.CHUNK_REDUCTION_FACTOR);
+      while (estimatedTokens > maxTokensPerChunk && currentMaxWords > 1) {
+        // Split chunk in half
+        currentMaxWords = Math.floor(currentMaxWords / 2);
+        console.log(`[CHUNKING] Chunk too large, splitting to ${currentMaxWords} words`);
+        
         chunkWords = words.slice(i, i + currentMaxWords);
         chunkText = chunkWords.join(' ');
         estimatedTokens = this.estimateTokenCount(chunkText);
         reductionCount++;
         
         // If we've reduced too many times, the content likely has very long words
-        if (reductionCount > 5) {
+        if (reductionCount > 15 || currentMaxWords < 10) {
           console.log(`[CHUNKING] Excessive reductions needed, switching to character-based chunking`);
           return this.chunkTextByCharacters(text, maxTokensPerChunk);
         }
@@ -127,9 +130,9 @@ export class VectorSearchService {
       
       // Final safety check
       if (estimatedTokens > maxTokensPerChunk) {
-        console.error(`[CHUNKING] Unable to reduce chunk size below token limit. Using minimum step.`);
-        // For content that can't be chunked properly, use a larger minimum step
-        currentMaxWords = Math.max(10, Math.floor(maxTokensPerChunk * CHUNK_CONFIG.TOKEN_ESTIMATE_DIVISOR / avgWordLength));
+        console.error(`[CHUNKING] Unable to reduce chunk size below token limit. Content may have extremely long words.`);
+        // Switch to character-based chunking for this specific case
+        return this.chunkTextByCharacters(text, maxTokensPerChunk);
       }
       
       chunks.push({
@@ -141,9 +144,7 @@ export class VectorSearchService {
       });
       
       // Calculate next position with overlap
-      // Ensure meaningful progress - at least 10% of chunk size or 10 words
-      const minStepSize = Math.max(10, Math.floor(currentMaxWords * 0.1));
-      const stepSize = Math.max(minStepSize, currentMaxWords - overlapWords);
+      const stepSize = Math.max(1, currentMaxWords - overlapWords);
       
       // Debug problematic stepping
       if (stepSize < 50 && chunks.length < 10) {

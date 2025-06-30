@@ -1,4 +1,4 @@
-import { Hono, type Context } from 'hono';
+import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { createRequestHandler } from "react-router";
 import { eq } from 'drizzle-orm';
@@ -639,13 +639,13 @@ app.post('/api/widgets/:id/crawl', async (c) => {
     }
 
     // Validate widget ownership
-    const widget = await c.get('services').widget.getWidget(id, auth.user.id);
-    if (!widget) {
+    const widgetRecord = await c.get('services').widget.getWidget(id, auth.user.id);
+    if (!widgetRecord) {
       return c.json({ error: 'Widget not found' }, 404);
     }
 
     // Check if already crawling
-    if (widget.crawlStatus === 'crawling') {
+    if (widgetRecord.crawlStatus === 'crawling') {
       return c.json({ error: 'Crawl already in progress' }, 400);
     }
 
@@ -655,14 +655,15 @@ app.post('/api/widgets/:id/crawl', async (c) => {
         widgetId: id,
         crawlUrl: crawlUrl,
         maxPages: 25,
-        isRecrawl: !!widget.crawlRunId
+        isRecrawl: !!widgetRecord.crawlRunId
       }
     });
 
     console.log('[API] Started workflow:', workflow.id);
 
     // Update widget status to indicate workflow started
-    await c.get('services').db.getDatabase()
+    const database = new DatabaseService(c.env.DATABASE_URL);
+    await database.getDatabase()
       .update(widget)
       .set({
         crawlStatus: 'crawling',
@@ -740,8 +741,8 @@ app.get('/api/widgets/:id/workflow/status', async (c) => {
   }
 });
 
-// Legacy crawl status check (for backward compatibility)
-app.get('/api/widgets/:id/crawl/status-legacy', async (c) => {
+// Check and process crawl status (original implementation)
+app.get('/api/widgets/:id/crawl/status-check', async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -988,3 +989,6 @@ export default app;
 
 // Export scheduled handler
 export { cleanupOldMessages as scheduled } from './cron/cleanup-messages';
+
+// Export workflow
+export { WidgetContentPipeline } from './workflows/widget-content-pipeline';

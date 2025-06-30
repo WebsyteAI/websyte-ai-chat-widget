@@ -28,7 +28,7 @@
       "name": "widget-content-pipeline",
       "binding": "WIDGET_CONTENT_WORKFLOW",
       "class_name": "WidgetContentPipeline",
-      "script_name": "widget-content-pipeline"
+      "script_name": "websyte-ai-chat-widget"
     }
   ],
   /**
