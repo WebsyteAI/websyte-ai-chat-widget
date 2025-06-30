@@ -15,25 +15,27 @@ graph TB
     subgraph "Workflow Trigger"
         B[Create Workflow Instance<br/>WIDGET_CONTENT_WORKFLOW]
         B1[Set workflowId in DB]
+        B2[10-minute Workflow Timeout]
     end
     
     subgraph "Widget Content Pipeline Workflow"
         C[Step 1: Update Status to 'crawling']
-        D[Step 2: Start Apify Crawl]
-        E[Step 3: Poll Crawl Status<br/>(max 120 attempts × 5s)]
+        D[Step 2: Start Apify Crawl<br/>Max 25 pages]
+        E[Step 3: Poll Crawl Status<br/>(max 50 attempts × 10s = 8.3 min)<br/>Using step.sleep]
         F{Crawl<br/>Succeeded?}
-        G[Process Crawl Results]
-        H[Step 4: Get Crawled Files]
-        I[Step 5: Process Embeddings]
+        G[Process Crawl Results<br/>Batch size: 5 pages]
+        H[Step 4: Get Crawled Files<br/>Store in R2]
+        I[Step 5: Process Embeddings<br/>Batch size: 3 pages<br/>Monitor time limit]
         J[Step 6: Update Status to 'completed']
-        K[Step 7: Generate Recommendations]
+        K[Step 7: Generate Recommendations<br/>(Optional)]
         L[Update Status to 'failed']
     end
     
     A1 --> B
     A2 --> B
     B --> B1
-    B1 --> C
+    B1 --> B2
+    B2 --> C
     C --> D
     D --> E
     E --> F
@@ -45,6 +47,9 @@ graph TB
     J --> K
     L --> |Clear workflowId| End1[End]
     K --> |Clear workflowId| End2[End]
+    
+    style E fill:#e1f5e1,stroke:#4caf50,stroke-width:2px
+    style B2 fill:#ffe0e0,stroke:#f44336,stroke-width:2px
 ```
 
 ## Detailed Step Breakdown
@@ -81,25 +86,33 @@ const crawlRunId = await step.do<string>('start-crawl', async () => {
 });
 ```
 
-### 4. **Step 3: Poll for Completion**
+### 4. **Step 3: Poll for Completion** ✅ **FIXED**
 ```typescript
-for (let attempt = 0; attempt < 120; attempt++) {
+// Fixed in commit f3d3e60: Now uses step.sleep instead of setTimeout
+for (let attempt = 0; attempt < 50; attempt++) {  // Reduced from 120 to 50
   const result = await step.do(`check-crawl-status-${attempt}`, async () => {
     // Check Apify crawl status
     if (status === 'SUCCEEDED') {
       // Process results
       return { status: 'success', pageCount };
-    } else if (status === 'FAILED') {
+    } else if (status === 'FAILED' || status === 'ABORTED') {
       return { status: 'failed', error };
     }
     return null; // Continue polling
   });
   
   if (!result) {
-    await step.sleep(`wait-crawl-${attempt}`, '5 seconds');
+    // IMPORTANT: Using step.sleep for proper async handling in Cloudflare Workers
+    await step.sleep(`wait-crawl-${attempt}`, '10 seconds');  // Changed from 5s to 10s
   }
 }
 ```
+
+**Key Changes:**
+- ✅ Replaced `setTimeout` with `step.sleep` for proper Cloudflare Workers compatibility
+- ✅ Reduced polling attempts from 120 to 50 (still 8.3 minutes total)
+- ✅ Increased polling interval from 5s to 10s for efficiency
+- ✅ Added ABORTED status check
 
 ### 5. **Process Crawl Results**
 When crawl succeeds:
@@ -208,7 +221,162 @@ stateDiagram-v2
 
 ## Recent Updates
 
-1. **Fixed workflowId tracking**: Both API endpoints now properly set workflowId
-2. **Page files in database**: Each page file gets a database record for accurate counting
-3. **UI filtering**: Page files filtered out by default to keep UI clean
-4. **Proper cleanup**: Delete operations remove both R2 objects and database records
+1. **Fixed stuck crawling workflow** (commit f3d3e60): Replaced `setTimeout` with `step.sleep` for proper async handling
+2. **Improved polling efficiency**: Reduced attempts to 50 × 10s (from 120 × 5s) while maintaining same timeout
+3. **Enhanced chunking**: Improved configuration and content processing for better embedding quality
+4. **Fixed workflowId tracking**: Both API endpoints now properly set workflowId
+5. **Page files in database**: Each page file gets a database record for accurate counting
+6. **UI filtering**: Page files filtered out by default to keep UI clean
+7. **Proper cleanup**: Delete operations remove both R2 objects and database records
+
+## Sequence Diagram - Complete Crawl Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant API
+    participant DB[(Database)]
+    participant Workflow
+    participant Apify
+    participant R2[R2 Storage]
+    participant Vector[Vector DB]
+    participant OpenAI
+    
+    User->>Frontend: Enter URL & Click "Crawl Website"
+    Frontend->>API: POST /api/widgets/:id/crawl
+    API->>DB: Check widget ownership & status
+    API->>API: Validate not already crawling
+    API->>Workflow: Create workflow instance
+    API->>DB: Save workflowId
+    API-->>Frontend: Return workflowId
+    
+    Note over Workflow: 10-minute timeout starts
+    
+    Workflow->>DB: Update status to 'crawling'
+    Workflow->>Apify: Start crawl (max 25 pages)
+    Apify-->>Workflow: Return crawlRunId
+    
+    loop Poll every 10 seconds (max 50 times)
+        Workflow->>Apify: Check crawl status
+        alt Crawl succeeded
+            Apify-->>Workflow: Status: SUCCEEDED
+            Workflow->>Workflow: Exit loop
+        else Crawl failed/aborted
+            Apify-->>Workflow: Status: FAILED/ABORTED
+            Workflow->>DB: Update status to 'failed'
+            Workflow->>DB: Clear workflowId
+            Workflow-->>Frontend: Error response
+        else Still running
+            Workflow->>Workflow: step.sleep(10s)
+        end
+    end
+    
+    Workflow->>Apify: Fetch crawl results
+    Apify-->>Workflow: Return pages data
+    
+    loop Process pages (batch of 5)
+        Workflow->>R2: Store page-N.md files
+        Workflow->>DB: Create file records
+    end
+    
+    loop Generate embeddings (batch of 3)
+        Workflow->>R2: Read page content
+        Workflow->>OpenAI: Generate embeddings
+        OpenAI-->>Workflow: Return vectors
+        Workflow->>Vector: Store embeddings
+        Workflow->>Workflow: Check time limit
+    end
+    
+    Workflow->>DB: Update status to 'completed'
+    opt Generate recommendations
+        Workflow->>OpenAI: Generate recommendations
+        Workflow->>DB: Store recommendations
+    end
+    
+    Workflow->>DB: Clear workflowId
+    
+    loop Frontend polls status
+        Frontend->>API: GET /api/widgets/:id/crawl/status
+        API->>DB: Check widget status
+        API-->>Frontend: Return status & progress
+    end
+```
+
+## Component Interaction Diagram
+
+```mermaid
+graph TB
+    subgraph "Frontend Layer"
+        UI[WidgetForm Component]
+        Status[Status Polling]
+    end
+    
+    subgraph "API Layer"
+        REST[REST API<br/>Hono Framework]
+        Auth[Authentication<br/>Middleware]
+        Rate[Rate Limiter<br/>10/min anon, 30/min auth]
+    end
+    
+    subgraph "Workflow Layer"
+        WF[Cloudflare Workflow<br/>10-min timeout]
+        Steps[Pipeline Steps<br/>1-7]
+    end
+    
+    subgraph "Service Layer"
+        Crawler[ApifyCrawlerService]
+        Widget[WidgetService]
+        Message[MessageService]
+        VectorSearch[VectorSearchService]
+    end
+    
+    subgraph "External Services"
+        ApifyAPI[Apify API]
+        OpenAIAPI[OpenAI API]
+    end
+    
+    subgraph "Storage Layer"
+        PG[(PostgreSQL<br/>Neon)]
+        R2S[R2 Storage<br/>Page Files]
+        VDB[(pgvector<br/>Embeddings)]
+    end
+    
+    UI --> REST
+    Status --> REST
+    REST --> Auth
+    Auth --> Rate
+    Rate --> WF
+    WF --> Steps
+    Steps --> Crawler
+    Steps --> Widget
+    Steps --> VectorSearch
+    Crawler --> ApifyAPI
+    VectorSearch --> OpenAIAPI
+    Widget --> PG
+    Crawler --> R2S
+    VectorSearch --> VDB
+    
+    style WF fill:#ffe0e0,stroke:#f44336,stroke-width:2px
+    style Steps fill:#e1f5e1,stroke:#4caf50,stroke-width:2px
+```
+
+## Timing and Performance
+
+### Workflow Timing
+- **Total Workflow Timeout**: 10 minutes (hard limit)
+- **Polling Interval**: 10 seconds (using `step.sleep`)
+- **Maximum Poll Attempts**: 50 (= 8.3 minutes)
+- **Safety Buffer**: 1.7 minutes for processing after crawl
+
+### Processing Limits
+- **Max Pages per Crawl**: 25 pages
+- **Page Processing Batch**: 5 pages at a time
+- **Embedding Batch Size**: 3 pages at a time
+- **Chunk Size**: ~1000 tokens per chunk
+
+### Performance Optimizations
+- **Domain-restricted crawling**: Only crawls within specified domain
+- **Media blocking**: Blocks images/videos for faster crawling
+- **Parallel processing**: Batched operations for efficiency
+- **Time monitoring**: Tracks elapsed time to avoid timeout
+- **Error recovery**: Graceful handling with status updates

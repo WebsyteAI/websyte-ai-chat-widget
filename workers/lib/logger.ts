@@ -1,30 +1,43 @@
 // Simple logger for Cloudflare Workers environment
 export interface Logger {
-  info: (message: string, ...args: any[]) => void;
-  error: (message: string, ...args: any[]) => void;
-  warn: (message: string, ...args: any[]) => void;
-  debug: (message: string, ...args: any[]) => void;
+  info: (message: string | Record<string, any>, ...args: any[]) => void;
+  error: (message: string | Record<string, any>, ...args: any[]) => void;
+  warn: (message: string | Record<string, any>, ...args: any[]) => void;
+  debug: (message: string | Record<string, any>, ...args: any[]) => void;
+  child: (context: Record<string, any>) => Logger;
 }
 
 // Factory function to create loggers with context
 export function createLogger(name: string, context?: Record<string, any>): Logger {
   const prefix = `[${name}]`;
+  const fullContext = context || {};
+  
+  const formatMessage = (message: string | Record<string, any>) => {
+    const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
+    if (Object.keys(fullContext).length > 0) {
+      return `${messageStr} ${JSON.stringify(fullContext)}`;
+    }
+    return messageStr;
+  };
   
   return {
-    info: (message: string, ...args: any[]) => {
-      console.log(prefix, message, ...args);
+    info: (message: string | Record<string, any>, ...args: any[]) => {
+      console.log(prefix, formatMessage(message), ...args);
     },
-    error: (message: string, ...args: any[]) => {
-      console.error(prefix, message, ...args);
+    error: (message: string | Record<string, any>, ...args: any[]) => {
+      console.error(prefix, formatMessage(message), ...args);
     },
-    warn: (message: string, ...args: any[]) => {
-      console.warn(prefix, message, ...args);
+    warn: (message: string | Record<string, any>, ...args: any[]) => {
+      console.warn(prefix, formatMessage(message), ...args);
     },
-    debug: (message: string, ...args: any[]) => {
+    debug: (message: string | Record<string, any>, ...args: any[]) => {
       // Only log debug in development
       if (process.env.NODE_ENV !== 'production') {
-        console.log(prefix, '[DEBUG]', message, ...args);
+        console.log(prefix, '[DEBUG]', formatMessage(message), ...args);
       }
+    },
+    child: (childContext: Record<string, any>) => {
+      return createLogger(name, { ...fullContext, ...childContext });
     },
   };
 }
