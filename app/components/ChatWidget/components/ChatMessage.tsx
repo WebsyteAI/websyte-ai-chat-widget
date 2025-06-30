@@ -89,7 +89,7 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
     <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} gap-2`}>
       {/* Assistant Avatar */}
       {message.role === "assistant" && (
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 pt-3">
           <img 
             src={avatarUrl || 'https://websyte.ai/websyte-ai-logo.svg'} 
             alt="AI Assistant"

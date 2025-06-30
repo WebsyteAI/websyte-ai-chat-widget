@@ -155,7 +155,7 @@ export function ChatPanel({
             
             {isLoading && (
               <div className="flex justify-start gap-2">
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 pt-4">
                   <img 
                     src={advertiserLogo || 'https://websyte.ai/websyte-ai-logo.svg'} 
                     alt="AI Assistant"
