@@ -11,12 +11,18 @@ export const createAuth = (env: Env) => {
     const sql = neon(env.DATABASE_URL);
     const db = drizzle(sql, { schema });
 
+    const isLocal = import.meta.env.DEV || env.BETTER_AUTH_URL?.includes('localhost');
+    
     return betterAuth({
       database: drizzleAdapter(db, { 
         provider: "pg"
       }),
       baseURL: env.BETTER_AUTH_URL,
       secret: env.BETTER_AUTH_SECRET,
+      emailAndPassword: {
+        enabled: isLocal, // Only enable email/password in local development
+        requireEmailVerification: false, // Disable for testing
+      },
       socialProviders: {
         google: {
           clientId: env.GOOGLE_CLIENT_ID as string,

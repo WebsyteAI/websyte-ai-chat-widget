@@ -1,7 +1,7 @@
 import type { Context, Next } from 'hono';
 import type { Env } from '../types';
 import { createLogger, generateRequestId } from './logger';
-import type { Logger } from 'pino';
+import type { Logger } from './logger';
 
 type AppContextType = {
   Bindings: Env;

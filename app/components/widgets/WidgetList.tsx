@@ -11,9 +11,19 @@ import {
   Edit, 
   Trash2, 
   Plus,
-  ExternalLink 
+  ExternalLink,
+  Globe 
 } from 'lucide-react';
 import { useWidgetStore, type Widget } from '../../stores';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '../ui/pagination';
 
 
 interface WidgetListProps {
@@ -23,12 +33,23 @@ interface WidgetListProps {
 }
 
 export function WidgetList({ onCreateWidget, onEditWidget, onDeleteWidget }: WidgetListProps) {
-  const { widgets, loading, error, fetchWidgets, clearError } = useWidgetStore();
+  const { 
+    widgets, 
+    loading, 
+    error, 
+    fetchWidgets, 
+    clearError,
+    currentPage,
+    pageSize,
+    totalWidgets,
+    getTotalPages,
+    setPage 
+  } = useWidgetStore();
 
 
   useEffect(() => {
-    fetchWidgets();
-  }, [fetchWidgets]);
+    fetchWidgets(currentPage, pageSize);
+  }, [fetchWidgets, currentPage, pageSize]);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -152,21 +173,73 @@ export function WidgetList({ onCreateWidget, onEditWidget, onDeleteWidget }: Wid
                 {/* Files */}
                 {widget.files.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-gray-700">Files:</h4>
+                    <h4 className="text-sm font-medium text-gray-700">Content:</h4>
                     <div className="space-y-1">
-                      {widget.files.slice(0, 3).map((file) => (
-                        <div key={file.id} className="flex items-center justify-between text-xs">
-                          <span className="truncate flex-1 mr-2">{file.filename}</span>
-                          <span className="text-gray-500">
-                            {formatFileSize(file.fileSize)}
-                          </span>
-                        </div>
-                      ))}
-                      {widget.files.length > 3 && (
-                        <p className="text-xs text-gray-500">
-                          +{widget.files.length - 3} more files
-                        </p>
-                      )}
+                      {(() => {
+                        // Separate crawled files from uploaded files
+                        const crawledFiles = widget.files.filter(f => f.filename.includes('.crawl.'));
+                        const uploadedFiles = widget.files.filter(f => !f.filename.includes('.crawl.'));
+                        
+                        // Group crawled pages
+                        if (crawledFiles.length > 0) {
+                          const totalCrawledSize = crawledFiles.reduce((sum, f) => sum + f.fileSize, 0);
+                          const pageCount = crawledFiles.filter(f => f.filename.includes('.crawl.page-')).length;
+                          
+                          return (
+                            <>
+                              <div className="flex items-center justify-between text-xs bg-blue-50 rounded p-2">
+                                <div className="flex items-center gap-2">
+                                  <Globe className="w-4 h-4 text-blue-500" />
+                                  <span className="font-medium">Website Crawl</span>
+                                </div>
+                                <span className="text-gray-600">
+                                  {pageCount} pages • {formatFileSize(totalCrawledSize)}
+                                </span>
+                              </div>
+                              
+                              {/* Show uploaded files separately */}
+                              {uploadedFiles.slice(0, 2).map((file) => (
+                                <div key={file.id} className="flex items-center justify-between text-xs">
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-gray-400" />
+                                    <span className="truncate flex-1">{file.filename}</span>
+                                  </div>
+                                  <span className="text-gray-500">
+                                    {formatFileSize(file.fileSize)}
+                                  </span>
+                                </div>
+                              ))}
+                              {uploadedFiles.length > 2 && (
+                                <p className="text-xs text-gray-500">
+                                  +{uploadedFiles.length - 2} more files
+                                </p>
+                              )}
+                            </>
+                          );
+                        }
+                        
+                        // No crawled files, show regular files
+                        return (
+                          <>
+                            {widget.files.slice(0, 3).map((file) => (
+                              <div key={file.id} className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2">
+                                  <FileText className="w-4 h-4 text-gray-400" />
+                                  <span className="truncate flex-1">{file.filename}</span>
+                                </div>
+                                <span className="text-gray-500">
+                                  {formatFileSize(file.fileSize)}
+                                </span>
+                              </div>
+                            ))}
+                            {widget.files.length > 3 && (
+                              <p className="text-xs text-gray-500">
+                                +{widget.files.length - 3} more files
+                              </p>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 )}
@@ -184,6 +257,65 @@ export function WidgetList({ onCreateWidget, onEditWidget, onDeleteWidget }: Wid
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalWidgets > pageSize && (
+        <div className="mt-8">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => setPage(Math.max(1, currentPage - 1))}
+                  className={currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+              
+              {Array.from({ length: getTotalPages() }, (_, i) => i + 1).map((page) => {
+                // Show first page, last page, current page, and pages around current
+                if (
+                  page === 1 || 
+                  page === getTotalPages() || 
+                  (page >= currentPage - 1 && page <= currentPage + 1)
+                ) {
+                  return (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        onClick={() => setPage(page)}
+                        isActive={page === currentPage}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                }
+                
+                // Show ellipsis
+                if (page === currentPage - 2 || page === currentPage + 2) {
+                  return (
+                    <PaginationItem key={page}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  );
+                }
+                
+                return null;
+              })}
+              
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={() => setPage(Math.min(getTotalPages(), currentPage + 1))}
+                  className={currentPage === getTotalPages() ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+          
+          <div className="text-center mt-4 text-sm text-gray-600">
+            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalWidgets)} of {totalWidgets} widgets
+          </div>
         </div>
       )}
     </div>

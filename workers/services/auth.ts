@@ -3,7 +3,7 @@ import type { Env } from '../types';
 import { createAuth } from '../lib/better-auth';
 
 export class AuthService {
-  private auth: ReturnType<typeof createAuth>;
+  public auth: ReturnType<typeof createAuth>;
 
   constructor(env: Env) {
     this.auth = createAuth(env);

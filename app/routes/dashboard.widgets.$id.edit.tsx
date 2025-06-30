@@ -32,9 +32,6 @@ export default function WidgetEdit() {
           const data = await response.json() as { widget: Widget };
           setWidget(data.widget);
           setLoading(false);
-          
-          // Also refresh the widgets list in the background
-          fetchWidgets().catch(console.error);
           return;
         }
 
@@ -68,12 +65,10 @@ export default function WidgetEdit() {
 
   const handleWidgetUpdated = (updatedWidget: Widget) => {
     setWidget(updatedWidget);
-    fetchWidgets(); // Refresh the widget list
   };
 
   const handleWidgetDeleted = () => {
     navigate('/dashboard/widgets');
-    fetchWidgets(); // Refresh the widget list
   };
 
   if (loading) {

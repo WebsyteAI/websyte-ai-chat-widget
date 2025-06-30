@@ -129,11 +129,6 @@ app.use('/api/analyze-selector', optionalAuthMiddleware);
 // Note: Auth middleware is applied individually to widget routes that need it
 // The /api/widgets/:id/public endpoint does not require authentication
 
-// Test auth route
-app.get('/api/auth/test', async (c) => {
-  return c.json({ message: 'Auth route is working!' });
-});
-
 // Auth Routes - Handle all Better Auth endpoints
 app.all('/api/auth/*', async (c) => {
   console.log('Auth route hit:', c.req.method, c.req.path);
@@ -1147,6 +1142,7 @@ app.post('/api/automation/widgets/:id/recommendations', bearerTokenMiddleware, a
     return c.json({ error: 'Failed to generate recommendations' }, 500);
   }
 });
+
 
 // Health check endpoint
 app.get('/api/health', (c) => {
