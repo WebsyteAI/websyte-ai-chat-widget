@@ -74,7 +74,7 @@ export function ChatMessage({ message, showSources = true, showDebug = false }: 
           className={`p-3 rounded-lg ${
             message.role === "user"
               ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-800"
+              : "text-gray-800"
           }`}
         >
           {message.role === "assistant" ? (

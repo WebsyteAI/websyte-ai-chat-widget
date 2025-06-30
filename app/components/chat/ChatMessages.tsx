@@ -49,7 +49,7 @@ export function ChatMessages({
       {/* Loading Indicator */}
       {loading && (
         <div className="flex justify-start mb-4">
-          <div className="bg-gray-100 text-gray-800 p-3 rounded-lg">
+          <div className="text-gray-800 p-3 rounded-lg">
             <div className="flex space-x-1">
               <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
               <div 
