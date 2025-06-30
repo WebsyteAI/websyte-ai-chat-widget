@@ -3,7 +3,7 @@
  * These values control how text is split into chunks for vector embeddings
  */
 export const CHUNK_CONFIG = {
-  DEFAULT_CHUNK_SIZE: 600,       // Default words per chunk (target 500-600)
+  DEFAULT_CHUNK_SIZE: 1000,      // Default words per chunk
   OVERLAP_SIZE: 100,             // Words overlapping between chunks
   MIN_CHUNK_SIZE: 100,           // Minimum chunk size
   MAX_TOKENS_PER_CHUNK: 8000,    // Conservative limit for OpenAI embeddings (actual limit is 8191)
