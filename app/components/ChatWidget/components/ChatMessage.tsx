@@ -86,26 +86,27 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
   };
 
   return (
-    <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} gap-2`}>
-      {/* Assistant Avatar */}
-      {message.role === "assistant" && (
-        <div className="flex-shrink-0 pt-3">
-          <img 
-            src={avatarUrl || 'https://websyte.ai/websyte-ai-logo.svg'} 
-            alt="AI Assistant"
-            className="w-8 h-8 rounded-full"
-          />
-        </div>
-      )}
-      
-      <div className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"}`}>
-        <div
-          className={`max-w-[80%] p-3 rounded-lg ${
-            message.role === "user"
-              ? "bg-blue-600 text-white"
-              : "text-gray-800"
-          }`}
-        >
+    <div className={`${message.role === "user" ? "flex justify-end" : ""}`}>
+      <div className={`flex ${message.role === "user" ? "" : "gap-2"}`}>
+        {/* Assistant Avatar */}
+        {message.role === "assistant" && (
+          <div className="flex-shrink-0 pt-3 w-8">
+            <img 
+              src={avatarUrl || 'https://websyte.ai/websyte-ai-logo.svg'} 
+              alt="AI Assistant"
+              className="w-8 h-8 rounded-full"
+            />
+          </div>
+        )}
+        
+        <div className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"} flex-1`}>
+          <div
+            className={`max-w-[80%] p-3 rounded-lg ${
+              message.role === "user"
+                ? "bg-blue-600 text-white"
+                : "text-gray-800"
+            }`}
+          >
         {message.role === "assistant" ? (
           <div className="text-sm prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
             <ReactMarkdown 
@@ -154,11 +155,13 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
             minute: '2-digit' 
           })}
         </p>
+          </div>
+        </div>
       </div>
       
       {/* Sources Section - Now positioned under the message */}
       {message.role === "assistant" && message.sources && message.sources.length > 0 && (
-        <div className="mt-2 max-w-[80%] w-full" ref={sourcesRef}>
+        <div className="mt-2" ref={sourcesRef}>
           {/* Toggle button */}
           <button
             onClick={() => setShowSources(!showSources)}
@@ -201,14 +204,14 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
                       }`}
                     >
                   <div className={`flex items-center justify-between gap-2 ${isExpanded ? 'mb-1' : ''}`}>
-                    <div className="flex items-center gap-2 flex-1">
-                      <span className="font-semibold text-blue-600">[{originalIndex + 1}]</span>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className="font-semibold text-blue-600 flex-shrink-0">[{originalIndex + 1}]</span>
                       {(source.metadata.url || source.metadata.crawledFrom) ? (
                         <a
                           href={source.metadata.url || source.metadata.crawledFrom}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors truncate"
+                          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors min-w-0"
                           title={source.metadata.url || source.metadata.crawledFrom}
                         >
                           <Globe className="w-3 h-3 flex-shrink-0" />
@@ -226,7 +229,7 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
                         </a>
                       ) : (
                         <>
-                          <FileText className="w-3 h-3" />
+                          <FileText className="w-3 h-3 flex-shrink-0" />
                           {source.metadata.title ? (
                             <span className="text-gray-600 font-medium truncate">{source.metadata.title}</span>
                           ) : source.metadata.source ? (
@@ -235,8 +238,8 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
                         </>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500">Chunk #{source.metadata.chunkIndex + 1}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="text-gray-500 whitespace-nowrap">Chunk #{source.metadata.chunkIndex + 1}</span>
                       <button
                         onClick={() => {
                           setExpandedSources(prev => {
@@ -272,7 +275,6 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
           )}
         </div>
       )}
-      </div>
     </div>
   );
 }

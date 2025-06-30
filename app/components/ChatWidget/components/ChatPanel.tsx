@@ -97,28 +97,19 @@ export function ChatPanel({
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
                 <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
-                    Welcome to 
-                    {advertiserLogo && (
-                      <img 
-                        src={advertiserLogo} 
-                        alt={advertiserName} 
-                        className="w-10 h-10 rounded"
-                      />
-                    )}
-                    {advertiserName}
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                    <div>Welcome to</div>
+                    <div className="flex items-center justify-center gap-3 mt-2">
+                      {advertiserLogo && (
+                        <img 
+                          src={advertiserLogo} 
+                          alt={advertiserName} 
+                          className="w-10 h-10 rounded"
+                        />
+                      )}
+                      {advertiserName}
+                    </div>
                   </h2>
-                  {!hidePoweredBy && (
-                    <p className="text-lg text-gray-500 flex items-center justify-center gap-2">
-                      Powered by 
-                      <img 
-                        src={`${baseUrl}/websyte-ai-logo.svg`} 
-                        alt="Websyte.ai" 
-                        className="w-5 h-5"
-                      />
-                      Websyte.ai
-                    </p>
-                  )}
                 </div>
                 
                 
