@@ -337,6 +337,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
     formData.append('name', name);
     if (description) formData.append('description', description);
     if (url) formData.append('url', url);
+    if (logoUrl) formData.append('logoUrl', logoUrl);
     if (content) formData.append('content', content);
     if (crawlUrl) formData.append('crawlUrl', crawlUrl);
     

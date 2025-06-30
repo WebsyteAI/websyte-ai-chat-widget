@@ -98,7 +98,6 @@ export function ChatPanel({
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
-                    Welcome to {advertiserName}
                     {advertiserLogo && (
                       <img 
                         src={advertiserLogo} 
@@ -106,6 +105,7 @@ export function ChatPanel({
                         className="w-10 h-10 rounded"
                       />
                     )}
+                    Welcome to {advertiserName}
                   </h2>
                   {!hidePoweredBy && (
                     <p className="text-lg text-gray-500 flex items-center justify-center gap-2">
