@@ -30,7 +30,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
   const [crawlStatus, setCrawlStatus] = useState<'pending' | 'crawling' | 'completed' | 'failed' | 'processing' | null>(widget?.crawlStatus || null);
   const [crawlPageCount, setCrawlPageCount] = useState(widget?.crawlPageCount || 0);
   const [crawlStarting, setCrawlStarting] = useState(false);
-  const [workflowId, setWorkflowId] = useState<string | null>(null);
+  const [workflowId, setWorkflowId] = useState<string | null>(widget?.workflowId || null);
   const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
   const [generatingRecommendations, setGeneratingRecommendations] = useState(false);
   const [recommendations, setRecommendations] = useState(widget?.recommendations || []);
@@ -59,6 +59,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       setCrawlUrl(widget.crawlUrl || '');
       setCrawlStatus(widget.crawlStatus || null);
       setCrawlPageCount(widget.crawlPageCount || 0);
+      setWorkflowId(widget.workflowId || null);
       setRecommendations(widget.recommendations || []);
     } else {
       resetWidgetForm();
@@ -67,6 +68,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       setCrawlUrl('');
       setCrawlStatus(null);
       setCrawlPageCount(0);
+      setWorkflowId(null);
       setRecommendations([]);
     }
   }, [widget, updateWidgetFormField, resetWidgetForm]);

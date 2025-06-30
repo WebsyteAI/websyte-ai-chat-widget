@@ -250,19 +250,13 @@ export class WidgetService {
       }
     }
 
-    // Handle crawl URL updates - automatically start crawl if URL is new or changed
+    // Note: Crawling is now handled via workflow endpoints only
+    // The crawlUrl is stored but crawling must be initiated separately via /api/widgets/:id/crawl
     if (request.crawlUrl !== undefined && request.crawlUrl !== currentWidget.crawlUrl) {
-      console.log('[WidgetService] Crawl URL changed, processing...');
+      console.log('[WidgetService] Crawl URL changed');
       if (request.crawlUrl) {
-        console.log('[WidgetService] Starting crawl for URL:', request.crawlUrl);
-        // Start crawl synchronously so the status is updated before returning
-        try {
-          await this.startWebsiteCrawl(id, userId, request.crawlUrl);
-        } catch (error) {
-          console.error('Error starting crawl after widget update:', error);
-          // Re-throw the error so it can be handled by the API endpoint
-          throw new Error(`Failed to start website crawl: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+        console.log('[WidgetService] New crawl URL set:', request.crawlUrl);
+        // Just update the URL, don't start crawl automatically
       } else if (!request.crawlUrl && currentWidget.crawlUrl) {
         console.log('[WidgetService] Crawl URL removed, deleting crawl files');
         // Crawl URL was removed, delete existing crawl files
@@ -428,51 +422,8 @@ export class WidgetService {
     return deleted;
   }
 
-  async startWebsiteCrawl(widgetId: string, userId: string, baseUrl: string) {
-    console.log('[WidgetService] startWebsiteCrawl called:', { widgetId, userId, baseUrl });
-    
-    // Validate widget ownership
-    const widgetRecord = await this.getWidget(widgetId, userId);
-    if (!widgetRecord) throw new Error('Widget not found');
-    
-    // Validate URL format
-    const url = new URL(baseUrl);
-    const cleanUrl = `${url.protocol}//${url.hostname}`;
-    const hostname = url.hostname;
-    
-    console.log('[WidgetService] Clean URL:', cleanUrl, 'Hostname:', hostname);
-    
-    // Check if already crawling
-    if (widgetRecord.crawlStatus === 'crawling') {
-      throw new Error('Crawl already in progress');
-    }
-    
-    // Delete any existing crawl files
-    await this.deleteExistingCrawlFiles(widgetId);
-    
-    // Start Apify crawl
-    const { runId } = await this.apifyCrawler.crawlWebsite(cleanUrl, {
-      maxPages: 25,
-      hostname: hostname
-    });
-    
-    // Update widget with crawl info
-    await this.db.getDatabase()
-      .update(widget)
-      .set({
-        crawlUrl: cleanUrl,
-        crawlStatus: 'crawling',
-        crawlRunId: runId,
-        updatedAt: new Date()
-      })
-      .where(eq(widget.id, widgetId));
-      
-    console.log('[WidgetService] Crawl started with runId:', runId);
-    // Note: Background processing doesn't work in Cloudflare Workers
-    // The frontend needs to poll the status endpoint
-    
-    return { runId, status: 'crawling' };
-  }
+  // Note: startWebsiteCrawl has been removed. Crawling is now handled via workflow endpoints only.
+  // Use POST /api/widgets/:id/crawl or /api/automation/widgets/:id/crawl instead.
 
   async deleteExistingCrawlFiles(widgetId: string) {
     try {

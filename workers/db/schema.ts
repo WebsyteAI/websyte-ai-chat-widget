@@ -32,6 +32,7 @@ export const widget = pgTable('widget', {
   crawlUrl: text('crawl_url'),
   crawlStatus: text('crawl_status'), // 'pending' | 'crawling' | 'completed' | 'failed'
   crawlRunId: text('crawl_run_id'), // Apify run ID
+  workflowId: text('workflow_id'), // Cloudflare Workflow ID for tracking crawl progress
   lastCrawlAt: timestamp('last_crawl_at'),
   crawlPageCount: integer('crawl_page_count').default(0),
   createdAt: timestamp('created_at').defaultNow().notNull(),

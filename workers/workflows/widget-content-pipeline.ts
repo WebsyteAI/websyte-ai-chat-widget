@@ -15,12 +15,6 @@ interface CrawlResult {
   error?: string;
 }
 
-interface EmbeddingBatch {
-  fileId: string;
-  pageNumber: number;
-  content: string;
-  metadata: any;
-}
 
 export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContentPipelineParams> {
   async run(event: WorkflowEvent<WidgetContentPipelineParams>, step: WorkflowStep) {
@@ -49,15 +43,16 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
     });
 
     // Step 2: Start Apify crawl
-    const crawlRunId = await step.do('start-crawl', async (): Promise<string> => {
-      const fileStorage = new FileStorageService(this.env.WIDGET_FILES);
+    const crawlRunId = await step.do<string>('start-crawl', async (): Promise<string> => {
       const db = new DatabaseService(this.env.DATABASE_URL);
+      const fileStorage = new FileStorageService(this.env.WIDGET_FILES, db);
       const { WidgetService } = await import('../services/widget');
       const widgetService = new WidgetService(
         db,
         new VectorSearchService(this.env.OPENAI_API_KEY, db),
         fileStorage,
-        new ApifyCrawlerService(this.env.APIFY_API_TOKEN, fileStorage)
+        new ApifyCrawlerService(this.env.APIFY_API_TOKEN),
+        this.env.OPENAI_API_KEY
       );
       
       // Clean URL
@@ -70,7 +65,7 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
       }
       
       // Start crawl using the existing service method
-      const crawler = new ApifyCrawlerService(this.env.APIFY_API_TOKEN, fileStorage);
+      const crawler = new ApifyCrawlerService(this.env.APIFY_API_TOKEN);
       const { runId } = await crawler.crawlWebsite(cleanUrl, {
         maxPages: maxPages,
         hostname: url.hostname
@@ -93,25 +88,36 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
     const maxAttempts = 120; // 120 attempts * 5 seconds = 10 minutes
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const checkResult = await step.do(`check-crawl-status-${attempt}`, async (): Promise<CrawlResult | null> => {
-        const fileStorage = new FileStorageService(this.env.WIDGET_FILES);
+      const checkResult = await step.do<CrawlResult | null>(`check-crawl-status-${attempt}`, async (): Promise<CrawlResult | null> => {
         const db = new DatabaseService(this.env.DATABASE_URL);
+        const fileStorage = new FileStorageService(this.env.WIDGET_FILES, db);
         const { WidgetService } = await import('../services/widget');
         const widgetService = new WidgetService(
           db,
           new VectorSearchService(this.env.OPENAI_API_KEY, db),
           fileStorage,
-          new ApifyCrawlerService(this.env.APIFY_API_TOKEN, fileStorage)
+          new ApifyCrawlerService(this.env.APIFY_API_TOKEN),
+          this.env.OPENAI_API_KEY
         );
-        const crawler = new ApifyCrawlerService(this.env.APIFY_API_TOKEN, fileStorage);
+        const crawler = new ApifyCrawlerService(this.env.APIFY_API_TOKEN);
         
         try {
           const status = await crawler.getCrawlStatus(crawlRunId);
           
           if (status.status === 'SUCCEEDED') {
-            // Process the results
-            const processedFiles = await widgetService.processCrawlResults(widgetId, crawlRunId);
-            const pageCount = processedFiles.filter(f => f.filename.includes('-page-')).length;
+            // Process the results and get page count from database
+            const dbWidget = await db.getDatabase()
+              .select()
+              .from(widget)
+              .where(eq(widget.id, widgetId))
+              .limit(1);
+            
+            // Process crawl results (this updates widget files)
+            await widgetService.processCrawlResults(widgetId, crawlRunId, dbWidget[0]?.userId || 'system');
+            
+            // Get the processed files to count pages (including page files)
+            const files = await fileStorage.getWidgetFiles(widgetId, true);
+            const pageCount = files.filter(f => f.filename.startsWith('page-') && f.filename.endsWith('.md')).length;
             
             return {
               runId: crawlRunId,
@@ -151,7 +157,7 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
       
       // Sleep before next check (except on last attempt)
       if (attempt < maxAttempts - 1) {
-        await step.sleep('5 seconds');
+        await step.sleep(`wait-crawl-${attempt}`, '5 seconds');
       }
     }
     
@@ -173,7 +179,8 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
           .update(widget)
           .set({
             crawlStatus: 'failed',
-            crawlRunId: crawlResult.runId
+            crawlRunId: crawlResult.runId,
+            workflowId: null // Clear workflowId when failed
           })
           .where(eq(widget.id, widgetId));
       });
@@ -182,8 +189,9 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
     }
 
     // Step 4: Get crawled files from R2
-    const files = await step.do('get-crawled-files', async () => {
-      const fileStorage = new FileStorageService(this.env.WIDGET_FILES);
+    const files = await step.do<any[]>('get-crawled-files', async () => {
+      const db = new DatabaseService(this.env.DATABASE_URL);
+      const fileStorage = new FileStorageService(this.env.WIDGET_FILES, db);
       return await fileStorage.getWidgetFiles(widgetId);
     });
 
@@ -192,9 +200,9 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
     const crawlFileId = files.find(f => f.filename.endsWith('.crawl.md'))?.id;
     
     if (crawlFileId) {
-      const embeddingCount = await step.do('process-all-embeddings', async () => {
+      const embeddingCount = await step.do<number>('process-all-embeddings', async () => {
         const db = new DatabaseService(this.env.DATABASE_URL);
-        const fileStorage = new FileStorageService(this.env.WIDGET_FILES);
+        const fileStorage = new FileStorageService(this.env.WIDGET_FILES, db);
         const vectorSearch = new VectorSearchService(this.env.OPENAI_API_KEY, db);
         
         // Get all page files for this crawl
@@ -216,7 +224,7 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
               const pageNumber = pageMatch ? parseInt(pageMatch[1]) : i + 1;
               
               // Get file content from R2
-              const content = await fileStorage.getFileContent(file.r2Key);
+              const content = await fileStorage.getFileContent(widgetId, file.r2Key);
               
               if (content) {
                 // Delete old embeddings if recrawling
@@ -261,7 +269,8 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
         .set({
           crawlStatus: 'completed',
           crawlRunId: crawlResult.runId,
-          crawlPageCount: crawlResult.pageCount
+          crawlPageCount: crawlResult.pageCount,
+          workflowId: null // Clear workflowId when completed
         })
         .where(eq(widget.id, widgetId));
     });
@@ -277,12 +286,13 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
           .limit(1);
         
         if (widgetRecord.length > 0 && widgetRecord[0].summaries) {
-          const { RecommendationsService } = await import('../services/recommendations');
-          const recommendationService = new RecommendationsService(this.env.OPENAI_API_KEY);
+          const { OpenAIService } = await import('../services/openai');
+          const openaiService = new OpenAIService(this.env.OPENAI_API_KEY);
           
-          const recommendations = await recommendationService.generateRecommendations(
+          const { recommendations } = await openaiService.generateRecommendations(
             widgetRecord[0].summaries.short,
-            widgetRecord[0].summaries.medium
+            widgetRecord[0].name || 'Widget',
+            widgetRecord[0].crawlUrl || ''
           );
           
           await db.getDatabase()
@@ -313,7 +323,8 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
           await db.getDatabase()
             .update(widget)
             .set({
-              crawlStatus: 'failed'
+              crawlStatus: 'failed',
+              workflowId: null // Clear workflowId when failed
             })
             .where(eq(widget.id, widgetId));
         });

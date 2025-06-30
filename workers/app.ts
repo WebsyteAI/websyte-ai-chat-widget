@@ -313,10 +313,62 @@ app.put('/api/widgets/:id', async (c) => {
   try {
     const body = await c.req.json();
     console.log('[API] Updating widget', id, 'with body:', body);
+    
+    // Get current widget to check if crawlUrl is changing
+    const currentWidget = await c.get('services').widget.getWidget(id, auth.user.id);
+    if (!currentWidget) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+    
+    // Update the widget
     const widget = await c.get('services').widget.updateWidget(id, auth.user.id, body);
     if (!widget) {
       return c.json({ error: 'Widget not found' }, 404);
     }
+    
+    // Check if crawlUrl changed and we should start crawling
+    if (body.crawlUrl !== undefined && body.crawlUrl !== currentWidget.crawlUrl && body.crawlUrl) {
+      console.log('[API] Crawl URL changed, starting workflow');
+      
+      // Check if already crawling
+      if (currentWidget.crawlStatus === 'crawling') {
+        console.log('[API] Already crawling, skipping workflow creation');
+      } else {
+        try {
+          // Trigger the workflow
+          const workflow = await c.env.WIDGET_CONTENT_WORKFLOW.create({
+            params: {
+              widgetId: id,
+              crawlUrl: body.crawlUrl,
+              maxPages: 25,
+              isRecrawl: !!currentWidget.crawlRunId
+            }
+          });
+          
+          console.log('[API] Started workflow:', workflow.id);
+          
+          // Update widget with workflowId
+          const database = new DatabaseService(c.env.DATABASE_URL);
+          await database.getDatabase()
+            .update(widget)
+            .set({
+              crawlStatus: 'crawling',
+              workflowId: workflow.id,
+              lastCrawlAt: new Date()
+            })
+            .where(eq(widget.id, id));
+          
+          // Return updated widget with workflow info
+          widget.crawlStatus = 'crawling';
+          widget.workflowId = workflow.id;
+          widget.lastCrawlAt = new Date();
+        } catch (workflowError) {
+          console.error('[API] Failed to start crawl workflow:', workflowError);
+          // Don't fail the update, just log the error
+        }
+      }
+    }
+    
     return c.json({ widget });
   } catch (error) {
     console.error('Error updating widget:', error);
@@ -661,12 +713,13 @@ app.post('/api/widgets/:id/crawl', async (c) => {
 
     console.log('[API] Started workflow:', workflow.id);
 
-    // Update widget status to indicate workflow started
+    // Update widget status to indicate workflow started and save workflowId
     const database = new DatabaseService(c.env.DATABASE_URL);
     await database.getDatabase()
       .update(widget)
       .set({
         crawlStatus: 'crawling',
+        workflowId: workflow.id,
         lastCrawlAt: new Date()
       })
       .where(eq(widget.id, id));
@@ -701,7 +754,8 @@ app.get('/api/widgets/:id/crawl/status', async (c) => {
     }
 
     // Check if there's an active workflow and if it's still running
-    const workflowId = c.req.query('workflowId');
+    // Use workflowId from query parameter or fall back to stored workflowId
+    const workflowId = c.req.query('workflowId') || widgetRecord.workflowId;
     if (workflowId && widgetRecord.crawlStatus === 'crawling') {
       try {
         const instance = await c.env.WIDGET_CONTENT_WORKFLOW.get(workflowId);
@@ -714,24 +768,26 @@ app.get('/api/widgets/:id/crawl/status', async (c) => {
             .update(widget)
             .set({
               crawlStatus: 'completed',
-              crawlPageCount: workflowStatus.output?.pagesCrawled || 0
+              crawlPageCount: (workflowStatus.output as any)?.pagesCrawled || 0,
+              workflowId: null // Clear workflowId when completed
             })
             .where(eq(widget.id, id));
           
           return c.json({ 
             status: 'completed',
-            crawlPageCount: workflowStatus.output?.pagesCrawled || 0,
+            crawlPageCount: (workflowStatus.output as any)?.pagesCrawled || 0,
             lastCrawlAt: widgetRecord.lastCrawlAt,
             crawlUrl: widgetRecord.crawlUrl,
             workflowStatus: workflowStatus.status
           });
-        } else if (workflowStatus.status === 'failed' || workflowStatus.status === 'terminated') {
+        } else if (workflowStatus.status === 'errored' || workflowStatus.status === 'terminated') {
           // Update widget status to failed
           const database = new DatabaseService(c.env.DATABASE_URL);
           await database.getDatabase()
             .update(widget)
             .set({
-              crawlStatus: 'failed'
+              crawlStatus: 'failed',
+              workflowId: null // Clear workflowId when failed
             })
             .where(eq(widget.id, id));
           
@@ -757,7 +813,8 @@ app.get('/api/widgets/:id/crawl/status', async (c) => {
           await database.getDatabase()
             .update(widget)
             .set({
-              crawlStatus: 'failed'
+              crawlStatus: 'failed',
+              workflowId: null // Clear workflowId on timeout
             })
             .where(eq(widget.id, id));
           
@@ -1003,11 +1060,38 @@ app.post('/api/automation/widgets/:id/crawl', bearerTokenMiddleware, async (c) =
       return c.json({ error: 'Widget has no crawl URL configured' }, 400);
     }
 
-    const crawl = await c.get('services').widget.startCrawl(id, widget.crawlUrl, 'system-automation');
+    // Check if already crawling
+    if (widget.crawlStatus === 'crawling') {
+      return c.json({ error: 'Crawl already in progress' }, 400);
+    }
+
+    // Trigger the workflow
+    const workflow = await c.env.WIDGET_CONTENT_WORKFLOW.create({
+      params: {
+        widgetId: id,
+        crawlUrl: widget.crawlUrl,
+        maxPages: 25,
+        isRecrawl: !!widget.crawlRunId
+      }
+    });
+
+    console.log('[AUTOMATION API] Started workflow:', workflow.id);
+
+    // Update widget status to indicate workflow started and save workflowId
+    const database = new DatabaseService(c.env.DATABASE_URL);
+    await database.getDatabase()
+      .update(widget)
+      .set({
+        crawlStatus: 'crawling',
+        workflowId: workflow.id,
+        lastCrawlAt: new Date()
+      })
+      .where(eq(widget.id, id));
+
     return c.json({ 
       success: true, 
-      crawlRunId: crawl.crawlRunId,
-      message: 'Crawl started successfully'
+      workflowId: workflow.id,
+      message: 'Crawl workflow started successfully'
     });
   } catch (error) {
     console.error('Error starting crawl:', error);

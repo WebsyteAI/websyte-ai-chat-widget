@@ -17,6 +17,7 @@ export interface Widget {
   crawlUrl?: string;
   crawlStatus?: 'pending' | 'crawling' | 'completed' | 'failed';
   crawlRunId?: string;
+  workflowId?: string;
   lastCrawlAt?: string;
   crawlPageCount?: number;
   createdAt: string;

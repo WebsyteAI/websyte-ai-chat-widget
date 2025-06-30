@@ -193,7 +193,7 @@ export class FileStorageService {
     }
   }
 
-  async getWidgetFiles(widgetId: string): Promise<StoredFile[]> {
+  async getWidgetFiles(widgetId: string, includePageFiles: boolean = false): Promise<StoredFile[]> {
     try {
       const files = await this.db.getDatabase()
         .select()
@@ -201,7 +201,12 @@ export class FileStorageService {
         .where(eq(widgetFile.widgetId, widgetId))
         .orderBy(widgetFile.createdAt);
 
-      return files.map(file => ({
+      // Filter out page files unless explicitly requested
+      const filteredFiles = includePageFiles 
+        ? files 
+        : files.filter(f => !f.filename.startsWith('page-') || !f.filename.endsWith('.md'));
+
+      return filteredFiles.map(file => ({
         id: file.id,
         widgetId: file.widgetId,
         r2Key: file.r2Key,
@@ -293,11 +298,28 @@ export class FileStorageService {
     try {
       const r2Key = this.generatePageR2Key(widgetId, fileId, pageNumber);
       
+      // Upload to R2
       await this.r2.put(r2Key, markdownContent, {
         httpMetadata: {
           contentType: 'text/markdown',
         }
       });
+      
+      // Create database record for the page file
+      const filename = `page-${pageNumber}.md`;
+      const fileSize = new Blob([markdownContent]).size;
+      
+      await this.db.getDatabase()
+        .insert(widgetFile)
+        .values({
+          widgetId,
+          r2Key,
+          filename,
+          fileType: 'text/markdown',
+          fileSize,
+        })
+        .onConflictDoNothing(); // In case the page already exists
+        
     } catch (error) {
       console.error('Error storing page file:', error);
       throw new Error('Failed to store page file');
@@ -326,12 +348,50 @@ export class FileStorageService {
       const prefix = `widgets/${widgetId}/${fileId}/page_`;
       const objects = await this.r2.list({ prefix });
       
-      // Delete all page files
+      // Delete from R2
       const deletePromises = objects.objects.map(obj => this.r2.delete(obj.key));
       await Promise.all(deletePromises);
+      
+      // Delete from database - find all page files by their r2Key pattern
+      const pageFiles = await this.db.getDatabase()
+        .select()
+        .from(widgetFile)
+        .where(and(
+          eq(widgetFile.widgetId, widgetId),
+          eq(widgetFile.fileType, 'text/markdown')
+        ));
+      
+      // Filter for page files by checking if r2Key matches the page pattern
+      const pageFileIds = pageFiles
+        .filter(f => f.r2Key.startsWith(prefix))
+        .map(f => f.id);
+      
+      if (pageFileIds.length > 0) {
+        await this.db.getDatabase()
+          .delete(widgetFile)
+          .where(and(
+            eq(widgetFile.widgetId, widgetId),
+            eq(widgetFile.fileType, 'text/markdown')
+          ));
+      }
     } catch (error) {
       console.error('Error deleting page files:', error);
       throw new Error('Failed to delete page files');
+    }
+  }
+
+  async countPageFiles(widgetId: string, fileId: string): Promise<number> {
+    try {
+      // List all page files for this document
+      const prefix = `widgets/${widgetId}/${fileId}/page_`;
+      const objects = await this.r2.list({ prefix });
+      
+      // Count only .md page files
+      const pageFiles = objects.objects.filter(obj => obj.key.endsWith('.md'));
+      return pageFiles.length;
+    } catch (error) {
+      console.error('Error counting page files:', error);
+      return 0;
     }
   }
 
