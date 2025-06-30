@@ -85,7 +85,7 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
 
     // Step 3: Poll for crawl completion
     let crawlResult: CrawlResult | null = null;
-    const maxAttempts = 120; // 120 attempts * 5 seconds = 10 minutes
+    const maxAttempts = 60; // 60 attempts * 10 seconds = 10 minutes
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const checkResult = await step.do<CrawlResult | null>(`check-crawl-status-${attempt}`, async (): Promise<CrawlResult | null> => {
@@ -157,7 +157,7 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
       
       // Sleep before next check (except on last attempt)
       if (attempt < maxAttempts - 1) {
-        await step.sleep(`wait-crawl-${attempt}`, '5 seconds');
+        await step.sleep(`wait-crawl-${attempt}`, '10 seconds');
       }
     }
     

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ContentExtractor } from "../../lib/content-extractor";
 import { UmamiTracking } from "../../lib/umami-tracker";
+import { createLogger } from "../../lib/logger";
 import { 
   useChatMessages, 
   useAudioPlayer, 
@@ -20,6 +21,8 @@ import type {
   ContentMode,
   Message,
 } from "./types";
+
+const logger = createLogger('ChatWidget');
 
 export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, advertiserUrl = "https://websyte.ai", isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false, widgetId, widgetName, saveChatMessages = false, isFullScreen = false, isEmbed = false }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
@@ -88,7 +91,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
       // Handle dynamic configuration updates from parent
       if (config.hidePoweredBy !== undefined) {
         // Note: This would require making these props stateful in the parent component
-        console.log('Received config update:', config);
+        logger.info('Received config update:', config);
       }
     },
     onMessageReceived: (message) => {
@@ -119,7 +122,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
       if (showSummaryDropdown && dropdownRef.current) {
         const target = event.target as Element;
         if (!dropdownRef.current.contains(target)) {
-          console.log('Clicking outside dropdown, closing');
+          logger.info('Clicking outside dropdown, closing');
           setShowSummaryDropdown(false);
         }
       }
@@ -172,7 +175,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
             }
           }
         } catch (error) {
-          console.error('Failed to fetch widget info:', error);
+          logger.error('Failed to fetch widget info:', error);
         }
       };
       fetchWidgetInfo();
@@ -192,7 +195,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
 
     // Warm cache, capture original content, and load all data in parallel
     const loadInitialData = async () => {
-      console.log('ChatWidget: loadInitialData started');
+      logger.info('ChatWidget: loadInitialData started');
       setIsLoadingRecommendations(true);
       
       try {
@@ -201,8 +204,8 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         
         // Initialize cache key for current URL if it doesn't exist
         const currentUrl = window.location.href;
-        console.log(`ChatWidget: About to initialize cache for URL: ${currentUrl}`);
-        console.log(`ChatWidget: Using baseUrl: ${baseUrl}`);
+        logger.info(`ChatWidget: About to initialize cache for URL: ${currentUrl}`);
+        logger.info(`ChatWidget: Using baseUrl: ${baseUrl}`);
         
         const pageContent = await extractPageContent();
         
@@ -265,40 +268,40 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         // Handle selector for summary replacement - only if enableSmartSelector is true
         if (enableSmartSelector) {
           if (contentSelector) {
-            console.log('Using override selector for summaries:', contentSelector);
+            logger.info('Using override selector for summaries:', contentSelector);
             const overrideElement = targetElement.querySelector(contentSelector);
             if (overrideElement) {
-              console.log('Override selector found:', overrideElement.tagName, overrideElement.className);
+              logger.info('Override selector found', { tagName: overrideElement.tagName, className: overrideElement.className });
               setMainContentElement(overrideElement);
               setOriginalContent(overrideElement.innerHTML);
             } else {
-              console.warn('Override selector failed, content replacement disabled');
+              logger.warn('Override selector failed, content replacement disabled');
               setMainContentElement(null);
               setOriginalContent('');
             }
           } else if (selectorResponse && selectorResponse.ok) {
             // Use AI selector for content replacement
             const analysis = await selectorResponse.json() as { contentSelector: string; reasoning: string };
-            console.log('Using AI selector for content replacement:', analysis.contentSelector);
+            logger.info('Using AI selector for content replacement:', analysis.contentSelector);
             
             const aiSelectedElement = targetElement.querySelector(analysis.contentSelector);
             if (aiSelectedElement) {
-              console.log('AI selector found:', aiSelectedElement.tagName, aiSelectedElement.className);
+              logger.info('AI selector found', { tagName: aiSelectedElement.tagName, className: aiSelectedElement.className });
               setMainContentElement(aiSelectedElement);
               setOriginalContent(aiSelectedElement.innerHTML);
             } else {
-              console.warn('AI selector failed, content replacement disabled');
+              logger.warn('AI selector failed, content replacement disabled');
               setMainContentElement(null);
               setOriginalContent('');
             }
           } else {
-            console.warn('No selector analysis, content replacement disabled');
+            logger.warn('No selector analysis, content replacement disabled');
             setMainContentElement(null);
             setOriginalContent('');
           }
         } else {
           // When enableSmartSelector is false, don't set up content replacement
-          console.log('Smart selector disabled, summaries will show in panel only');
+          logger.info('Smart selector disabled, summaries will show in panel only');
           setMainContentElement(null);
           setOriginalContent('');
         }
@@ -323,11 +326,11 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
             });
           }
         } else {
-          console.warn('Summaries API failed, but continuing without summaries');
+          logger.warn('Summaries API failed, but continuing without summaries');
         }
 
       } catch (error) {
-        console.error("Failed to load initial data:", error);
+        logger.error("Failed to load initial data:", error);
         // No fallback recommendations - leave empty if content extraction fails
         setRecommendations([]);
       } finally {
@@ -403,7 +406,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
           content: "Message cancelled.",
         });
       } else {
-        console.error("Error sending message:", error);
+        logger.error("Error sending message:", error);
         const errorMessage = addMessage({
           role: "assistant",
           content: "Sorry, I'm having trouble connecting right now. Please try again.",
@@ -546,7 +549,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
           content: "Message cancelled.",
         });
       } else {
-        console.error("Error sending message:", error);
+        logger.error("Error sending message:", error);
         const errorMessage = addMessage({
           role: "assistant",
           content: "Sorry, I'm having trouble connecting right now. Please try again.",

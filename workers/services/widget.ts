@@ -5,6 +5,7 @@ import { FileStorageService } from './file-storage';
 import { ApifyCrawlerService } from './apify-crawler';
 import { OpenAIService } from './openai';
 import { widget, widgetEmbedding, type Widget, type NewWidget } from '../db/schema';
+import { createLogger } from '../lib/logger';
 
 export interface CreateWidgetRequest {
   name: string;
@@ -40,6 +41,7 @@ export class WidgetService {
   private fileStorage: FileStorageService;
   private apifyCrawler: ApifyCrawlerService;
   private openaiApiKey: string;
+  private logger = createLogger('WidgetService');
 
   constructor(
     databaseService: DatabaseService,
@@ -89,7 +91,7 @@ export class WidgetService {
         });
         uploadedFiles.push(storedFile);
         
-        console.log(`[WIDGET_CREATE] Uploaded file: ${storedFile.filename} (${storedFile.fileType})`);
+        this.logger.info({  filename: storedFile.filename, fileType: storedFile.fileType, widgetId: createdWidget.id  }, 'Uploaded file');
       }
     }
 
@@ -381,7 +383,7 @@ export class WidgetService {
     });
 
     // OCR processing and embedding creation happens automatically in FileStorageService
-    console.log(`[WIDGET_FILE_ADD] Added file: ${storedFile.filename} (${storedFile.fileType})`);
+    this.logger.info({  filename: storedFile.filename, fileType: storedFile.fileType, widgetId: id  }, 'File added');
 
     // Update widget timestamp
     await this.db.getDatabase()
@@ -476,15 +478,14 @@ export class WidgetService {
         // Frontend will continue polling
       }
     } catch (error) {
-      console.error('Error checking crawl status:', error);
+      this.logger.error({ err: error }, 'Error checking crawl status');
       // More detailed error logging
       if (error instanceof Error) {
-        console.error('Error details:', {
-          message: error.message,
-          stack: error.stack,
+        this.logger.error({
+          err: error,
           widgetId,
           runId
-        });
+        }, 'Error details');
       }
       
       await this.db.getDatabase()

@@ -1,5 +1,6 @@
 import type { Context, Next } from 'hono';
 import type { Env } from '../types';
+import { createLogger } from './logger';
 
 export interface AuthContext {
   user: {
@@ -20,6 +21,8 @@ type AppContextType = {
   Variables: {
     services: any;
     auth?: AuthContext;
+    requestId?: string;
+    logger?: any;
   };
 };
 
@@ -41,7 +44,8 @@ export const authMiddleware = async (c: Context<AppContextType>, next: Next) => 
 
     await next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
+    const logger = c.get('logger') || createLogger('AUTH');
+    logger.error({ err: error }, 'Auth middleware error');
     return c.json({ error: 'Authentication failed' }, 401);
   }
 };
@@ -63,7 +67,8 @@ export const optionalAuthMiddleware = async (c: Context<AppContextType>, next: N
     await next();
   } catch (error) {
     // Continue without auth for optional middleware
-    console.warn('Optional auth middleware warning:', error);
+    const logger = c.get('logger') || createLogger('AUTH');
+    logger.warn({ err: error }, 'Optional auth middleware warning');
     await next();
   }
 };
@@ -92,7 +97,8 @@ export const adminMiddleware = async (c: Context<AppContextType>, next: Next) =>
 
     await next();
   } catch (error) {
-    console.error('Admin middleware error:', error);
+    const logger = c.get('logger') || createLogger('AUTH');
+    logger.error({ err: error }, 'Admin middleware error');
     return c.json({ error: 'Authentication failed' }, 401);
   }
 };
@@ -102,7 +108,8 @@ export const bearerTokenMiddleware = async (c: Context<AppContextType>, next: Ne
   
   // Skip if no token is configured
   if (!token) {
-    console.warn('API_BEARER_TOKEN not configured, skipping bearer token authentication');
+    const logger = createLogger('AUTH');
+    logger.warn('API_BEARER_TOKEN not configured, skipping bearer token authentication');
     await next();
     return;
   }

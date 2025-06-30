@@ -2,6 +2,7 @@ import { openai } from '@ai-sdk/openai';
 import { generateText, streamText, embed } from 'ai';
 import type { WidgetService } from './widget.js';
 import type { ChatMessage, ChatRequest } from '../types.js';
+import { createLogger } from '../lib/logger';
 
 export interface RAGChatRequest extends ChatRequest {
   widgetId?: string;
@@ -14,6 +15,8 @@ export interface RAGChatOptions {
 }
 
 export class RAGAgent {
+  private logger = createLogger('RAGAgent');
+  
   constructor(
     private openaiApiKey: string,
     private widgetService: WidgetService
@@ -26,30 +29,45 @@ export class RAGAgent {
     maxChunks: number = 4,
     threshold: number = 0
   ): Promise<{ chunks: string[]; sources: any[] }> {
+    const start = Date.now();
+    const contextLogger = this.logger.child({ widgetId, userId });
+    
     try {
-      console.log('[RAG] Retrieving context for widget:', widgetId, 'user:', userId, 'query:', query);
+      contextLogger.debug({ queryLength: query.length, maxChunks }, 'Retrieving context');
       
+      const searchStart = Date.now();
       const searchResults = await this.widgetService.searchWidgetContent(
         widgetId,
         userId,
         query,
         maxChunks
       );
+      const searchDuration = Date.now() - searchStart;
+      contextLogger.debug({ duration_ms: searchDuration }, 'Widget content search completed');
 
-      console.log('[RAG] Search results count:', searchResults.length);
+      contextLogger.info({ count: searchResults.length }, 'Search results');
 
       // Filter by similarity threshold
       const filteredResults = searchResults.filter((result: any) => result.similarity >= threshold);
       
-      console.log('[RAG] Filtered results count:', filteredResults.length);
+      contextLogger.info({ 
+        count: filteredResults.length,
+        threshold,
+        avgSimilarity: filteredResults.length > 0 
+          ? filteredResults.reduce((sum, r) => sum + r.similarity, 0) / filteredResults.length 
+          : 0
+      }, 'Filtered results');
       
       return {
         chunks: filteredResults.map((result: any) => result.chunk),
         sources: filteredResults
       };
     } catch (error) {
-      console.error('[RAG] Error retrieving context:', error);
+      contextLogger.error({ err: error }, 'Error retrieving context');
       return { chunks: [], sources: [] };
+    } finally {
+      const duration = Date.now() - start;
+      contextLogger.debug({ duration_ms: duration }, 'Context retrieval completed');
     }
   }
 
@@ -121,16 +139,24 @@ export class RAGAgent {
     userId: string,
     options: RAGChatOptions = {}
   ): Promise<{ response: string; sources?: any[] }> {
-    const {
-      maxRetrievedChunks = 5,
-      similarityThreshold = 0
-    } = options;
-
-    let retrievedChunks: string[] = [];
-    let sources: any[] = [];
+    const start = Date.now();
+    const responseLogger = this.logger.child({ 
+      widgetId: request.widgetId, 
+      userId,
+      messageLength: request.message.length 
+    });
     
-    // Retrieve relevant context if widgetId is provided
-    if (request.widgetId) {
+    try {
+      const {
+        maxRetrievedChunks = 5,
+        similarityThreshold = 0
+      } = options;
+
+      let retrievedChunks: string[] = [];
+      let sources: any[] = [];
+      
+      // Retrieve relevant context if widgetId is provided
+      if (request.widgetId) {
       const contextResult = await this.retrieveRelevantContext(
         request.message,
         request.widgetId,
@@ -143,23 +169,34 @@ export class RAGAgent {
     }
 
     const systemPrompt = this.buildSystemPrompt(retrievedChunks, request.context);
-    const messages = this.formatMessages(request, systemPrompt);
+      const messages = this.formatMessages(request, systemPrompt);
 
-    try {
+      const llmStart = Date.now();
       const result = await generateText({
         model: openai('gpt-4.1-mini'),
         messages,
         temperature: 0.2,
         maxTokens: 5000,
       });
+      const llmDuration = Date.now() - llmStart;
+      responseLogger.debug({ duration_ms: llmDuration }, 'LLM generation completed');
+
+      responseLogger.info({
+        responseLength: result.text.length,
+        sourcesCount: sources.length,
+        hasContext: retrievedChunks.length > 0
+      }, 'Response generated');
 
       return {
         response: result.text,
         sources: sources.length > 0 ? sources : undefined
       };
     } catch (error) {
-      console.error('Error generating RAG response:', error);
+      responseLogger.error({ err: error }, 'Error generating RAG response');
       throw new Error('Failed to generate response');
+    } finally {
+      const duration = Date.now() - start;
+      responseLogger.info({ total_duration_ms: duration }, 'RAG response generation completed');
     }
   }
 

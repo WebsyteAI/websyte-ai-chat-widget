@@ -6,6 +6,7 @@ import { MessageService } from './messages';
 import type { ChatRequest, ChatMessage, Env } from '../types';
 import { ServiceValidation, ErrorHandler } from './common';
 import { RAGAgent } from './rag-agent';
+import { createLogger } from '../lib/logger';
 
 type AppContext = Context<{ Bindings: Env; Variables: any }>;
 
@@ -13,6 +14,7 @@ export class ChatService {
   private ragAgent?: RAGAgent;
   private widgetService?: WidgetService;
   private messageService?: MessageService;
+  private logger = createLogger('ChatService');
 
   constructor(
     private openai: OpenAIService, 
@@ -30,11 +32,14 @@ export class ChatService {
     const methodError = ServiceValidation.validatePostMethod(c);
     if (methodError) return methodError;
 
+    const requestLogger = c.get('logger') || this.logger;
+    
     try {
       const body: ChatRequest = await ServiceValidation.parseRequestBody<ChatRequest>(c);
       const { message, history = [], context, widgetId, sessionId, isEmbedded } = body;
 
-      console.log('[CHAT] 📨 Received chat request - widgetId:', widgetId, 'isEmbedded:', isEmbedded, 'sessionId:', sessionId);
+      const chatLogger = requestLogger.child({ widgetId, sessionId: sessionId || 'unknown' });
+      chatLogger.info({ isEmbedded, messageLength: message?.length }, 'Received chat request');
 
       if (!message || typeof message !== "string") {
         return c.json({ error: "Invalid message" }, 400);
@@ -72,14 +77,14 @@ export class ChatService {
       if (widgetId && this.ragAgent && this.widgetService && this.messageService) {
         try {
           const auth = c.get('auth');
-          console.log('[CHAT] Auth status:', auth ? 'authenticated' : 'not authenticated', 'User ID:', auth?.user?.id || 'none');
+          chatLogger.debug({ authenticated: !!auth, userId: auth?.user?.id || 'none' }, 'Auth status');
           
           const userId = auth?.user?.id || null;
           const startTime = Date.now();
           
           // Only save messages if this is from an embedded widget (not editor)
           if (isEmbedded) {
-            console.log('[CHAT] 💾 Saving user message - widgetId:', widgetId, 'sessionId:', chatSessionId, 'userId:', userId || 'anonymous');
+            chatLogger.info({ widgetId, sessionId: chatSessionId, userId: userId || 'anonymous' }, 'Saving user message');
             // Save user message
             await this.messageService.saveMessage({
               widgetId,
@@ -93,7 +98,7 @@ export class ChatService {
               }
             });
           } else {
-            console.log('[CHAT] ⏭️  NOT saving user message (not embedded) - widgetId:', widgetId, 'isEmbedded:', isEmbedded);
+            chatLogger.debug({ widgetId, isEmbedded }, 'Skipping message save (not embedded)');
           }
           
           // If user is authenticated, use their ID (for widget editor and authenticated access)
@@ -103,7 +108,7 @@ export class ChatService {
             
             // Only save assistant response if from embedded widget
             if (isEmbedded) {
-              console.log('[CHAT] 💾 Saving assistant message - widgetId:', widgetId, 'sessionId:', chatSessionId, 'userId:', auth.user.id);
+              chatLogger.info({ widgetId, sessionId: chatSessionId, userId: auth.user.id }, 'Saving assistant message');
               await this.messageService.saveMessage({
                 widgetId,
                 sessionId: chatSessionId,
@@ -117,7 +122,7 @@ export class ChatService {
                 }
               });
             } else {
-              console.log('[CHAT] ⏭️  NOT saving assistant message (not embedded) - widgetId:', widgetId, 'isEmbedded:', isEmbedded);
+              chatLogger.debug({ widgetId, isEmbedded }, 'Skipping assistant message save (not embedded)');
             }
             
             return c.json({ 
@@ -137,7 +142,7 @@ export class ChatService {
             
             // Only save assistant response if from embedded widget
             if (isEmbedded) {
-              console.log('[CHAT] 💾 Saving assistant message (public widget) - widgetId:', widgetId, 'sessionId:', chatSessionId, 'userId: anonymous');
+              chatLogger.info({ widgetId, sessionId: chatSessionId, userId: 'anonymous' }, 'Saving assistant message (public widget)');
               await this.messageService.saveMessage({
                 widgetId,
                 sessionId: chatSessionId,
@@ -151,7 +156,7 @@ export class ChatService {
                 }
               });
             } else {
-              console.log('[CHAT] ⏭️  NOT saving assistant message (public widget, not embedded) - widgetId:', widgetId, 'isEmbedded:', isEmbedded);
+              chatLogger.debug({ widgetId, isEmbedded }, 'Skipping assistant message save (public widget, not embedded)');
             }
             
             return c.json({ 
@@ -163,7 +168,7 @@ export class ChatService {
             return c.json({ error: "Widget not found or authentication required" }, 401);
           }
         } catch (ragError) {
-          console.error('RAG error, falling back to standard chat:', ragError);
+          chatLogger.error({ err: ragError }, 'RAG error, falling back to standard chat');
           // Fall through to standard chat functionality
         }
       }

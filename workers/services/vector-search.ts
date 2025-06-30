@@ -3,6 +3,7 @@ import { eq, desc, sql } from 'drizzle-orm';
 import { DatabaseService } from './database';
 import { widgetEmbedding, type NewWidgetEmbedding, type WidgetEmbedding } from '../db/schema';
 import { CHUNK_CONFIG } from '../config/chunking';
+import { createLogger } from '../lib/logger';
 
 export interface EmbeddingChunk {
   text: string;
@@ -35,6 +36,7 @@ export interface SearchResult {
 export class VectorSearchService {
   private openai: OpenAI;
   private db: DatabaseService;
+  private logger = createLogger('VectorSearchService');
 
   constructor(openaiApiKey: string, databaseService: DatabaseService) {
     this.openai = new OpenAI({ apiKey: openaiApiKey });
@@ -281,33 +283,57 @@ export class VectorSearchService {
     limit: number = 10,
     threshold: number = 0
   ): Promise<SearchResult[]> {
-    const queryEmbedding = await this.generateEmbedding(query);
-    const queryVector = JSON.stringify(queryEmbedding);
+    const start = Date.now();
+    const searchLogger = this.logger.child({ widgetId, queryLength: query.length });
+    
+    try {
+      // Time embedding generation
+      const embeddingStart = Date.now();
+      const queryEmbedding = await this.generateEmbedding(query);
+      const embeddingDuration = Date.now() - embeddingStart;
+      searchLogger.debug({ duration_ms: embeddingDuration }, 'Generated query embedding');
+      
+      const queryVector = JSON.stringify(queryEmbedding);
 
-    const baseSelect = this.db.getDatabase()
-      .select({
-        id: widgetEmbedding.id,
-        widgetId: widgetEmbedding.widgetId,
-        contentChunk: widgetEmbedding.contentChunk,
-        metadata: widgetEmbedding.metadata,
-        similarity: sql<number>`1 - (${widgetEmbedding.embedding} <=> ${queryVector})`.as('similarity')
-      })
-      .from(widgetEmbedding);
+      const baseSelect = this.db.getDatabase()
+        .select({
+          id: widgetEmbedding.id,
+          widgetId: widgetEmbedding.widgetId,
+          contentChunk: widgetEmbedding.contentChunk,
+          metadata: widgetEmbedding.metadata,
+          similarity: sql<number>`1 - (${widgetEmbedding.embedding} <=> ${queryVector})`.as('similarity')
+        })
+        .from(widgetEmbedding);
 
-    const searchQuery = widgetId 
-      ? baseSelect.where(sql`1 - (${widgetEmbedding.embedding} <=> ${queryVector}) > ${threshold} AND ${widgetEmbedding.widgetId} = ${widgetId}`)
-      : baseSelect.where(sql`1 - (${widgetEmbedding.embedding} <=> ${queryVector}) > ${threshold}`);
+      const searchQuery = widgetId 
+        ? baseSelect.where(sql`1 - (${widgetEmbedding.embedding} <=> ${queryVector}) > ${threshold} AND ${widgetEmbedding.widgetId} = ${widgetId}`)
+        : baseSelect.where(sql`1 - (${widgetEmbedding.embedding} <=> ${queryVector}) > ${threshold}`);
 
-    const results = await searchQuery
-      .orderBy(desc(sql`1 - (${widgetEmbedding.embedding} <=> ${queryVector})`))
-      .limit(limit);
+      // Time database query
+      const dbStart = Date.now();
+      const results = await searchQuery
+        .orderBy(desc(sql`1 - (${widgetEmbedding.embedding} <=> ${queryVector})`))
+        .limit(limit);
+      const dbDuration = Date.now() - dbStart;
+      searchLogger.debug({ duration_ms: dbDuration }, 'Database similarity search completed');
 
-    return results.map((result: any) => ({
-      chunk: result.contentChunk,
-      similarity: result.similarity,
-      metadata: result.metadata as { chunkIndex: number; source?: string; pageNumber?: number },
-      widgetId: result.widgetId
-    }));
+      const totalDuration = Date.now() - start;
+      searchLogger.info({ 
+        resultsCount: results.length,
+        topSimilarity: results[0]?.similarity || 0,
+        total_duration_ms: totalDuration
+      }, 'Search completed');
+
+      return results.map((result: any) => ({
+        chunk: result.contentChunk,
+        similarity: result.similarity,
+        metadata: result.metadata as { chunkIndex: number; source?: string; pageNumber?: number },
+        widgetId: result.widgetId
+      }));
+    } catch (error) {
+      searchLogger.error({ err: error }, 'Search failed');
+      throw error;
+    }
   }
 
   async deleteEmbeddingsForWidget(widgetId: string): Promise<void> {

@@ -19,6 +19,8 @@ import { ApifyCrawlerService } from './services/apify-crawler';
 import { optionalAuthMiddleware, authMiddleware, adminMiddleware, bearerTokenMiddleware, type AuthContext } from './lib/middleware';
 import { rateLimitMiddleware } from './lib/rate-limiter';
 import { iframeMiddleware } from './lib/iframe-middleware';
+import { requestLoggerMiddleware } from './lib/request-logger';
+import type { Logger } from 'pino';
 import type { Env } from './types';
 
 declare module "react-router" {
@@ -45,6 +47,8 @@ type AppType = {
       messages: MessageService;
     };
     auth?: AuthContext;
+    requestId: string;
+    logger: Logger;
   };
 };
 
@@ -62,6 +66,9 @@ app.use('*', cors({
 
 // Apply iframe security middleware
 app.use('*', iframeMiddleware);
+
+// Apply request logging middleware
+app.use('*', requestLoggerMiddleware);
 
 // Services cache to avoid recreation
 let servicesCache: {

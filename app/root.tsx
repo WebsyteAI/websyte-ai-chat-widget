@@ -7,11 +7,14 @@ import {
   ScrollRestoration,
   useLocation,
 } from "react-router";
+import { useEffect } from "react";
 
 import type { Route } from "./+types/root";
 import { UmamiTracking } from "./lib/umami-tracker";
 import { AuthProvider } from "./lib/auth/auth-context";
 import { Toaster } from "@/components/ui/sonner";
+import { ErrorBoundary as AppErrorBoundary } from "./components/ErrorBoundary";
+import { createLogger, setupGlobalErrorHandling, setupPerformanceLogging } from "./lib/logger";
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [
@@ -30,6 +33,15 @@ export const links: Route.LinksFunction = () => [
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+  
+  useEffect(() => {
+    // Setup global error handling and performance logging
+    const appLogger = createLogger('App');
+    setupGlobalErrorHandling(appLogger);
+    setupPerformanceLogging(appLogger);
+    
+    appLogger.info('Application initialized', { path: location.pathname });
+  }, []);
   
   // Use environment variable or default to production
   const isDev = import.meta.env.DEV;
@@ -50,10 +62,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         ></script>
       </head>
       <body>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-        <Toaster />
+        <AppErrorBoundary>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+          <Toaster />
+        </AppErrorBoundary>
         <ScrollRestoration />
         <Scripts />
         {isHomePage && (
