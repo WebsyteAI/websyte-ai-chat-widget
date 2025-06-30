@@ -81,12 +81,19 @@ export function ChatPanel({
           {!hidePoweredBy && (
             <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
               Powered by 
-              <img 
-                src={`${baseUrl}/websyte-ai-logo.svg`} 
-                alt="Websyte.ai" 
-                className="w-4 h-4"
-              />
-              Websyte.ai
+              <a 
+                href="https://websyte.ai" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <img 
+                  src={`${baseUrl}/websyte-ai-logo.svg`} 
+                  alt="Websyte.ai" 
+                  className="w-4 h-4"
+                />
+                Websyte.ai
+              </a>
             </p>
           )}
         </div>
@@ -96,7 +103,7 @@ export function ChatPanel({
           <div className={`p-6 flex flex-col gap-4 max-w-4xl mx-auto w-full ${isEmbed ? 'websyte-embed-messages' : ''}`}>
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
-                <div className="text-center mb-8">
+                <div className="text-center mb-4">
                   <h2 className="text-3xl font-bold text-gray-900 mb-4">
                     <div>Welcome to</div>
                     <div className="flex items-center justify-center gap-3 mt-2">
@@ -146,15 +153,15 @@ export function ChatPanel({
             ))}
             
             {isLoading && (
-              <div className="flex justify-start gap-2">
-                <div className="flex-shrink-0 pt-4">
+              <div className="flex flex-col items-start max-w-[80%]">
+                <div className="mb-2 px-3">
                   <img 
                     src={advertiserLogo || 'https://websyte.ai/websyte-ai-logo.svg'} 
                     alt="AI Assistant"
-                    className="w-8 h-8 rounded-full"
+                    className="w-6 h-6 rounded-full"
                   />
                 </div>
-                <div className="text-gray-800 p-4 rounded-lg">
+                <div className="text-gray-800 p-3 rounded-lg">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
@@ -265,7 +272,14 @@ export function ChatPanel({
         ))}
         
         {isLoading && (
-          <div className="flex justify-start">
+          <div className="flex flex-col items-start max-w-[80%]">
+            <div className="mb-2 px-3">
+              <img 
+                src={advertiserLogo || 'https://websyte.ai/websyte-ai-logo.svg'} 
+                alt="AI Assistant"
+                className="w-6 h-6 rounded-full"
+              />
+            </div>
             <div className="text-gray-800 p-3 rounded-lg">
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>

@@ -87,26 +87,25 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
 
   return (
     <div className={`${message.role === "user" ? "flex justify-end" : ""}`}>
-      <div className={`flex ${message.role === "user" ? "" : "gap-2"}`}>
-        {/* Assistant Avatar */}
+      <div className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"} max-w-[80%]`}>
+        {/* Assistant Avatar - Now on top */}
         {message.role === "assistant" && (
-          <div className="flex-shrink-0 pt-3 w-8">
+          <div className="mb-2 px-3">
             <img 
               src={avatarUrl || 'https://websyte.ai/websyte-ai-logo.svg'} 
               alt="AI Assistant"
-              className="w-8 h-8 rounded-full"
+              className="w-6 h-6 rounded-full"
             />
           </div>
         )}
         
-        <div className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"} flex-1`}>
-          <div
-            className={`max-w-[80%] p-3 rounded-lg ${
-              message.role === "user"
-                ? "bg-blue-600 text-white"
-                : "text-gray-800"
-            }`}
-          >
+        <div
+          className={`p-3 rounded-lg ${
+            message.role === "user"
+              ? "bg-blue-600 text-white"
+              : "text-gray-800"
+          }`}
+        >
         {message.role === "assistant" ? (
           <div className="text-sm prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
             <ReactMarkdown 
@@ -155,13 +154,11 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
             minute: '2-digit' 
           })}
         </p>
-          </div>
         </div>
-      </div>
-      
-      {/* Sources Section - Now positioned under the message */}
-      {message.role === "assistant" && message.sources && message.sources.length > 0 && (
-        <div className="mt-2" ref={sourcesRef}>
+        
+        {/* Sources Section - Now positioned under the message */}
+        {message.role === "assistant" && message.sources && message.sources.length > 0 && (
+          <div className="mt-2 px-3" ref={sourcesRef}>
           {/* Toggle button */}
           <button
             onClick={() => setShowSources(!showSources)}
@@ -273,8 +270,9 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
                 })}
             </div>
           )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
