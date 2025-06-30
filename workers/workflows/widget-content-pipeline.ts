@@ -20,6 +20,10 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
   async run(event: WorkflowEvent<WidgetContentPipelineParams>, step: WorkflowStep) {
     const { widgetId, crawlUrl, maxPages = 25, isRecrawl = false } = event.payload;
     
+    // Track workflow start time to prevent exceeding 10 minutes
+    const workflowStartTime = Date.now();
+    const MAX_WORKFLOW_DURATION_MS = 9 * 60 * 1000; // 9 minutes (leaving 1 minute buffer)
+    
     // Import services dynamically to avoid circular dependencies
     const { DatabaseService } = await import('../services/database');
     const { ApifyCrawlerService } = await import('../services/apify-crawler');
@@ -85,9 +89,21 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
 
     // Step 3: Poll for crawl completion
     let crawlResult: CrawlResult | null = null;
-    const maxAttempts = 60; // 60 attempts * 10 seconds = 10 minutes
+    const maxAttempts = 50; // 50 attempts * 10 seconds = 8.3 minutes (leaving buffer for processing)
     
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      // Check if we're approaching the workflow time limit
+      const elapsedTime = Date.now() - workflowStartTime;
+      if (elapsedTime >= MAX_WORKFLOW_DURATION_MS) {
+        console.warn(`[WORKFLOW] Approaching 10-minute limit (${Math.floor(elapsedTime / 1000)}s elapsed), stopping crawl checks`);
+        crawlResult = {
+          runId: crawlRunId,
+          pageCount: 0,
+          status: 'failed',
+          error: 'Workflow timeout - exceeded maximum duration'
+        };
+        break;
+      }
       const checkResult = await step.do<CrawlResult | null>(`check-crawl-status-${attempt}`, async (): Promise<CrawlResult | null> => {
         const db = new DatabaseService(this.env.DATABASE_URL);
         const fileStorage = new FileStorageService(this.env.WIDGET_FILES, db);
@@ -215,6 +231,13 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
         // Process pages in small batches to avoid memory issues
         const BATCH_SIZE = 3;
         for (let i = 0; i < pageFiles.length; i += BATCH_SIZE) {
+          // Check if we're approaching the workflow time limit
+          const elapsedTime = Date.now() - workflowStartTime;
+          if (elapsedTime >= MAX_WORKFLOW_DURATION_MS) {
+            console.warn(`[WORKFLOW] Approaching 10-minute limit during embeddings (${Math.floor(elapsedTime / 1000)}s elapsed), stopping`);
+            break;
+          }
+          
           const batch = pageFiles.slice(i, i + BATCH_SIZE);
           
           for (const file of batch) {
@@ -278,6 +301,13 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
     // Step 7: Generate recommendations (optional)
     await step.do('generate-recommendations', async () => {
       try {
+        // Check if we have enough time left for recommendations
+        const elapsedTime = Date.now() - workflowStartTime;
+        if (elapsedTime >= MAX_WORKFLOW_DURATION_MS) {
+          console.warn(`[WORKFLOW] Skipping recommendations - approaching 10-minute limit (${Math.floor(elapsedTime / 1000)}s elapsed)`);
+          return;
+        }
+        
         const db = new DatabaseService(this.env.DATABASE_URL);
         const widgetRecord = await db.getDatabase()
           .select()
