@@ -126,8 +126,8 @@ app.use('/api/recommendations', optionalAuthMiddleware);
 app.use('/api/summaries', optionalAuthMiddleware);
 app.use('/api/analyze-selector', optionalAuthMiddleware);
 
-// Required auth middleware for widget routes
-app.use('/api/widgets/*', authMiddleware);
+// Note: Auth middleware is applied individually to widget routes that need it
+// The /api/widgets/:id/public endpoint does not require authentication
 
 // Test auth route
 app.get('/api/auth/test', async (c) => {
@@ -199,7 +199,7 @@ app.get('/api/public/widget/:id', async (c) => {
 
 // Widget API Routes
 // Get all user widgets
-app.get('/api/widgets', async (c) => {
+app.get('/api/widgets', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -242,7 +242,7 @@ app.get('/api/admin/widgets', adminMiddleware, async (c) => {
 });
 
 // Create new widget
-app.post('/api/widgets', async (c) => {
+app.post('/api/widgets', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -284,7 +284,7 @@ app.post('/api/widgets', async (c) => {
 });
 
 // Get specific widget
-app.get('/api/widgets/:id', async (c) => {
+app.get('/api/widgets/:id', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -308,7 +308,7 @@ app.get('/api/widgets/:id', async (c) => {
 });
 
 // Update widget
-app.put('/api/widgets/:id', async (c) => {
+app.put('/api/widgets/:id', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -387,7 +387,7 @@ app.put('/api/widgets/:id', async (c) => {
 });
 
 // Delete widget
-app.delete('/api/widgets/:id', async (c) => {
+app.delete('/api/widgets/:id', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -411,7 +411,7 @@ app.delete('/api/widgets/:id', async (c) => {
 });
 
 // Search within specific widget
-app.post('/api/widgets/:id/search', async (c) => {
+app.post('/api/widgets/:id/search', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -437,7 +437,7 @@ app.post('/api/widgets/:id/search', async (c) => {
 });
 
 // Get chat messages for a widget
-app.get('/api/widgets/:id/messages', async (c) => {
+app.get('/api/widgets/:id/messages', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -481,7 +481,7 @@ app.get('/api/widgets/:id/messages', async (c) => {
 });
 
 // Get chat sessions for a widget
-app.get('/api/widgets/:id/sessions', async (c) => {
+app.get('/api/widgets/:id/sessions', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -508,7 +508,7 @@ app.get('/api/widgets/:id/sessions', async (c) => {
 });
 
 // Delete a chat message
-app.delete('/api/widgets/:widgetId/messages/:messageId', async (c) => {
+app.delete('/api/widgets/:widgetId/messages/:messageId', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -535,7 +535,7 @@ app.delete('/api/widgets/:widgetId/messages/:messageId', async (c) => {
       offset: 0
     });
     
-    const message = messages.find(m => m.id === messageId);
+    const message = messages.find((m: any) => m.id === messageId);
     if (!message) {
       return c.json({ error: 'Message not found in this widget' }, 404);
     }
@@ -549,7 +549,7 @@ app.delete('/api/widgets/:widgetId/messages/:messageId', async (c) => {
 });
 
 // Search across all user widgets
-app.post('/api/widgets/search', async (c) => {
+app.post('/api/widgets/search', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -570,7 +570,7 @@ app.post('/api/widgets/search', async (c) => {
 });
 
 // Add file to widget
-app.post('/api/widgets/:id/files', async (c) => {
+app.post('/api/widgets/:id/files', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -598,7 +598,7 @@ app.post('/api/widgets/:id/files', async (c) => {
 });
 
 // Download file
-app.get('/api/widgets/:id/files/:fileId/download', async (c) => {
+app.get('/api/widgets/:id/files/:fileId/download', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -630,7 +630,7 @@ app.get('/api/widgets/:id/files/:fileId/download', async (c) => {
 });
 
 // Delete file from widget
-app.delete('/api/widgets/:id/files/:fileId', async (c) => {
+app.delete('/api/widgets/:id/files/:fileId', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -680,7 +680,7 @@ app.get('/api/widgets/:id/public', async (c) => {
 });
 
 // Start website crawl
-app.post('/api/widgets/:id/crawl', async (c) => {
+app.post('/api/widgets/:id/crawl', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -745,7 +745,7 @@ app.post('/api/widgets/:id/crawl', async (c) => {
 });
 
 // Check crawl status
-app.get('/api/widgets/:id/crawl/status', async (c) => {
+app.get('/api/widgets/:id/crawl/status', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -852,7 +852,7 @@ app.get('/api/widgets/:id/crawl/status', async (c) => {
 });
 
 // Check workflow status
-app.get('/api/widgets/:id/workflow/status', async (c) => {
+app.get('/api/widgets/:id/workflow/status', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -880,7 +880,7 @@ app.get('/api/widgets/:id/workflow/status', async (c) => {
 });
 
 // Check and process crawl status (original implementation)
-app.get('/api/widgets/:id/crawl/status-check', async (c) => {
+app.get('/api/widgets/:id/crawl/status-check', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -920,7 +920,7 @@ app.get('/api/widgets/:id/crawl/status-check', async (c) => {
 });
 
 // Reset stuck crawl
-app.post('/api/widgets/:id/crawl/reset', async (c) => {
+app.post('/api/widgets/:id/crawl/reset', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -945,7 +945,7 @@ app.post('/api/widgets/:id/crawl/reset', async (c) => {
 });
 
 // Generate recommendations for a widget
-app.post('/api/widgets/:id/recommendations', async (c) => {
+app.post('/api/widgets/:id/recommendations', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -979,7 +979,7 @@ app.post('/api/widgets/:id/recommendations', async (c) => {
 });
 
 // Refresh embeddings for a widget
-app.post('/api/widgets/:id/embeddings/refresh', async (c) => {
+app.post('/api/widgets/:id/embeddings/refresh', authMiddleware, async (c) => {
   const auth = c.get('auth');
   if (!auth?.user) {
     return c.json({ error: 'Unauthorized' }, 401);

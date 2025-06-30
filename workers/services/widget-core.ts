@@ -150,7 +150,7 @@ export class WidgetCoreService {
       .where(eq(widget.id, widgetId));
   }
 
-  async updateRecommendations(widgetId: string, recommendations: string[]): Promise<void> {
+  async updateRecommendations(widgetId: string, recommendations: Array<{title: string; description: string}>): Promise<void> {
     await this.db.getDatabase()
       .update(widget)
       .set({ recommendations })

@@ -36,12 +36,10 @@ export class RAGAgent {
       contextLogger.debug({ queryLength: query.length, maxChunks }, 'Retrieving context');
       
       const searchStart = Date.now();
-      const searchResults = await this.widgetService.searchWidgetContent(
-        widgetId,
-        userId,
-        query,
-        maxChunks
-      );
+      // Use public search method for anonymous users
+      const searchResults = userId === 'anonymous' 
+        ? await this.widgetService.searchPublicWidgetContent(widgetId, query, maxChunks)
+        : await this.widgetService.searchWidgetContent(widgetId, userId, query, maxChunks);
       const searchDuration = Date.now() - searchStart;
       contextLogger.debug({ duration_ms: searchDuration }, 'Widget content search completed');
 
