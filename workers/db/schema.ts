@@ -19,7 +19,7 @@ export const widget = pgTable('widget', {
   name: text('name').notNull(),
   description: text('description'),
   url: text('url').unique(), // Unique URL for website widgets
-  logoUrl: text('logo_url').default('https://websyte.ai/logo.svg'), // Logo URL with websyte.ai default
+  logoUrl: text('logo_url').default('/websyte-ai-logo.svg'), // Logo URL with websyte.ai default
   summaries: json('summaries').$type<{
     short: string;
     medium: string;

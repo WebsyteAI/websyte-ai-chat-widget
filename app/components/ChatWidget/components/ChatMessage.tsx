@@ -91,7 +91,7 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
       {message.role === "assistant" && (
         <div className="flex-shrink-0">
           <img 
-            src={avatarUrl || 'https://websyte.ai/logo.svg'} 
+            src={avatarUrl || '/websyte-ai-logo.svg'} 
             alt="AI Assistant"
             className="w-8 h-8 rounded-full"
           />
