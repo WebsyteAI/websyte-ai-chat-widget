@@ -211,8 +211,11 @@ app.get('/api/widgets', authMiddleware, async (c) => {
   const offset = parseInt(c.req.query('offset') || '0');
 
   try {
-    const widgets = await c.get('services').widget.getUserWidgets(auth.user.id, limit, offset);
-    return c.json({ widgets });
+    const [widgets, total] = await Promise.all([
+      c.get('services').widget.getUserWidgets(auth.user.id, limit, offset),
+      c.get('services').widget.getUserWidgetsCount(auth.user.id)
+    ]);
+    return c.json({ widgets, total });
   } catch (error) {
     console.error('Error getting widgets:', error);
     return c.json({ error: 'Failed to get widgets' }, 500);
@@ -1016,8 +1019,16 @@ app.post('/api/widgets/:id/embeddings/refresh', authMiddleware, async (c) => {
 // List all widgets (automation API)
 app.get('/api/automation/widgets', bearerTokenMiddleware, async (c) => {
   try {
-    const widgets = await c.get('services').widget.getAllWidgets();
-    return c.json({ widgets });
+    const MAX_LIMIT = 1000;
+    const requestedLimit = parseInt(c.req.query('limit') || '50');
+    const limit = Math.min(requestedLimit, MAX_LIMIT);
+    const offset = parseInt(c.req.query('offset') || '0');
+
+    const [widgets, total] = await Promise.all([
+      c.get('services').widget.getAllWidgets(limit, offset),
+      c.get('services').widget.getAllWidgetsCount()
+    ]);
+    return c.json({ widgets, total });
   } catch (error) {
     console.error('Error listing widgets:', error);
     return c.json({ error: 'Failed to list widgets' }, 500);
@@ -1036,14 +1047,22 @@ app.post('/api/automation/widgets', bearerTokenMiddleware, async (c) => {
 
     // Create widget with a system user ID (you might want to configure this)
     const systemUserId = 'system-automation';
-    const widget = await c.get('services').widget.createWidget({
+    const widget = await c.get('services').widget.createWidget(systemUserId, {
       name,
       description: description || '',
       url: url || null,
-      crawlUrl: crawlUrl || null,
-      isPublic: isPublic ?? false,
-      userId: systemUserId,
+      logoUrl: null,
+      content: null
     });
+
+    // Update widget with additional fields if provided
+    if (crawlUrl !== undefined || isPublic !== undefined) {
+      const updatedWidget = await c.get('services').widget.updateWidget(widget.id, systemUserId, {
+        crawlUrl: crawlUrl || undefined,
+        isPublic: isPublic ?? undefined
+      });
+      return c.json({ widget: updatedWidget });
+    }
 
     return c.json({ widget });
   } catch (error) {

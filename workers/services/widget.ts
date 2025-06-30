@@ -204,6 +204,53 @@ export class WidgetService {
     return result;
   }
 
+  async getUserWidgetsCount(userId: string): Promise<number> {
+    const result = await this.db.getDatabase()
+      .select({ count: sql<number>`count(*)` })
+      .from(widget)
+      .where(eq(widget.userId, userId));
+
+    return result[0]?.count || 0;
+  }
+
+  async getAllWidgets(limit: number = 50, offset: number = 0): Promise<WidgetWithFiles[]> {
+    const widgets = await this.db.getDatabase()
+      .select()
+      .from(widget)
+      .orderBy(desc(widget.updatedAt))
+      .limit(limit)
+      .offset(offset);
+
+    const result: WidgetWithFiles[] = [];
+    
+    for (const w of widgets) {
+      const files = await this.fileStorage.getWidgetFiles(w.id);
+      const embeddingsCount = await this.vectorSearch.getEmbeddingsCount(w.id);
+      
+      result.push({
+        ...w,
+        files: files.map((f: any) => ({
+          id: f.id,
+          filename: f.filename,
+          fileType: f.fileType,
+          fileSize: f.fileSize,
+          createdAt: f.createdAt
+        })),
+        embeddingsCount
+      });
+    }
+
+    return result;
+  }
+
+  async getAllWidgetsCount(): Promise<number> {
+    const result = await this.db.getDatabase()
+      .select({ count: sql<number>`count(*)` })
+      .from(widget);
+
+    return result[0]?.count || 0;
+  }
+
 
   async updateWidget(id: string, userId: string, request: UpdateWidgetRequest): Promise<WidgetWithFiles | null> {
     console.log('[WidgetService] updateWidget called with:', { id, userId, request });
