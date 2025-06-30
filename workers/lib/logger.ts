@@ -1,22 +1,32 @@
-import pino from 'pino';
+// Simple logger for Cloudflare Workers environment
+export interface Logger {
+  info: (message: string, ...args: any[]) => void;
+  error: (message: string, ...args: any[]) => void;
+  warn: (message: string, ...args: any[]) => void;
+  debug: (message: string, ...args: any[]) => void;
+}
 
-// Create base logger configuration
-const baseOptions: pino.LoggerOptions = {
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-  formatters: {
-    level: (label) => {
-      return { level: label.toUpperCase() };
+// Factory function to create loggers with context
+export function createLogger(name: string, context?: Record<string, any>): Logger {
+  const prefix = `[${name}]`;
+  
+  return {
+    info: (message: string, ...args: any[]) => {
+      console.log(prefix, message, ...args);
     },
-  },
-  timestamp: pino.stdTimeFunctions.isoTime,
-};
-
-// Create the base logger
-export const logger = pino(baseOptions);
-
-// Factory function to create child loggers with context
-export function createLogger(name: string, context?: Record<string, any>) {
-  return logger.child({ service: name, ...context });
+    error: (message: string, ...args: any[]) => {
+      console.error(prefix, message, ...args);
+    },
+    warn: (message: string, ...args: any[]) => {
+      console.warn(prefix, message, ...args);
+    },
+    debug: (message: string, ...args: any[]) => {
+      // Only log debug in development
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(prefix, '[DEBUG]', message, ...args);
+      }
+    },
+  };
 }
 
 // Generate a simple request ID
@@ -28,3 +38,6 @@ export function generateRequestId(): string {
 export function withRequestId(requestId: string): Record<string, any> {
   return { requestId };
 }
+
+// Default logger instance
+export const logger = createLogger('App');
