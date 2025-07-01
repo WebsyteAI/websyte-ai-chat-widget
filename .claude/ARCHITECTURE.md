@@ -260,7 +260,8 @@ app/components/ChatWidget/
 │   ├── index.ts              # Hook exports
 │   ├── useChatMessages.ts    # Message state management
 │   ├── useAudioPlayer.ts     # Audio playback controls
-│   └── useContentSummarization.ts # Content mode switching
+│   ├── useContentSummarization.ts # Content mode switching
+│   └── useIframeMessaging.ts # Iframe communication
 └── components/
     ├── index.ts              # Component exports
     ├── ActionBar.tsx         # Action buttons and dropdown
@@ -299,6 +300,7 @@ The new architecture separates concerns into distinct layers:
 - **useChatMessages.ts**: Message state management
 - **useAudioPlayer.ts**: Audio playback controls  
 - **useContentSummarization.ts**: Content mode switching
+- **useIframeMessaging.ts**: Iframe communication and postMessage API
 
 ### UI Components
 - **ActionBar.tsx**: Main action buttons and summarization dropdown
@@ -400,6 +402,31 @@ interface UseContentSummarizationReturn {
 - Supports both API-based and pre-loaded summary data
 - Optimized for parallel loading scenarios
 
+### `useIframeMessaging`
+
+**Purpose**: Manages iframe communication via postMessage API
+
+**Responsibilities**:
+- Bidirectional message passing between iframe and parent window
+- Event listener management for message events
+- Type-safe message handling
+- Security origin validation
+
+**API**:
+```typescript
+interface UseIframeMessagingReturn {
+  sendMessage: (message: any, targetOrigin?: string) => void;
+  onMessage: (handler: (event: MessageEvent) => void) => void;
+  isInIframe: boolean;
+}
+```
+
+**Benefits**:
+- Secure cross-origin communication
+- Reusable for any iframe-based features
+- Centralized message handling logic
+- Supports the iframe embedding API
+
 ## Refactoring Benefits
 
 ### Before Refactoring
@@ -413,7 +440,7 @@ interface UseContentSummarizationReturn {
 ### After Refactoring
 - **~400 lines** in main component (55% reduction)
 - **6 focused UI components** with single responsibilities
-- **3 custom hooks** for business logic
+- **4 custom hooks** for business logic
 - **Type-safe interfaces** for all component props
 - **Separated business logic** from UI rendering
 - **Independently testable** components and hooks
@@ -695,6 +722,83 @@ Protected routes for programmatic access:
 4. **Auth Middleware** - Session validation for user routes
 5. **Bearer Token Middleware** - Token validation for automation
 
+## Backend Route Architecture
+
+### Modular Route Organization
+The backend API has been refactored from a monolithic structure into modular route files for better maintainability:
+
+#### Route Structure (`workers/routes/`)
+```typescript
+// index.ts - Central route registration
+export function registerAllRoutes(app: AppType) {
+  registerAuthRoutes(app);
+  registerChatRoutes(app);
+  registerWidgetRoutes(app);
+  registerWidgetCrawlRoutes(app);
+  registerWidgetDocsRoutes(app);
+  registerAutomationRoutes(app);
+  registerPublicRoutes(app);
+  registerAdminRoutes(app);
+  registerServiceRoutes(app);
+}
+```
+
+#### Route Modules
+- **`auth.routes.ts`** - Authentication endpoints (login, logout, session)
+- **`chat.routes.ts`** - Chat API with streaming support
+- **`widget.routes.ts`** - Widget CRUD operations
+- **`widget-crawl.routes.ts`** - Website crawling functionality
+- **`widget-docs.routes.ts`** - Documentation and file management
+- **`automation.routes.ts`** - Bearer token protected automation API
+- **`public.routes.ts`** - Public widget access (no auth required)
+- **`admin.routes.ts`** - Admin-only system management
+- **`services.routes.ts`** - General service endpoints
+
+#### Shared Types (`workers/routes/types.ts`)
+```typescript
+export type AppType = Hono<{
+  Bindings: Env;
+  Variables: {
+    auth: BetterAuthContext | null;
+    db: NeonHttpDatabase;
+    embeddings: typeof embeddings;
+    summaries: typeof summaries;
+    messages: typeof messages;
+    widgets: typeof widgets;
+    widgetFiles: typeof widgetFiles;
+    users: typeof users;
+  };
+}>;
+```
+
+### Route Architecture Benefits
+- **Separation of Concerns**: Each route file handles a specific domain
+- **Better Testability**: Routes can be tested independently
+- **Type Safety**: Shared `AppType` ensures consistent typing
+- **Easier Navigation**: Clear file structure for finding endpoints
+- **Reduced Conflicts**: Multiple developers can work on different routes
+- **Scalability**: Easy to add new route modules as features grow
+
+## Additional Services
+
+### Utility Services
+- **`database.ts`** - Database connection management and query helpers
+- **`file-storage.ts`** - R2 storage integration for file uploads
+- **`ocr-service.ts`** - OCR capabilities using Mistral AI for PDFs and images
+- **`selector-analysis.ts`** - CSS selector validation and content analysis
+- **`common.ts`** - Common utilities and helper functions
+
+### Core Services
+- **`auth.ts`** - Authentication and session management
+- **`widget.ts`** - Widget CRUD operations and access control
+- **`chat.ts`** - Chat API with streaming support
+- **`rag-agent.ts`** - RAG implementation with context retrieval
+- **`vector-search.ts`** - Embedding generation and similarity search
+- **`messages.ts`** - Chat message persistence
+- **`apify-crawler.ts`** - Website crawling integration
+- **`openai.ts`** - OpenAI API client wrapper
+- **`recommendations.ts`** - Content recommendation generation
+
 ## Architecture Benefits
 
 ### Development Experience
@@ -708,3 +812,41 @@ Protected routes for programmatic access:
 - **Clean imports** with organized directory structure
 - **Future extensibility** for new features and modifications
 - **Better maintainability** with focused responsibilities
+
+## Data Flow
+
+### Widget Initialization Flow
+1. User loads article page with embedded script
+2. Widget initializes and extracts page content
+3. User sends message through widget
+4. Widget sends message + page context to Cloudflare Workers
+5. Workers process request and call OpenAI API
+6. Response sent back to widget and displayed
+7. Message history stored in localStorage
+
+### Content Extraction Strategy
+- **Required Selector**: Uses user-provided `contentTarget` selector (e.g., `"article, main, .content"`)
+- **Content Cleaning**: Advanced content processing with script/style removal and unwanted element filtering
+- **Validation**: Ensures extracted content meets quality requirements (50+ chars, 10+ words)
+- **Error Handling**: Throws descriptive errors if selector not found or content insufficient
+- **No Fallbacks**: Strict selector matching without default fallback patterns
+- **Size Limits**: Content limited to 10,000 characters for optimal API performance
+
+### Storage Schema (localStorage)
+```json
+{
+  "chatHistory": [
+    {
+      "id": "unique-id",
+      "timestamp": "2025-01-05T10:30:00Z",
+      "role": "user|assistant",
+      "content": "message content",
+      "pageUrl": "https://example.com/article"
+    }
+  ],
+  "widgetState": {
+    "isMinimized": false,
+    "position": "bottom-right"
+  }
+}
+```

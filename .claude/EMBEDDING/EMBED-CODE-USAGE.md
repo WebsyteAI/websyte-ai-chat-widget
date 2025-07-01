@@ -136,3 +136,54 @@ This URL can be:
 - Used as a standalone chat interface
 - Embedded in documentation or help centers
 - Bookmarked for quick access
+
+## Legacy Widget Embedding (Page Content Chat)
+
+For the original page content chat functionality:
+
+### Basic Embedding
+```html
+<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" async></script>
+```
+
+### Advanced Configuration
+```html
+<script 
+  src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" 
+  data-content-target="main, .content, article"
+  data-api-endpoint="/api/chat"
+  data-base-url="https://api.example.com"
+  data-target-element="#my-container"
+  data-advertiser-name="My Brand"
+  data-advertiser-logo="https://logo.clearbit.com/mybrand.com"
+  data-position="bottom-center"
+  data-theme="default"
+  async
+></script>
+```
+
+### Script Tag Attributes
+- `data-content-target`: CSS selector for page content extraction
+- `data-api-endpoint`: Custom API endpoint URL
+- `data-base-url`: Base URL for all API endpoints
+- `data-target-element`: CSS selector for widget injection target
+- `data-advertiser-name`: Custom branding name
+- `data-advertiser-logo`: Custom logo URL
+- `data-position`: Widget position (bottom-center, bottom-right, etc.)
+- `data-theme`: UI theme selection
+- `data-save-chat-messages`: Whether to save chat messages (true/false)
+
+### Injection Modes
+
+**Body Injection (Default):**
+- Widget appears as fixed overlay
+- Action bar at top center of viewport
+- Chat panel slides from right side
+- Z-index: 9999
+
+**Targeted Injection:**
+- Widget appears inline within specified container
+- Action bar at top center of container
+- Chat panel still fixed right side
+- Z-index: 999
+- Example: `data-target-element="#chat-container"`

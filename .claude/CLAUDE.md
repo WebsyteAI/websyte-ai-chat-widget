@@ -14,12 +14,15 @@
 - Widget development: `pnpm run dev:widget`
 - Build widget only: `pnpm run build:widget`
 - Test with coverage: `pnpm test:coverage`
+- Run unit tests: `pnpm test`
+- Run integration tests: `pnpm test:integration`
 
 ### Testing Requirements
 - **Always create tests for new features**
 - Maintain 100% test coverage for worker services
 - Use Vitest framework with comprehensive mocking
-- See `.claude/TESTING.md` for detailed testing guidelines
+- See `.claude/TESTING.md` for unit testing guidelines
+- See `.claude/TESTING-INTEGRATION.md` for integration testing framework
 
 ### File Access Guidelines
 **NEVER read these generated directories**:
@@ -27,29 +30,57 @@
 
 **Work with source files in**: `app/`, `workers/`, `test/`, and root config files.
 
+## Documentation Structure
+
+### Directory Organization (Updated 2025-01-01)
+Documentation is now organized into subdirectories for better maintainability:
+```
+.claude/
+├── Core Documentation
+│   ├── ARCHITECTURE.md - System architecture with route modularization
+│   ├── API-REFERENCE.md - Complete API docs with automation endpoints
+│   ├── CONTEXT.md - Project overview and goals
+│   └── PLANNING.md - Future enhancements and development workflow
+├── FEATURES/ - Feature-specific documentation
+│   ├── MESSAGE-PERSISTENCE.md
+│   ├── WEBSITE-CRAWLER.md
+│   ├── WIDGET-SHARING.md
+│   └── WORKFLOW-VISUALIZATION.md
+├── EMBEDDING/ - Embedding and integration docs
+│   ├── IFRAME-API.md
+│   └── EMBED-CODE-USAGE.md
+├── Testing Documentation
+│   ├── TESTING.md - Unit testing guidelines
+│   └── TESTING-INTEGRATION.md - Integration testing framework
+├── FUTURE/ - Future plans and proposals
+│   └── stripe-payment-integration-plan.md
+└── ARCHIVE/ - Historical documentation
+    └── PLANNING-HISTORY.md
+```
+
 ## Documentation Maintenance
 **IMPORTANT**: When adding new features or making significant changes, always update documentation:
 
 ### Required Documentation Updates
-1. **README.md** - Update the following sections when applicable:
+1. **Root CLAUDE.md** - Update the following sections when applicable:
    - Features list (add new features with ✅ **NEW** flag)
-   - Architecture section (note significant architectural changes)
-   - API Endpoints (document new endpoints)
-   - Recent Updates section (add new entry at top with latest changes)
-   - Configuration options (if new script attributes added)
+   - Essential Files section (for new route files or services)
+   - Quick Start commands (for new scripts)
+   - API Automation section (for new automation endpoints)
 
-2. **PLANNING.md** - Update the following sections when applicable:
-   - Project Status (if completion status changes)
-   - Implementation Phases (mark completed phases as ✅ COMPLETED)
-   - Recent Implementation sections (add detailed technical implementation notes)
-   - File Structure (if new files or directories added)
-   - API Endpoints (document new endpoint specifications)
+2. **API-REFERENCE.md** - Update when adding:
+   - New API endpoints (public, authenticated, automation, or admin)
+   - Changes to authentication methods
+   - Rate limiting changes
+   - Request/response formats
 
-3. **CLAUDE.md** (this file) - Update when applicable:
-   - Architecture notes (for significant architectural changes)
-   - New development patterns or requirements
-   - Testing requirements (if test strategy changes)
-   - Build process changes
+3. **ARCHITECTURE.md** - Update when:
+   - Adding new route modules to `workers/routes/`
+   - Changing system architecture
+   - Modifying authentication flow
+   - Adding new services or components
+
+4. **Feature-specific docs** - Create new docs in `.claude/FEATURES/` for major features
 
 ### Documentation Standards
 - Use ✅ **NEW** for brand new features
@@ -90,9 +121,11 @@
 
 ### Backend Services
 - **Cloudflare Workers** with Hono framework
+- **Modular Route Architecture** in `workers/routes/` directory
 - **OpenAI API** integration for chat and AI features
 - **Content caching** with TTL and LRU eviction
 - **Comprehensive error handling** and validation
+- **Integration Testing** with real services or mocks
 
 ## Current Project Status
 
@@ -103,6 +136,10 @@
 - **Test Coverage**: 235 tests with 100% coverage
 
 ### Latest Improvements
+- **Documentation Reorganization** (2025-01-01): Restructured docs into subdirectories for better maintainability
+- **Route Modularization**: Backend routes split into separate files in `workers/routes/`
+- **Integration Testing**: New test framework with mocking support for CI/CD
+- **API Automation**: Bearer token auth endpoints for programmatic access
 - **Content Caching**: Intelligent caching with TTL and LRU eviction for 70-80% performance improvement
 - **Component Architecture**: Modular hooks and components for better maintainability
 - **Zero Configuration**: Automatic content extraction without selector requirements

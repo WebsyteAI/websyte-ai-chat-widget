@@ -6,22 +6,32 @@ This directory contains detailed technical documentation for the Websyte AI Chat
 
 ### Core Documentation
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture, component design, and technical stack
-- **[PLANNING.md](./PLANNING.md)** - Project planning, phases, and implementation roadmap
-- **[TESTING.md](./TESTING.md)** - Testing strategy, guidelines, and coverage requirements
+- **[PLANNING.md](./PLANNING.md)** - Project planning, future enhancements, and development workflow
 - **[CONTEXT.md](./CONTEXT.md)** - Project context, goals, and high-level overview
+- **[API-REFERENCE.md](./API-REFERENCE.md)** - Complete API documentation and endpoints
+
+### Testing
+- **[TESTING.md](./TESTING.md)** - Unit testing strategy and coverage
+- **[TESTING-INTEGRATION.md](./TESTING-INTEGRATION.md)** - Integration testing framework and guidelines
 
 ### Feature Documentation
-- **[MESSAGE-PERSISTENCE.md](./MESSAGE-PERSISTENCE.md)** - Chat message storage, analytics, and GDPR compliance
-- **[WEBSITE-CRAWLER.md](./WEBSITE-CRAWLER.md)** - Apify integration for automated content crawling
-- **[WIDGET-SHARING.md](./WIDGET-SHARING.md)** - Direct URL sharing and public widget access
-- **[stripe-payment-integration-plan.md](./stripe-payment-integration-plan.md)** - Payment integration planning
+- **[FEATURES/MESSAGE-PERSISTENCE.md](./FEATURES/MESSAGE-PERSISTENCE.md)** - Chat message storage, analytics, and GDPR compliance
+- **[FEATURES/WEBSITE-CRAWLER.md](./FEATURES/WEBSITE-CRAWLER.md)** - Apify integration for automated content crawling
+- **[FEATURES/WIDGET-SHARING.md](./FEATURES/WIDGET-SHARING.md)** - Direct URL sharing and public widget access
+- **[FEATURES/WORKFLOW-VISUALIZATION.md](./FEATURES/WORKFLOW-VISUALIZATION.md)** - Workflow visualization and bot detection
 
 ### Embedding & Integration
-- **[IFRAME-API.md](./IFRAME-API.md)** - PostMessage API for iframe communication
-- **[EMBED-CODE-USAGE.md](./EMBED-CODE-USAGE.md)** - Widget embed code generation and best practices
+- **[EMBEDDING/IFRAME-API.md](./EMBEDDING/IFRAME-API.md)** - PostMessage API for iframe communication
+- **[EMBEDDING/EMBED-CODE-USAGE.md](./EMBEDDING/EMBED-CODE-USAGE.md)** - Widget embed code generation and best practices
 
 ### Development Guidelines
 - **[CLAUDE.md](./CLAUDE.md)** - Development notes, coding standards, and Claude-specific instructions
+
+### Future Plans
+- **[FUTURE/stripe-payment-integration-plan.md](./FUTURE/stripe-payment-integration-plan.md)** - Payment integration planning
+
+### Historical Archives
+- **[ARCHIVE/PLANNING-HISTORY.md](./ARCHIVE/PLANNING-HISTORY.md)** - Historical implementation logs and completed phases
 
 ## 🚀 Quick Links
 
@@ -60,7 +70,7 @@ RATE_LIMIT_AUTHENTICATED=30
 1. **New to the project?** Start with [CONTEXT.md](./CONTEXT.md) and [ARCHITECTURE.md](./ARCHITECTURE.md)
 2. **Implementing a feature?** Check the relevant feature documentation
 3. **Writing tests?** Follow guidelines in [TESTING.md](./TESTING.md)
-4. **Planning work?** Review [PLANNING.md](./PLANNING.md) for roadmap
+4. **Planning work?** Review [PLANNING.md](./PLANNING.md) for future enhancements
 
 ## 🔄 Documentation Updates
 

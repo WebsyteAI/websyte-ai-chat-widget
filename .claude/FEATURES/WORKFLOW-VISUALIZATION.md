@@ -1,5 +1,7 @@
 # Widget Content Pipeline Workflow Visualization
 
+> **Note: PLANNED FEATURE** - This document describes a planned implementation using Cloudflare Workflows. The current implementation uses direct API calls without workflow orchestration.
+
 ## Overview
 The Widget Content Pipeline is a Cloudflare Workflow that handles the complete process of crawling websites, storing content, and generating embeddings for AI-powered chat widgets.
 

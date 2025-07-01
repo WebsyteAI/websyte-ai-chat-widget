@@ -1,6 +1,6 @@
 # Test Suite for Websyte AI Chat Widget Services
 
-This directory contains comprehensive tests for the worker services in the `workers/services/` directory.
+This document covers unit testing for the worker services. For integration testing, see [TESTING-INTEGRATION.md](./TESTING-INTEGRATION.md).
 
 ## Test Framework
 
@@ -8,11 +8,25 @@ This directory contains comprehensive tests for the worker services in the `work
 - **jsdom** - DOM environment for testing
 - **vi** - Built-in mocking utilities
 
+## Test Commands
+
+```bash
+pnpm test             # Run unit tests in watch mode
+pnpm test:run         # Run unit tests once
+pnpm test:integration # Run integration tests (see TESTING-INTEGRATION.md)
+pnpm test:coverage    # Generate coverage report
+pnpm test:ui          # Run tests with Vitest UI
+pnpm test:all         # Run both unit and integration tests
+```
+
 ## Test Coverage
 
 Current test coverage is **100% statements, 100% functions, 100% lines, 98% branches**.
 
-**Total Test Count**: 235 tests across 9 test files (93 worker services + 121 app library tests + 21 integration tests)
+**Total Test Count**: 484 tests
+- App library tests: 98 tests
+- Worker service tests: 306 tests  
+- Integration tests: 80 tests
 
 ## Test Files
 
@@ -49,16 +63,70 @@ Tests for the summarize service:
 - ✅ Error handling and user-friendly error messages
 - ✅ Special character and edge case handling
 
-## App Library Tests
+### `auth.test.ts`
+Tests for authentication service:
+- ✅ Session validation and user authentication
+- ✅ Token generation and verification
+- ✅ OAuth provider integration
+- ✅ Error handling for invalid credentials
 
-### `content-extractor.test.ts`
-Tests for the content extraction system with caching:
-- ✅ Cache-first content extraction and fallback behavior
-- ✅ Retry mechanism with exponential backoff (3 attempts)
-- ✅ DOM processing (script/style removal, text cleaning)
-- ✅ Content validation (length and word count requirements)
-- ✅ Cache utility methods (warming, clearing, statistics)
-- ✅ Error handling (missing selectors, insufficient content)
+### `widget.test.ts`
+Tests for widget service:
+- ✅ Widget CRUD operations
+- ✅ Public/private widget access control
+- ✅ Widget content search functionality
+- ✅ Ownership validation
+
+### `rag-agent.test.ts`
+Tests for RAG (Retrieval-Augmented Generation) agent:
+- ✅ Context retrieval with vector search
+- ✅ System prompt building
+- ✅ Response generation with citations
+- ✅ Streaming response handling
+
+### `vector-search.test.ts`
+Tests for vector search service:
+- ✅ Text chunking with overlap
+- ✅ Embedding generation via OpenAI
+- ✅ Similarity search with pgvector
+- ✅ Batch processing for widgets
+
+### `database.test.ts`
+Tests for database service:
+- ✅ Connection management
+- ✅ Query execution and error handling
+- ✅ Transaction support
+- ✅ Migration handling
+
+### `file-storage.test.ts`
+Tests for R2 file storage:
+- ✅ File upload and retrieval
+- ✅ File deletion
+- ✅ URL generation
+- ✅ Error handling for storage operations
+
+### `ocr-service.test.ts`
+Tests for OCR service:
+- ✅ PDF text extraction
+- ✅ Image text extraction
+- ✅ Mistral AI integration for OCR
+- ✅ Error handling for unsupported formats
+
+### `selector-analysis.test.ts`
+Tests for CSS selector analysis:
+- ✅ Selector validation
+- ✅ Content extraction analysis
+- ✅ Performance metrics
+- ✅ Error handling for invalid selectors
+
+### `common.test.ts`
+Tests for common utilities:
+- ✅ Helper functions
+- ✅ Type guards
+- ✅ Validation utilities
+- ✅ Error formatting
+
+## App Library Tests
 
 ### `content-cache.test.ts`
 Tests for the content caching system:

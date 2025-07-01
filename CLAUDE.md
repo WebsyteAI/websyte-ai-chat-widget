@@ -9,32 +9,56 @@ Embeddable React-based AI chat widget for websites with content summarization an
 
 ### Core Documentation
 - **[.claude/ARCHITECTURE.md](.claude/ARCHITECTURE.md)** - System architecture, component design, and technical stack
-- **[.claude/PLANNING.md](.claude/PLANNING.md)** - Project planning, phases, and implementation roadmap
+- **[.claude/PLANNING.md](.claude/PLANNING.md)** - Project planning, future enhancements, and development workflow
 - **[.claude/TESTING.md](.claude/TESTING.md)** - Testing strategy, guidelines, and coverage requirements
 - **[.claude/CONTEXT.md](.claude/CONTEXT.md)** - Project context, goals, and high-level overview
 - **[.claude/API-REFERENCE.md](.claude/API-REFERENCE.md)** - Complete API documentation and endpoints
 
 ### Feature Documentation
-- **[.claude/MESSAGE-PERSISTENCE.md](.claude/MESSAGE-PERSISTENCE.md)** - Chat message storage, analytics, and GDPR compliance
-- **[.claude/WEBSITE-CRAWLER.md](.claude/WEBSITE-CRAWLER.md)** - Apify integration for automated content crawling
-- **[.claude/WIDGET-SHARING.md](.claude/WIDGET-SHARING.md)** - Direct URL sharing and public widget access
-- **[.claude/stripe-payment-integration-plan.md](.claude/stripe-payment-integration-plan.md)** - Payment integration planning
+- **[.claude/FEATURES/MESSAGE-PERSISTENCE.md](.claude/FEATURES/MESSAGE-PERSISTENCE.md)** - Chat message storage, analytics, and GDPR compliance
+- **[.claude/FEATURES/WEBSITE-CRAWLER.md](.claude/FEATURES/WEBSITE-CRAWLER.md)** - Apify integration for automated content crawling
+- **[.claude/FEATURES/WIDGET-SHARING.md](.claude/FEATURES/WIDGET-SHARING.md)** - Direct URL sharing and public widget access
+- **[.claude/FEATURES/WORKFLOW-VISUALIZATION.md](.claude/FEATURES/WORKFLOW-VISUALIZATION.md)** - (PLANNED) Cloudflare Workflows for content pipeline
 
 ### Embedding & Integration
-- **[.claude/IFRAME-API.md](.claude/IFRAME-API.md)** - PostMessage API for iframe communication
-- **[.claude/EMBED-CODE-USAGE.md](.claude/EMBED-CODE-USAGE.md)** - Widget embed code generation and best practices
+- **[.claude/EMBEDDING/IFRAME-API.md](.claude/EMBEDDING/IFRAME-API.md)** - PostMessage API for iframe communication
+- **[.claude/EMBEDDING/EMBED-CODE-USAGE.md](.claude/EMBEDDING/EMBED-CODE-USAGE.md)** - Widget embed code generation and best practices
+
+### Testing & Quality
+- **[.claude/TESTING-INTEGRATION.md](.claude/TESTING-INTEGRATION.md)** - Integration testing framework and guidelines
 
 ### Development Guidelines
 - **[.claude/CLAUDE.md](.claude/CLAUDE.md)** - Development notes, coding standards, and Claude-specific instructions
 - **[.claude/README.md](.claude/README.md)** - Documentation index and quick links
 
+### Future Plans
+- **[.claude/FUTURE/stripe-payment-integration-plan.md](.claude/FUTURE/stripe-payment-integration-plan.md)** - Payment integration planning
+
 ## Quick Start
 ```bash
+# Development
 pnpm dev              # Development server (port 5173)
 pnpm dev:widget       # Build widget in watch mode
+pnpm preview          # Preview production build locally
+
+# Building & Deployment
 pnpm build            # Production build
 pnpm typecheck        # TypeScript checks
+pnpm cf-typegen       # Generate Cloudflare types
 pnpm deploy           # Deploy to Cloudflare
+
+# Testing
+pnpm test             # Run unit tests in watch mode
+pnpm test:run         # Run unit tests once
+pnpm test:integration # Run integration tests
+pnpm test:all         # Run all tests
+pnpm test:coverage    # Generate coverage report
+pnpm test:ui          # Run tests with Vitest UI
+
+# Database Management
+pnpm db:generate      # Generate database migrations
+pnpm db:push          # Push database changes
+pnpm db:studio        # Open Drizzle Studio
 ```
 
 ## Tech Stack
@@ -42,12 +66,23 @@ pnpm deploy           # Deploy to Cloudflare
 - Hono on Cloudflare Workers
 - Neon PostgreSQL + Drizzle ORM
 - Better Auth
-- OpenAI API (GPT-4.1-mini + text-embedding-3-small)
+- OpenAI API (GPT-4o-mini + text-embedding-3-small)
 - Vector Search with pgvector
 - OCR capabilities
 
 ## Essential Files
-- `workers/app.ts` - Main backend with widget APIs
+
+### Backend Routes (Modular Architecture)
+- `workers/app.ts` - Main backend entry point
+- `workers/routes/index.ts` - Central route registration
+- `workers/routes/auth.routes.ts` - Authentication endpoints
+- `workers/routes/chat.routes.ts` - Chat API endpoints
+- `workers/routes/widget.routes.ts` - Widget management
+- `workers/routes/automation.routes.ts` - Bearer token API
+- `workers/routes/public.routes.ts` - Public widget access
+- `workers/routes/admin.routes.ts` - Admin endpoints
+
+### Core Services
 - `workers/db/schema.ts` - Database schema with public widgets & chat messages
 - `workers/services/rag-agent.ts` - RAG chat agent with inline citations
 - `workers/services/vector-search.ts` - Vector search & embeddings
@@ -69,6 +104,11 @@ pnpm deploy           # Deploy to Cloudflare
 - `app/` - Frontend code
 - `.claude/` - **Detailed documentation**
 
+### Testing Infrastructure
+- `test/integration/` - Integration test suite
+- `vitest.integration.config.ts` - Integration test configuration
+- `test/integration/api-test-factory.ts` - Test app factory with mocking
+
 ## New Features
 - **Custom Widget Embed Scripts**: Generate embeddable AI assistants with custom knowledge bases
 - **RAG Chat Agent**: Context-aware chat with knowledge base retrieval and inline citations
@@ -82,8 +122,8 @@ pnpm deploy           # Deploy to Cloudflare
 - **Smart Prompt Recommendations**: Dynamic prompt suggestions with animated marquee display
 - **Embed Code Generation**: One-click script generation with public/private controls
 - **Public Widget API**: Anonymous access to public widgets for embedding
-- **OCR Support**: Extract text from images and PDFs for knowledge bases
-- **Multi-AI Support**: OpenAI GPT-4.1-mini and Mistral AI integration
+- **OCR Support**: Extract text from images and PDFs using Mistral AI for knowledge bases
+- **AI Integration**: OpenAI GPT-4o-mini for chat, Mistral AI for OCR
 - **Testing Playground**: Comprehensive widget testing environment at `/test`
 - **Nested Dashboard Routes**: File-based routing with explicit route configuration
 - **Full-Screen Widget Editor**: Split-screen editor with form on left, chat preview on right
