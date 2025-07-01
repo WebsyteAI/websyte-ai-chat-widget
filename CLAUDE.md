@@ -113,3 +113,4 @@ Use bearer token authentication for programmatic access:
 
 ## Competitors
 - Save https://answerhq.co/ as a reference competitor
+- https://www.tawk.to/why-free/ as another competitor to follow
