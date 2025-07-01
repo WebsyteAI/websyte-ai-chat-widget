@@ -944,7 +944,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
           {isEditing && existingFiles.length > 0 && (
             <div className="space-y-4">
               <Label>Existing Files</Label>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
                 {existingFiles.map((file) => {
                   // Check if this is a crawl file
                   const isCrawlFile = file.filename.includes('.crawl.');

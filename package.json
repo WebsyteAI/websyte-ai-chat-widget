@@ -18,6 +18,9 @@
 		"test:run": "vitest run",
 		"test:coverage": "vitest run --coverage",
 		"test:ui": "vitest --ui",
+		"test:integration": "vitest run --config vitest.integration.config.ts",
+		"test:integration:watch": "vitest --config vitest.integration.config.ts",
+		"test:all": "pnpm test:run && pnpm test:integration",
 		"typecheck": "npm run cf-typegen && react-router typegen && tsc -b"
 	},
 	"dependencies": {

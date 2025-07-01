@@ -11,8 +11,8 @@ export default defineConfig({
     setupFiles: ['./test/setup.ts'],
     coverage: {
       provider: 'v8',
-      include: ['workers/services/**/*.ts'],
-      exclude: ['workers/services/**/*.test.ts', 'workers/services/**/*.spec.ts'],
+      include: ['workers/services/**/*.ts', 'workers/app.ts', 'workers/routes/**/*.ts'],
+      exclude: ['workers/services/**/*.test.ts', 'workers/services/**/*.spec.ts', 'workers/**/*.integration.test.ts'],
       reporter: ['text', 'json', 'html']
     }
   },
