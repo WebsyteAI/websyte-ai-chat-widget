@@ -22,14 +22,14 @@ export function WidgetEditor({
   const [createdWidget, setCreatedWidget] = useState<Widget | null>(widget || null);
   const [formLoading, setFormLoading] = useState(false);
 
-  const isEditing = !!widget;
+  const isEditing = !!(widget || createdWidget);
   const hasWidget = !!createdWidget;
 
   const handleWidgetSubmit = async (formData: FormData) => {
     setFormLoading(true);
     
     try {
-      if (isEditing && widget) {
+      if (isEditing && createdWidget) {
         // Update existing widget
         const data: any = {};
         for (const [key, value] of formData.entries()) {
@@ -40,7 +40,7 @@ export function WidgetEditor({
         
         console.log('[WidgetEditor] Updating widget with data:', data);
 
-        const response = await fetch(`/api/widgets/${widget.id}`, {
+        const response = await fetch(`/api/widgets/${createdWidget.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

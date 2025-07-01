@@ -332,6 +332,11 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Prevent duplicate submissions
+    if (loading) {
+      return;
+    }
+    
     // First handle the main widget update
     const formData = new FormData();
     formData.append('name', name);
@@ -544,7 +549,16 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       </CardHeader>
 
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form 
+          onSubmit={handleSubmit} 
+          onKeyDown={(e) => {
+            // Prevent Enter key submission when already processing
+            if (e.key === 'Enter' && loading) {
+              e.preventDefault();
+            }
+          }}
+          className="space-y-6"
+        >
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
