@@ -178,12 +178,13 @@ export function WidgetList({ onCreateWidget, onEditWidget, onDeleteWidget }: Wid
                       {(() => {
                         // Separate crawled files from uploaded files
                         const crawledFiles = widget.files.filter(f => f.filename.includes('.crawl.'));
-                        const uploadedFiles = widget.files.filter(f => !f.filename.includes('.crawl.'));
+                        const pageFiles = widget.files.filter(f => f.filename.startsWith('page-') && f.filename.endsWith('.md'));
+                        const uploadedFiles = widget.files.filter(f => !f.filename.includes('.crawl.') && !(f.filename.startsWith('page-') && f.filename.endsWith('.md')));
                         
                         // Group crawled pages
-                        if (crawledFiles.length > 0) {
-                          const totalCrawledSize = crawledFiles.reduce((sum, f) => sum + f.fileSize, 0);
-                          const pageCount = crawledFiles.filter(f => f.filename.includes('.crawl.page-')).length;
+                        if (crawledFiles.length > 0 || pageFiles.length > 0) {
+                          const totalCrawledSize = [...crawledFiles, ...pageFiles].reduce((sum, f) => sum + f.fileSize, 0);
+                          const pageCount = pageFiles.length;
                           
                           return (
                             <>

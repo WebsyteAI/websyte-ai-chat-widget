@@ -224,7 +224,7 @@ describe('WidgetService', () => {
       expect(mockDb.select).toHaveBeenCalled();
       expect(mockDb.where).toHaveBeenCalled();
       expect(mockDb.limit).toHaveBeenCalledWith(1);
-      expect(mockFileStorage.getWidgetFiles).toHaveBeenCalledWith('widget-123');
+      expect(mockFileStorage.getWidgetFiles).toHaveBeenCalledWith('widget-123', true);
       expect(mockVectorSearch.getEmbeddingsCount).toHaveBeenCalledWith('widget-123');
 
       expect(result).toEqual({
@@ -312,8 +312,17 @@ describe('WidgetService', () => {
         isPublic: true
       };
 
+      // Mock getWidget to return existing widget
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        files: [],
+        embeddingsCount: 5
+      });
+
       const updatedWidget = { ...mockWidget, ...request };
       mockDb.returning.mockResolvedValue([updatedWidget]);
+      // Mock the final select query after update
+      mockDb.limit.mockResolvedValue([updatedWidget]);
 
       const result = await widgetService.updateWidget('widget-123', 'user-123', request);
 
@@ -338,6 +347,17 @@ describe('WidgetService', () => {
         content: 'New content for the widget'
       };
 
+      // Mock getWidget to return existing widget
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        files: [],
+        embeddingsCount: 5
+      });
+
+      mockDb.returning.mockResolvedValue([mockWidget]);
+      // Mock the final select query after update
+      mockDb.limit.mockResolvedValue([mockWidget]);
+
       const result = await widgetService.updateWidget('widget-123', 'user-123', request);
 
       // Verify old embeddings deleted
@@ -358,6 +378,17 @@ describe('WidgetService', () => {
         content: ''
       };
 
+      // Mock getWidget to return existing widget
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        files: [],
+        embeddingsCount: 5
+      });
+
+      mockDb.returning.mockResolvedValue([mockWidget]);
+      // Mock the final select query after update
+      mockDb.limit.mockResolvedValue([mockWidget]);
+
       await widgetService.updateWidget('widget-123', 'user-123', request);
 
       // Verify embeddings deleted
@@ -368,6 +399,9 @@ describe('WidgetService', () => {
     });
 
     it('should return null if widget not found', async () => {
+      // Mock getWidget to return null (widget not found)
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue(null);
+      
       mockDb.returning.mockResolvedValue([]);
 
       const result = await widgetService.updateWidget('non-existent', 'user-123', {
@@ -381,6 +415,17 @@ describe('WidgetService', () => {
       const request: UpdateWidgetRequest = {
         name: 'Only Name Updated'
       };
+
+      // Mock getWidget to return existing widget
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        files: [],
+        embeddingsCount: 5
+      });
+
+      mockDb.returning.mockResolvedValue([mockWidget]);
+      // Mock the final select query after update
+      mockDb.limit.mockResolvedValue([mockWidget]);
 
       await widgetService.updateWidget('widget-123', 'user-123', request);
 

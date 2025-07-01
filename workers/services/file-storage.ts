@@ -204,7 +204,7 @@ export class FileStorageService {
       // Filter out page files unless explicitly requested
       const filteredFiles = includePageFiles 
         ? files 
-        : files.filter(f => !f.filename.startsWith('page-') || !f.filename.endsWith('.md'));
+        : files.filter(f => !(f.filename.startsWith('page-') && f.filename.endsWith('.md')));
 
       return filteredFiles.map(file => ({
         id: file.id,

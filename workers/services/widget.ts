@@ -127,7 +127,7 @@ export class WidgetService {
       return null;
     }
 
-    const files = await this.fileStorage.getWidgetFiles(id);
+    const files = await this.fileStorage.getWidgetFiles(id, true);
     const embeddingsCount = await this.vectorSearch.getEmbeddingsCount(id);
 
     return {
@@ -157,7 +157,7 @@ export class WidgetService {
       return null;
     }
 
-    const files = await this.fileStorage.getWidgetFiles(id);
+    const files = await this.fileStorage.getWidgetFiles(id, true);
     const embeddingsCount = await this.vectorSearch.getEmbeddingsCount(id);
 
     return {
@@ -185,7 +185,7 @@ export class WidgetService {
     const result: WidgetWithFiles[] = [];
     
     for (const w of widgets) {
-      const files = await this.fileStorage.getWidgetFiles(w.id);
+      const files = await this.fileStorage.getWidgetFiles(w.id, true);
       const embeddingsCount = await this.vectorSearch.getEmbeddingsCount(w.id);
       
       result.push({
@@ -224,7 +224,7 @@ export class WidgetService {
     const result: WidgetWithFiles[] = [];
     
     for (const w of widgets) {
-      const files = await this.fileStorage.getWidgetFiles(w.id);
+      const files = await this.fileStorage.getWidgetFiles(w.id, true);
       const embeddingsCount = await this.vectorSearch.getEmbeddingsCount(w.id);
       
       result.push({
@@ -334,7 +334,7 @@ export class WidgetService {
       .where(eq(widget.id, id))
       .limit(1);
 
-    const files = await this.fileStorage.getWidgetFiles(id);
+    const files = await this.fileStorage.getWidgetFiles(id, true);
     const embeddingsCount = await this.vectorSearch.getEmbeddingsCount(id);
 
     console.log('[WidgetService] Returning updated widget:', finalWidget[0]);
@@ -481,7 +481,7 @@ export class WidgetService {
   async deleteExistingCrawlFiles(widgetId: string) {
     try {
       // Find and delete all crawl-related files
-      const files = await this.fileStorage.getWidgetFiles(widgetId);
+      const files = await this.fileStorage.getWidgetFiles(widgetId, true);
       const crawlFiles = files.filter(f => 
         f.filename.endsWith('.crawl.md')  // Only need to delete the main crawl file
       );
@@ -890,7 +890,7 @@ ${page.markdown}
       console.log('[WidgetService] Deleted existing embeddings for widget:', widgetId);
       
       // Get all files for the widget
-      const files = await this.fileStorage.getWidgetFiles(widgetId);
+      const files = await this.fileStorage.getWidgetFiles(widgetId, true);
       console.log(`[WidgetService] Found ${files.length} files to process`);
       
       let embeddingsCreated = 0;
