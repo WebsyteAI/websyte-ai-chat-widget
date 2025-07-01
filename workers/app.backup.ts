@@ -20,7 +20,7 @@ import { optionalAuthMiddleware, authMiddleware, adminMiddleware, bearerTokenMid
 import { rateLimitMiddleware } from './lib/rate-limiter';
 import { iframeMiddleware } from './lib/iframe-middleware';
 import { requestLoggerMiddleware } from './lib/request-logger';
-import type { Logger } from 'pino';
+import type { Logger } from './lib/logger';
 import type { Env } from './types';
 
 declare module "react-router" {

@@ -95,7 +95,7 @@ export default function ShareWidget() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
-        const response = await fetch(`/api/widgets/${id}/public`, {
+        const response = await fetch(`/api/public/widget/${id}`, {
           signal: controller.signal
         });
         

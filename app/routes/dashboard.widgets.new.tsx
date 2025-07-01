@@ -14,14 +14,11 @@ export default function WidgetNew() {
   const handleWidgetCreated = async (widget: Widget) => {
     console.log('[WidgetNew] Widget created:', widget);
     
-    // Refresh the widget list first
+    // Refresh the widget list
     await fetchWidgets();
     
-    // Small delay to ensure state is settled and avoid navigation conflicts
-    setTimeout(() => {
-      console.log('[WidgetNew] Navigating to edit page for widget:', widget.id);
-      navigate(`/dashboard/widgets/${widget.id}/edit`);
-    }, 100);
+    // No navigation - let the user stay on the same page
+    // The WidgetEditor will update to show the created widget
   };
 
   return (

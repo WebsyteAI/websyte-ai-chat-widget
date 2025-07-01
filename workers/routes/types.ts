@@ -8,7 +8,7 @@ import type { VectorSearchService } from '../services/vector-search';
 import type { FileStorageService } from '../services/file-storage';
 import type { MessageService } from '../services/messages';
 import type { AuthContext } from '../lib/middleware';
-import type { Logger } from 'pino';
+import type { Logger } from '../lib/logger';
 import type { Env } from '../types';
 
 export type AppType = {

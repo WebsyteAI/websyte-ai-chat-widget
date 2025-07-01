@@ -38,6 +38,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
   const [hasRendered, setHasRendered] = useState(false);
   const [showSummaryDropdown, setShowSummaryDropdown] = useState(false);
   const [fetchedWidgetName, setFetchedWidgetName] = useState<string | null>(null);
+  const [fetchedLogoUrl, setFetchedLogoUrl] = useState<string | null>(null);
   
   // Extracted hooks for business logic
   const { messages, addMessage, clearMessages } = useChatMessages();
@@ -164,9 +165,15 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
               id: string; 
               name: string; 
               description?: string;
+              logoUrl?: string;
               recommendations?: Array<{ title: string; description: string }>;
             };
             setFetchedWidgetName(data.name);
+            
+            // Set logo URL if available
+            if (data.logoUrl) {
+              setFetchedLogoUrl(data.logoUrl);
+            }
             
             // Set recommendations if available
             if (data.recommendations && data.recommendations.length > 0) {
@@ -583,7 +590,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
           isLoadingRecommendations={isLoadingRecommendations}
           advertiserName={displayName}
           hidePoweredBy={hidePoweredBy}
-          advertiserLogo={advertiserLogo}
+          advertiserLogo={fetchedLogoUrl || advertiserLogo}
           baseUrl={baseUrl}
           summaries={summaries}
           currentContentMode={currentContentMode}
