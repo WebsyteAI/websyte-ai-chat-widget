@@ -1,5 +1,9 @@
 import type { Route } from "./+types/home";
-import { LandingPage } from "../components/LandingPage";
+import { LandingPageChat } from "../components/landing-chat";
+import { useAuth } from "@/lib/auth/auth-context";
+import { UserProfile } from "@/components/auth/UserProfile";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -17,5 +21,54 @@ export function loader({ context }: Route.LoaderArgs) {
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  return <LandingPage />;
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  return (
+    <div className="h-screen flex flex-col">
+      {/* Header */}
+      <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative z-50 border-b">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img
+                src="/websyte-ai-logo.svg"
+                alt="Websyte AI"
+                className="w-8 h-8"
+              />
+              <span className="text-xl font-bold text-foreground">
+                websyte.ai
+              </span>
+            </div>
+            
+            {/* Auth Section */}
+            <div className="flex items-center gap-3">
+              {!isLoading && (
+                isAuthenticated ? (
+                  <UserProfile />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Link to="/login">
+                      <Button variant="outline" size="sm">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/login?mode=register">
+                      <Button size="sm">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      {/* Full-screen chat demo */}
+      <div className="flex-1 overflow-hidden">
+        <LandingPageChat />
+      </div>
+    </div>
+  );
 }

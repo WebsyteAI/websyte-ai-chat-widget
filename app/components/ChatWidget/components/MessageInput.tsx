@@ -29,7 +29,7 @@ export function MessageInput({
           onChange={(e) => onInputChange(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder={placeholder}
-          className="flex-1 px-3 py-2 bg-transparent border-0 focus:outline-none text-sm placeholder-gray-500"
+          className="flex-1 px-3 py-2 bg-transparent border-0 focus:outline-none text-lg placeholder-gray-500"
           disabled={isLoading}
         />
         <Button
