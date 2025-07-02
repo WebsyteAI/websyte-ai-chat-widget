@@ -31,8 +31,10 @@ export const DynamicIslandProvider = React.forwardRef<
         <motion.div
           ref={ref}
           className={cn(
-            "absolute left-1/2 z-50 flex min-h-10 -translate-x-1/2 items-center justify-center overflow-hidden rounded-2xl bg-black/90 px-4 py-2 shadow-lg backdrop-blur-md",
-            "dark:bg-white/10",
+            "absolute left-1/2 z-50 flex min-h-10 -translate-x-1/2 items-center justify-center overflow-hidden rounded-2xl shadow-lg",
+            "bg-gray-100 border border-gray-200",
+            "dark:bg-gray-900/95 dark:border-gray-800 dark:backdrop-blur-md",
+            "max-w-[90vw] sm:max-w-[600px]",
             positionClasses[position],
             SIZE_VARIANTS[islandSize]?.size,
             className
@@ -40,6 +42,9 @@ export const DynamicIslandProvider = React.forwardRef<
           initial={SIZE_VARIANTS[islandSize]?.motionProps.initial}
           animate={SIZE_VARIANTS[islandSize]?.motionProps.animate}
           exit={SIZE_VARIANTS[islandSize]?.motionProps.exit}
+          style={{
+            maxWidth: 'min(90vw, 600px)'
+          }}
         >
           <AnimatePresence>{children}</AnimatePresence>
         </motion.div>
@@ -56,7 +61,7 @@ export const DynamicIsland = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <motion.div
     ref={ref}
-    className={cn("flex items-center justify-center", className)}
+    className={cn("flex items-center justify-center w-full", className)}
     initial={{ opacity: 0, scale: 0.8 }}
     animate={{ opacity: 1, scale: 1 }}
     exit={{ opacity: 0, scale: 0.8 }}
@@ -91,41 +96,41 @@ const SIZE_VARIANTS: Record<
   compact: {
     size: "h-9 px-3",
     motionProps: {
-      initial: { width: "140px", height: "36px" },
-      animate: { width: "140px", height: "36px" },
-      exit: { width: "140px", height: "36px" },
+      initial: { width: "240px", height: "36px" },
+      animate: { width: "240px", height: "36px" },
+      exit: { width: "240px", height: "36px" },
     },
   },
   default: {
     size: "h-10 px-4",
     motionProps: {
-      initial: { width: "180px", height: "40px" },
-      animate: { width: "180px", height: "40px" },
-      exit: { width: "180px", height: "40px" },
+      initial: { width: "320px", height: "40px" },
+      animate: { width: "320px", height: "40px" },
+      exit: { width: "320px", height: "40px" },
     },
   },
   medium: {
     size: "min-h-14 px-5",
     motionProps: {
-      initial: { width: "220px", height: "56px" },
-      animate: { width: "220px", height: "56px" },
-      exit: { width: "220px", height: "56px" },
+      initial: { width: "400px", height: "56px" },
+      animate: { width: "400px", height: "56px" },
+      exit: { width: "400px", height: "56px" },
     },
   },
   long: {
-    size: "h-10 px-6",
+    size: "h-12",
     motionProps: {
-      initial: { width: "280px", height: "40px" },
-      animate: { width: "280px", height: "40px" },
-      exit: { width: "280px", height: "40px" },
+      initial: { width: "480px", height: "48px" },
+      animate: { width: "480px", height: "48px" },
+      exit: { width: "480px", height: "48px" },
     },
   },
   large: {
-    size: "min-h-24 p-5",
+    size: "h-12",
     motionProps: {
-      initial: { width: "350px", height: "96px" },
-      animate: { width: "350px", height: "96px" },
-      exit: { width: "350px", height: "96px" },
+      initial: { width: "600px", height: "48px" },
+      animate: { width: "600px", height: "48px" },
+      exit: { width: "600px", height: "48px" },
     },
   },
 }

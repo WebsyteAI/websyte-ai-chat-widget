@@ -10,8 +10,9 @@ export const iframeMiddleware: MiddlewareHandler = async (c, next) => {
   // Check if this is a share route with embed parameter
   const url = new URL(c.req.url);
   const isShareRoute = url.pathname.startsWith('/share/w/');
-  const isEmbedMode = url.searchParams.get('embed') === 'true';
-  const isAllowedEmbed = isShareRoute && isEmbedMode;
+  const isEmbedMode = url.searchParams.get('embed') === 'true' || url.searchParams.get('embedded') === 'true';
+  const isTestRoute = url.pathname === '/test' && isEmbedMode;
+  const isAllowedEmbed = (isShareRoute && isEmbedMode) || isTestRoute;
 
   // Continue processing the request
   await next();

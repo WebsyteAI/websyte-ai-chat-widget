@@ -98,9 +98,11 @@ export function ChatPanel({
           )}
         </div>
 
-        {/* Messages area - scrollable */}
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <div className={`p-6 flex flex-col gap-4 max-w-4xl mx-auto w-full ${isEmbed ? 'websyte-embed-messages' : ''}`}>
+        {/* Content wrapper with relative positioning */}
+        <div className="flex-1 flex flex-col relative overflow-hidden">
+          {/* Messages area - scrollable with padding for floating input */}
+          <div className="flex-1 overflow-y-auto min-h-0 pb-24">
+            <div className={`p-6 flex flex-col gap-4 max-w-4xl mx-auto w-full ${isEmbed ? 'websyte-embed-messages' : ''}`}>
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
                 <div className="text-center mb-4">
@@ -172,22 +174,19 @@ export function ChatPanel({
             )}
             
             <div ref={messagesEndRef} />
+            </div>
           </div>
-        </div>
 
-        {/* Input area - fixed */}
-        <div className="flex-shrink-0 border-t border-gray-200 bg-white">
-          <div className={`p-4 max-w-4xl mx-auto w-full ${isEmbed ? 'websyte-embed-input' : ''}`}>
-            <MessageInput
-              inputValue={inputValue}
-              placeholder={placeholder}
-              isLoading={isLoading}
-              onInputChange={onInputChange}
-              onKeyDown={onKeyDown}
-              onSend={onSendMessage}
-              onCancel={onCancelMessage}
-            />
-          </div>
+          {/* Dynamic Island input now floats independently */}
+          <MessageInput
+            inputValue={inputValue}
+            placeholder={placeholder}
+            isLoading={isLoading}
+            onInputChange={onInputChange}
+            onKeyDown={onKeyDown}
+            onSend={onSendMessage}
+            onCancel={onCancelMessage}
+          />
         </div>
       </div>
     );
@@ -208,7 +207,9 @@ export function ChatPanel({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+      {/* Content wrapper with relative positioning */}
+      <div className="flex-1 flex flex-col relative overflow-hidden">
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 pb-24">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full">
             <div className="text-center mb-8">
@@ -291,17 +292,18 @@ export function ChatPanel({
         )}
         
         <div ref={messagesEndRef} />
-      </div>
+        </div>
 
-      <MessageInput
-        inputValue={inputValue}
-        placeholder={placeholder}
-        isLoading={isLoading}
-        onInputChange={onInputChange}
-        onKeyDown={onKeyDown}
-        onSend={onSendMessage}
-        onCancel={onCancelMessage}
-      />
+        <MessageInput
+          inputValue={inputValue}
+          placeholder={placeholder}
+          isLoading={isLoading}
+          onInputChange={onInputChange}
+          onKeyDown={onKeyDown}
+          onSend={onSendMessage}
+          onCancel={onCancelMessage}
+        />
+      </div>
     </div>
   );
 }

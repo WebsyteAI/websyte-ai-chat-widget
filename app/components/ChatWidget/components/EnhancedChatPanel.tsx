@@ -109,8 +109,8 @@ export function EnhancedChatPanel({
           )}
         </div>
 
-        {/* Messages area - scrollable */}
-        <div className="flex-1 overflow-y-auto min-h-0">
+        {/* Messages area - scrollable with padding for floating input */}
+        <div className="flex-1 overflow-y-auto min-h-0 pb-24">
           <div className={`p-6 flex flex-col gap-4 ${fullWidthMessages ? 'max-w-[1024px]' : 'max-w-4xl'} mx-auto w-full ${isEmbed ? 'websyte-embed-messages' : ''}`}>
             {messages.length === 0 && showEmptyState && (
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
@@ -196,20 +196,16 @@ export function EnhancedChatPanel({
           </div>
         </div>
 
-        {/* Input area - fixed */}
-        <div className="flex-shrink-0 border-t border-gray-200 bg-white">
-          <div className={`p-4 ${fullWidthMessages ? 'max-w-[1024px]' : 'max-w-4xl'} mx-auto w-full ${isEmbed ? 'websyte-embed-input' : ''}`}>
-            <MessageInput
-              inputValue={inputValue}
-              placeholder={placeholder}
-              isLoading={isLoading}
-              onInputChange={onInputChange}
-              onKeyDown={onKeyDown}
-              onSend={onSendMessage}
-              onCancel={onCancelMessage}
-            />
-          </div>
-        </div>
+        {/* Dynamic Island input now floats independently */}
+        <MessageInput
+          inputValue={inputValue}
+          placeholder={placeholder}
+          isLoading={isLoading}
+          onInputChange={onInputChange}
+          onKeyDown={onKeyDown}
+          onSend={onSendMessage}
+          onCancel={onCancelMessage}
+        />
       </div>
     );
   }
