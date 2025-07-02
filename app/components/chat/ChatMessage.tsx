@@ -76,7 +76,7 @@ export function ChatMessage({ message, showSources = true, showDebug = false, fu
             message.role === "user"
               ? "bg-blue-600 text-white"
               : "text-gray-800"
-          }`}
+          } ${fullWidth && message.role === "assistant" ? "w-full" : ""}`}
         >
           {message.role === "assistant" ? (
             <div className="text-sm prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">

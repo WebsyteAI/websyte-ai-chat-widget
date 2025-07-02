@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { AnimatePresence, MotionConfig, motion } from "motion"
+import { AnimatePresence, MotionConfig, motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 export const DynamicIslandProvider = React.forwardRef<
@@ -10,13 +10,20 @@ export const DynamicIslandProvider = React.forwardRef<
     children: React.ReactNode
     setSize?: React.Dispatch<React.SetStateAction<DynamicIslandSize>>
     size?: DynamicIslandSize
+    position?: "top" | "bottom" | "center"
   }
->(({ children, size = "default", setSize, ...props }, ref) => {
+>(({ children, size = "default", setSize, position = "top", className, ...props }, ref) => {
   const [islandSize, setIslandSize] = React.useState<DynamicIslandSize>(size)
 
   React.useEffect(() => {
     setIslandSize(size)
   }, [size])
+
+  const positionClasses = {
+    top: "top-4",
+    bottom: "bottom-4",
+    center: "top-1/2 -translate-y-1/2"
+  }
 
   return (
     <DynamicIslandContext.Provider value={{ size: islandSize, setSize: setSize || setIslandSize }}>
@@ -24,12 +31,15 @@ export const DynamicIslandProvider = React.forwardRef<
         <motion.div
           ref={ref}
           className={cn(
-            "absolute left-1/2 top-4 z-50 flex min-h-10 -translate-x-1/2 items-center justify-center overflow-hidden rounded-2xl bg-black/90 px-4 py-2 shadow-lg backdrop-blur-md",
+            "absolute left-1/2 z-50 flex min-h-10 -translate-x-1/2 items-center justify-center overflow-hidden rounded-2xl bg-black/90 px-4 py-2 shadow-lg backdrop-blur-md",
             "dark:bg-white/10",
-            SIZE_VARIANTS[islandSize]?.size
+            positionClasses[position],
+            SIZE_VARIANTS[islandSize]?.size,
+            className
           )}
-          {...props}
-          {...SIZE_VARIANTS[islandSize]?.motionProps}
+          initial={SIZE_VARIANTS[islandSize]?.motionProps.initial}
+          animate={SIZE_VARIANTS[islandSize]?.motionProps.animate}
+          exit={SIZE_VARIANTS[islandSize]?.motionProps.exit}
         >
           <AnimatePresence>{children}</AnimatePresence>
         </motion.div>
