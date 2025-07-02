@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../lib/auth/auth-context";
 import { Navigate } from "react-router";
 import { ChatWidget } from "../components/ChatWidget";
+import { Input } from "../components/ui/input";
+import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
+import { Label } from "../components/ui/label";
 
 interface Widget {
   id: string;
@@ -158,26 +161,20 @@ export default function Test() {
             {/* Test Mode Selection */}
             <div>
               <h3 style={{ marginBottom: "1rem", color: "#555" }}>Test Mode</h3>
-              <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <input
-                    type="radio"
-                    value="standard"
-                    checked={testMode === "standard"}
-                    onChange={(e) => setTestMode(e.target.value as "standard" | "custom")}
-                  />
-                  Standard Chat (Page Content)
-                </label>
-                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <input
-                    type="radio"
-                    value="custom"
-                    checked={testMode === "custom"}
-                    onChange={(e) => setTestMode(e.target.value as "standard" | "custom")}
-                  />
-                  Custom Widget (RAG)
-                </label>
-              </div>
+              <RadioGroup 
+                value={testMode} 
+                onValueChange={(value) => setTestMode(value as "standard" | "custom")}
+                className="flex gap-6 mb-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="standard" id="standard" />
+                  <Label htmlFor="standard">Standard Chat (Page Content)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="custom" id="custom" />
+                  <Label htmlFor="custom">Custom Widget (RAG)</Label>
+                </div>
+              </RadioGroup>
               
               {testMode === "custom" && (
                 <div>
@@ -224,17 +221,10 @@ export default function Test() {
                 <label style={{ display: "block", marginBottom: "0.5rem", color: "#666" }}>
                   Advertiser Name:
                 </label>
-                <input
+                <Input
                   type="text"
                   value={advertiserName}
                   onChange={(e) => setAdvertiserName(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "0.5rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    fontSize: "0.9rem"
-                  }}
                 />
               </div>
               
@@ -242,18 +232,11 @@ export default function Test() {
                 <label style={{ display: "block", marginBottom: "0.5rem", color: "#666" }}>
                   Advertiser Logo URL:
                 </label>
-                <input
+                <Input
                   type="text"
                   value={advertiserLogo}
                   onChange={(e) => setAdvertiserLogo(e.target.value)}
                   placeholder="https://logo.clearbit.com/example.com"
-                  style={{
-                    width: "100%",
-                    padding: "0.5rem",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    fontSize: "0.9rem"
-                  }}
                 />
               </div>
             </div>

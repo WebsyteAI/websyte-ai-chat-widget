@@ -132,6 +132,14 @@ body {
   }
 }
 
+/* Ring utilities setup */
+*, ::before, ::after {
+  --tw-ring-color: hsl(var(--color-ring));
+  --tw-ring-offset-color: hsl(var(--color-background));
+}
+
+
+
 @keyframes marquee-infinite {
   0% {
     transform: translateX(0);

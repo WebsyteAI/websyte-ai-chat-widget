@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChatPanel } from '../chat';
+import { ChatWidget } from '../ChatWidget';
 import { WidgetForm } from './WidgetForm';
 import { toast } from '../../lib/use-toast';
 import type { Widget } from '../../stores/types';
@@ -144,22 +144,44 @@ export function WidgetEditor({
       </div>
 
       {/* Right Panel - Chat Testing */}
-      <div className="w-1/2 bg-gray-50 flex flex-col [&_[data-slot='card']]:border-0 [&_[data-slot='card']]:shadow-none">
-        <ChatPanel
-          config={{
-            widgetId: createdWidget?.id || undefined,
-            enabled: hasWidget,
-            baseUrl: '',
-            enableSources: true,
-            enableDebug: false,
-            mode: hasWidget ? 'rag' : 'standard',
-          }}
-          layout="panel"
-          title={hasWidget ? 'Test Your Widget' : 'Chat Preview'}
-          showHeader={true}
-          showDebugToggle={false}
-          className="h-full"
-        />
+      <div className="w-1/2 bg-gray-50 flex flex-col overflow-hidden relative">
+        <div className="absolute inset-0 flex flex-col">
+          {hasWidget ? (
+            <div className="h-full overflow-hidden">
+              <ChatWidget 
+                widgetId={createdWidget.id}
+                widgetName={createdWidget.name}
+                advertiserName={createdWidget.name}
+                advertiserLogo={createdWidget.logoUrl}
+                advertiserUrl="https://websyte.ai"
+                isFullScreen={true}
+                saveChatMessages={false} // Don't save test messages
+                hidePoweredBy={false}
+                baseUrl=""
+                isEmbed={true} // Use embed mode for proper styling
+                recommendations={createdWidget.recommendations}
+              />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center space-y-4 p-6">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Chat Preview
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Create a widget to enable chat testing
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

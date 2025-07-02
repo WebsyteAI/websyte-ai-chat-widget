@@ -102,8 +102,6 @@ function LandingChatWidget({
   onRecommendationClick,
   componentRegistry 
 }: LandingChatWidgetProps) {
-  // We'll use a custom implementation that wraps the enhanced chat panel
-  // This is a simplified version - in production, you'd integrate with the full ChatWidget
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 

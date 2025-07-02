@@ -42,6 +42,10 @@ export default {
         border: "hsl(var(--color-border))",
         input: "hsl(var(--color-input))",
         ring: "hsl(var(--color-ring))",
+        "ring-offset": "hsl(var(--color-background))",
+      },
+      ringOffsetWidth: {
+        DEFAULT: "2px",
       },
       borderRadius: {
         lg: "var(--radius)",

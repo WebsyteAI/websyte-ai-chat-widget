@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../lib/auth/auth-context";
 import { Navigate } from "react-router";
+import { Input } from "../components/ui/input";
+import { Checkbox } from "../components/ui/checkbox";
 
 interface Widget {
   id: string;
@@ -225,19 +227,19 @@ export default function TestIframe() {
                 Dimensions
               </label>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="number"
                   value={iframeConfig.width}
                   onChange={(e) => setIframeConfig(prev => ({ ...prev, width: e.target.value }))}
                   placeholder="Width"
-                  className="w-1/2 px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-1/2"
                 />
-                <input
+                <Input
                   type="number"
                   value={iframeConfig.height}
                   onChange={(e) => setIframeConfig(prev => ({ ...prev, height: e.target.value }))}
                   placeholder="Height"
-                  className="w-1/2 px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-1/2"
                 />
               </div>
             </div>
@@ -248,30 +250,31 @@ export default function TestIframe() {
                 Auto Resize
               </label>
               <div className="space-y-2">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="autoResize"
                     checked={iframeConfig.autoResize}
-                    onChange={(e) => setIframeConfig(prev => ({ ...prev, autoResize: e.target.checked }))}
-                    className="mr-2"
+                    onCheckedChange={(checked) => setIframeConfig(prev => ({ ...prev, autoResize: !!checked }))}
                   />
-                  Enable auto-resize
-                </label>
+                  <label htmlFor="autoResize" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Enable auto-resize
+                  </label>
+                </div>
                 {iframeConfig.autoResize && (
                   <div className="flex gap-2 ml-6">
-                    <input
+                    <Input
                       type="number"
                       value={iframeConfig.minHeight}
                       onChange={(e) => setIframeConfig(prev => ({ ...prev, minHeight: e.target.value }))}
                       placeholder="Min height"
-                      className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+                      className="w-24"
                     />
-                    <input
+                    <Input
                       type="number"
                       value={iframeConfig.maxHeight}
                       onChange={(e) => setIframeConfig(prev => ({ ...prev, maxHeight: e.target.value }))}
                       placeholder="Max height"
-                      className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+                      className="w-24"
                     />
                   </div>
                 )}
@@ -284,33 +287,36 @@ export default function TestIframe() {
                 Styling
               </label>
               <div className="space-y-1">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="border"
                     checked={iframeConfig.border}
-                    onChange={(e) => setIframeConfig(prev => ({ ...prev, border: e.target.checked }))}
-                    className="mr-2"
+                    onCheckedChange={(checked) => setIframeConfig(prev => ({ ...prev, border: !!checked }))}
                   />
-                  Show border
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
+                  <label htmlFor="border" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Show border
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="rounded"
                     checked={iframeConfig.rounded}
-                    onChange={(e) => setIframeConfig(prev => ({ ...prev, rounded: e.target.checked }))}
-                    className="mr-2"
+                    onCheckedChange={(checked) => setIframeConfig(prev => ({ ...prev, rounded: !!checked }))}
                   />
-                  Rounded corners
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
+                  <label htmlFor="rounded" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Rounded corners
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="shadow"
                     checked={iframeConfig.shadow}
-                    onChange={(e) => setIframeConfig(prev => ({ ...prev, shadow: e.target.checked }))}
-                    className="mr-2"
+                    onCheckedChange={(checked) => setIframeConfig(prev => ({ ...prev, shadow: !!checked }))}
                   />
-                  Drop shadow
-                </label>
+                  <label htmlFor="shadow" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Drop shadow
+                  </label>
+                </div>
               </div>
             </div>
 

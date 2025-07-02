@@ -32,6 +32,7 @@ export interface ChatWidgetProps {
   saveChatMessages?: boolean; // Whether to save chat messages to database
   isFullScreen?: boolean; // Whether to render as full-screen interface
   isEmbed?: boolean; // Whether widget is running in iframe embed mode
+  recommendations?: Recommendation[]; // Optional recommendations to pass directly
 }
 
 export interface Recommendation {

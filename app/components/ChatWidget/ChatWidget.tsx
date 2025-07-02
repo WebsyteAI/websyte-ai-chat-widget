@@ -3,7 +3,7 @@ import { ContentExtractor } from "../../lib/content-extractor";
 import { UmamiTracking } from "../../lib/umami-tracker";
 import { createLogger } from "../../lib/logger";
 import { 
-  useChatMessages, 
+  useChatMessages,
   useAudioPlayer, 
   useContentSummarization,
   useIframeMessaging,
@@ -12,8 +12,10 @@ import {
   ActionBar,
   AudioPlayer,
   ChatPanel,
+  EnhancedChatPanel,
   RecommendationsList,
 } from "./components";
+import { UnifiedChatPanel } from "../chat-ui";
 import type {
   ChatWidgetProps,
   Recommendation,
@@ -21,15 +23,16 @@ import type {
   ContentMode,
   Message,
 } from "./types";
+import type { UnifiedChatConfig } from "../chat-ui/types";
 
 const logger = createLogger('ChatWidget');
 
-export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, advertiserUrl = "https://websyte.ai", isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false, widgetId, widgetName, saveChatMessages = false, isFullScreen = false, isEmbed = false }: ChatWidgetProps) {
+export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", advertiserLogo, advertiserUrl = "https://websyte.ai", isTargetedInjection = false, contentSelector, hidePoweredBy = false, enableSmartSelector = false, widgetId, widgetName, saveChatMessages = false, isFullScreen = false, isEmbed = false, recommendations: propRecommendations }: ChatWidgetProps) {
   const [currentView, setCurrentView] = useState<"main" | "chat">("main");
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>(propRecommendations || []);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [placeholder, setPlaceholder] = useState("Ask me about this content");
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -175,9 +178,11 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
               setFetchedLogoUrl(data.logoUrl);
             }
             
-            // Set recommendations if available
-            if (data.recommendations && data.recommendations.length > 0) {
+            // Set recommendations if available and not provided as prop
+            if (!propRecommendations && data.recommendations && data.recommendations.length > 0) {
               setRecommendations(data.recommendations);
+              setPlaceholder(`Ask me about ${data.name}...`);
+            } else if (propRecommendations && propRecommendations.length > 0) {
               setPlaceholder(`Ask me about ${data.name}...`);
             }
           }
@@ -187,7 +192,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
       };
       fetchWidgetInfo();
     }
-  }, [isFullScreen, widgetId, widgetName, baseUrl]);
+  }, [isFullScreen, widgetId, widgetName, baseUrl, propRecommendations]);
 
   useEffect(() => {
     // Skip page content extraction for full-screen mode (standalone widgets)
