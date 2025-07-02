@@ -10,9 +10,10 @@ interface ChatMessageProps {
   message: ChatMessageType;
   showSources?: boolean;
   showDebug?: boolean;
+  fullWidth?: boolean;
 }
 
-export function ChatMessage({ message, showSources = true, showDebug = false }: ChatMessageProps) {
+export function ChatMessage({ message, showSources = true, showDebug = false, fullWidth = false }: ChatMessageProps) {
   const sourcesRef = useRef<HTMLDivElement>(null);
   const [processedContent, setProcessedContent] = useState<string>("");
   const [isSourcesExpanded, setIsSourcesExpanded] = useState(false);
@@ -68,7 +69,7 @@ export function ChatMessage({ message, showSources = true, showDebug = false }: 
 
   return (
     <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mb-4`}>
-      <div className={`max-w-[85%] ${message.role === "user" ? "" : "space-y-3"}`}>
+      <div className={`${fullWidth && message.role === "assistant" ? "w-full" : "max-w-[85%]"} ${message.role === "user" ? "" : "space-y-3"}`}>
         {/* Message Content */}
         <div
           className={`p-3 rounded-lg ${

@@ -15,6 +15,7 @@ interface ChatPanelProps {
   showHeader?: boolean;
   showDebugToggle?: boolean;
   onDebugToggle?: (enabled: boolean) => void;
+  fullWidth?: boolean;
 }
 
 export function ChatPanel({ 
@@ -25,6 +26,7 @@ export function ChatPanel({
   showHeader = true,
   showDebugToggle = false,
   onDebugToggle,
+  fullWidth = false,
 }: ChatPanelProps) {
   const chat = useChat(config);
   
@@ -164,6 +166,7 @@ export function ChatPanel({
           showSources={config.enableSources}
           showDebug={config.enableDebug}
           emptyStateContent={getEmptyStateContent()}
+          fullWidth={fullWidth}
         />
         
         <div className="flex-shrink-0">

@@ -8,6 +8,7 @@ interface ChatMessagesProps {
   showSources?: boolean;
   showDebug?: boolean;
   emptyStateContent?: React.ReactNode;
+  fullWidth?: boolean;
 }
 
 export function ChatMessages({ 
@@ -15,7 +16,8 @@ export function ChatMessages({
   loading = false, 
   showSources = true, 
   showDebug = false,
-  emptyStateContent 
+  emptyStateContent,
+  fullWidth = false 
 }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -43,6 +45,7 @@ export function ChatMessages({
           message={message}
           showSources={showSources}
           showDebug={showDebug}
+          fullWidth={fullWidth}
         />
       ))}
 
