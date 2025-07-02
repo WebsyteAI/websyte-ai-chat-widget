@@ -11,16 +11,14 @@ export const demoMessages = {
     "assistant",
     `{{component:hero-section}}
 
-{{component:activity-feed}}
+**Scroll down to explore everything Websyte AI has to offer** 👇
 
-**What would you like to explore?**
-- 💡 "Show me all features" - See everything we offer
-- 🚀 "How do I get started?" - Quick setup guide  
-- 📊 "Compare with others" - See how we stack up
-- 🎬 "Show me a demo" - Watch it in action
-- 💰 "Is it really free?" - Our transparent pricing
-
-{{component:success-stories}}`
+We'll show you:
+- ✨ All our features
+- 🚀 How to get started
+- 💰 Transparent pricing
+- 🎯 Why visitors love it
+- And much more...`
   ),
 
   features: createMessage(
@@ -189,6 +187,41 @@ The widget appears automatically and starts helping visitors.
 Need platform-specific help? Just ask!`
   ),
 
+  embedConfig: createMessage(
+    "assistant",
+    `## Advanced Embed Configuration 🛠️
+
+Customize your widget with data attributes:
+
+### Basic Embed
+\`\`\`html
+<script src="https://websyte.ai/dist/widget.js" async></script>
+\`\`\`
+
+### With Custom Options
+\`\`\`html
+<script 
+  src="https://websyte.ai/dist/widget.js" 
+  data-content-target="article, main, .content"
+  data-advertiser-name="Your Brand"
+  data-advertiser-logo="https://your-logo.png"
+  data-target-element="#custom-container"
+  data-base-url="https://your-api.com"
+  async>
+</script>
+\`\`\`
+
+### Available Options:
+- **data-content-target** - CSS selector for content to analyze
+- **data-advertiser-name** - Your brand name in the chat
+- **data-advertiser-logo** - URL to your logo
+- **data-target-element** - Where to inject the widget
+- **data-base-url** - Custom API endpoint
+- **data-widget-id** - For custom knowledge base widgets
+
+All options are optional - the widget works great with defaults!`
+  ),
+
   benefits: createMessage(
     "assistant",
     `## Why Your Visitors Will Love This ❤️
@@ -287,6 +320,47 @@ Here are some things you can ask me:
 Or just type your question - I'm here to help!`
   ),
 
+  // Missing sections from original landing page
+  whyEngage: createMessage(
+    "assistant",
+    `## Why Your Visitors Will Actually Stay and Engage 🎯
+
+Stop watching analytics show high bounce rates. Give visitors the smart, instant help they're desperately looking for.
+
+{{component:full-feature-grid}}
+
+**The difference is clear:**
+- ❌ Without AI: Visitors leave frustrated, can't find answers
+- ✅ With Websyte AI: Instant help, happy visitors, longer sessions
+
+Ask me about specific features or see how to get started!`
+  ),
+
+  performanceSecurity: createMessage(
+    "assistant",
+    `## Built for Performance & Security 🚀🔒
+
+Enterprise-grade infrastructure with modern web standards:
+
+{{component:performance-stats}}
+
+**Technical highlights:**
+- ⚡ **~200KB bundle** - Smaller than most images
+- 🏃 **<100ms load time** - Instant widget appearance  
+- 🛡️ **Cloudflare Workers** - Global edge computing
+- 🔐 **Rate limiting** - 10/min anonymous, 30/min authenticated
+- 📋 **GDPR compliant** - Privacy by design
+- 🧹 **90-day auto cleanup** - Automatic data retention
+
+**Infrastructure:**
+- 🌍 Any website or CMS
+- 📱 Mobile responsive
+- 🌐 Cross-browser compatible
+- 🔄 Zero conflicts guaranteed
+
+Built with ❤️ using React Router and Cloudflare Workers.`
+  ),
+
   // Contextual responses for specific queries
   wordpress: createMessage(
     "assistant",
@@ -353,6 +427,47 @@ Your data and your visitors' privacy are our top priorities:
 
 {{component:cta-button text="Read Security Docs" href="/docs/security"}}`
   ),
+
+  aboutUs: createMessage(
+    "assistant",
+    `## About Websyte AI Chat Widget 💬
+
+**Built with ❤️ using:**
+- ⚛️ React Router 7 + Vite
+- ☁️ Cloudflare Workers
+- 🐘 PostgreSQL + Drizzle ORM
+- 🤖 OpenAI GPT-4o-mini
+- 🔐 Better Auth
+- 🎨 Tailwind CSS + shadcn/ui
+
+**Open Source & Community:**
+- 📖 MIT License
+- 🐙 GitHub: [websyte/ai-chat-widget](https://github.com/websyte/ai-chat-widget)
+- 🐛 Report issues: [GitHub Issues](https://github.com/websyte/ai-chat-widget/issues)
+- 💡 Feature requests welcome!
+
+**Powered by:**
+- OpenAI for intelligent responses
+- Cloudflare Workers for global edge computing
+- Neon PostgreSQL for reliable data storage
+
+Join our community and help shape the future of web engagement!`
+  ),
+
+  // Widget workflow message
+  widgetWorkflow: createMessage(
+    "assistant",
+    `## From Documents to Deployed AI in Minutes 🚀
+
+Upload your knowledge base, generate embed codes, and deploy intelligent AI assistants that answer questions from your specific content.
+
+{{component:workflow-steps}}
+
+{{component:tech-stack}}
+
+Ready to build your custom AI assistant? 
+{{component:auth-button action="signup" text="Get Started Free"}}`
+  ),
 };
 
 // Response matcher to find the best response for a user query
@@ -381,6 +496,9 @@ export function findBestResponse(query: string): typeof demoMessages[keyof typeo
   if (q.includes("work") || q.includes("how does") || q.includes("function")) {
     return demoMessages.howItWorks;
   }
+  if (q.includes("config") || q.includes("customize") || q.includes("options")) {
+    return demoMessages.embedConfig;
+  }
   if (q.includes("wordpress") || q.includes("wp")) {
     return demoMessages.wordpress;
   }
@@ -393,8 +511,20 @@ export function findBestResponse(query: string): typeof demoMessages[keyof typeo
   if (q.includes("compar") || q.includes("competitor") || q.includes("vs") || q.includes("better") || q.includes("different")) {
     return demoMessages.competitors;
   }
-  if (q.includes("benefit") || q.includes("why") || q.includes("value")) {
+  if (q.includes("benefit") || q.includes("why use") || q.includes("value")) {
     return demoMessages.benefits;
+  }
+  if (q.includes("why") && (q.includes("stay") || q.includes("engage"))) {
+    return demoMessages.whyEngage;
+  }
+  if (q.includes("performance") || q.includes("security") || q.includes("infrastructure")) {
+    return demoMessages.performanceSecurity;
+  }
+  if (q.includes("about") || q.includes("who") || q.includes("built") || q.includes("footer")) {
+    return demoMessages.aboutUs;
+  }
+  if (q.includes("workflow") || q.includes("process") || q.includes("document") || q.includes("deploy")) {
+    return demoMessages.widgetWorkflow;
   }
   
   // Default to help if no match

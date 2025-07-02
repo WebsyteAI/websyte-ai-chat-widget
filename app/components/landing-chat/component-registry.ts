@@ -23,13 +23,8 @@ export type ComponentRegistry = {
 export const defaultComponentRegistry: ComponentRegistry = {
   // Static components
   "feature-showcase": DemoComponents.FeatureShowcase,
-  "embed-demo": DemoComponents.EmbedCodeDemo,
-  "tech-stack": DemoComponents.TechStackDisplay,
   "cta-button": DemoComponents.CTAButton,
-  "video-demo": DemoComponents.VideoDemo,
   "pricing-info": DemoComponents.PricingInfo,
-  "performance-stats": DemoComponents.PerformanceStats,
-  "workflow-steps": DemoComponents.WorkflowSteps,
   "badge-list": DemoComponents.BadgeList,
   
   // Smart components with data hooks
@@ -48,6 +43,11 @@ export const defaultComponentRegistry: ComponentRegistry = {
   "success-stories": LandingComponents.SuccessStories,
   "quick-start-guide": LandingComponents.QuickStartGuide,
   "api-example": LandingComponents.APIExample,
+  "video-demo": LandingComponents.VideoDemo,
+  "workflow-steps": LandingComponents.WorkflowSteps,
+  "tech-stack": LandingComponents.TechStack,
+  "performance-stats": LandingComponents.PerformanceStats,
+  "embed-demo": LandingComponents.EmbedDemo,
 };
 
 // Parser for component syntax: {{component:name prop1="value1" prop2="value2"}}

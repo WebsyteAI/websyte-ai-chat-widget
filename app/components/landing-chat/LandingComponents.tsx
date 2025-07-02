@@ -517,3 +517,275 @@ curl -X POST https://websyte.ai/api/automation/widgets/WIDGET_ID/crawl \\
     </Card>
   );
 }
+
+// Video Demo Component
+export function VideoDemo() {
+  return (
+    <Card className="overflow-hidden my-6">
+      <CardContent className="p-0">
+        <div className="relative">
+          <video
+            className="w-full h-full object-cover"
+            controls
+            preload="metadata"
+          >
+            <source src="/wai-chat-widget-demo.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Workflow Steps Component (3-step process)
+export function WorkflowSteps() {
+  const steps = [
+    {
+      number: "1",
+      title: "Upload Content",
+      description: "Add PDFs, documents, images, or crawl entire websites to build your knowledge base",
+      icon: <FileText className="h-6 w-6 text-blue-600" />,
+      bgColor: "bg-blue-100 dark:bg-blue-900/20",
+      details: [
+        "Website crawler with Apify integration",
+        "PDF and document processing",
+        "OCR for images and scanned files",
+        "Automatic text chunking and vectorization"
+      ]
+    },
+    {
+      number: "2", 
+      title: "Generate & Share",
+      description: "One-click embed code generation or share via direct URL",
+      icon: <Code className="h-6 w-6 text-green-600" />,
+      bgColor: "bg-green-100 dark:bg-green-900/20",
+      details: [
+        "Direct widget sharing URLs",
+        "Public/private widget controls", 
+        "Custom advertiser name and logo",
+        "Copy-paste ready script tags"
+      ]
+    },
+    {
+      number: "3",
+      title: "Deploy AI Assistant",
+      description: "Embed anywhere and provide instant answers from your knowledge base",
+      icon: <Bot className="h-6 w-6 text-purple-600" />,
+      bgColor: "bg-purple-100 dark:bg-purple-900/20",
+      details: [
+        "RAG responses with inline citations",
+        "Smart prompt recommendations",
+        "Conversation history & analytics",
+        "Multi-AI model support"
+      ]
+    }
+  ];
+
+  return (
+    <div className="grid md:grid-cols-3 gap-8 my-8">
+      {steps.map((step, index) => (
+        <Card key={index} className="text-center">
+          <CardHeader>
+            <div className={cn("mx-auto p-3 rounded-full w-fit mb-4", step.bgColor)}>
+              {step.icon}
+            </div>
+            <CardTitle>{step.number}. {step.title}</CardTitle>
+            <CardDescription>{step.description}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {step.details.map((detail, i) => (
+              <p key={i} className="text-sm text-muted-foreground">• {detail}</p>
+            ))}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// Tech Stack Component
+export function TechStack() {
+  const technologies = [
+    {
+      name: "OpenAI GPT-4o-mini",
+      description: "Latest language model",
+      icon: <Brain className="h-6 w-6 text-blue-600" />,
+      bgColor: "bg-white dark:bg-gray-800"
+    },
+    {
+      name: "Vector Search", 
+      description: "Semantic similarity matching",
+      icon: <Search className="h-6 w-6 text-green-600" />,
+      bgColor: "bg-white dark:bg-gray-800"
+    },
+    {
+      name: "PostgreSQL",
+      description: "pgvector embeddings", 
+      icon: <Database className="h-6 w-6 text-purple-600" />,
+      bgColor: "bg-white dark:bg-gray-800"
+    },
+    {
+      name: "Multi-AI",
+      description: "OpenAI + Mistral support",
+      icon: <Layers className="h-6 w-6 text-orange-600" />,
+      bgColor: "bg-white dark:bg-gray-800"
+    }
+  ];
+
+  return (
+    <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 rounded-2xl p-8 my-6">
+      <div className="text-center mb-8">
+        <h3 className="text-2xl font-bold mb-4">Powered by Advanced AI Technology</h3>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          Our RAG (Retrieval-Augmented Generation) system combines the latest in AI and search technology 
+          to provide accurate, contextual responses from your specific content.
+        </p>
+      </div>
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {technologies.map((tech, index) => (
+          <div key={index} className="text-center">
+            <div className={cn("p-3 rounded-lg mb-3 w-fit mx-auto", tech.bgColor)}>
+              {tech.icon}
+            </div>
+            <h4 className="font-semibold mb-1">{tech.name}</h4>
+            <p className="text-sm text-muted-foreground">{tech.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Embed Demo Component - for showing different widget types
+export function EmbedDemo({ type = "standard" }: { type?: "standard" | "custom" }) {
+  const isStandard = type === "standard";
+  
+  return (
+    <Card className={!isStandard ? "border-primary/50 bg-primary/5" : ""}>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            {isStandard ? (
+              <>
+                <MessageCircle className="h-5 w-5" />
+                Standard Page Chat
+              </>
+            ) : (
+              <>
+                <Bot className="h-5 w-5" />
+                Custom AI Widget
+              </>
+            )}
+          </CardTitle>
+          {!isStandard && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Sparkles className="h-3 w-3" />
+              NEW
+            </Badge>
+          )}
+        </div>
+        <CardDescription>
+          {isStandard ? "AI that understands your webpage content instantly" : "Your own knowledge base with uploaded documents and files"}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <ScriptCopyBtn
+          code={isStandard ? 
+            `<script src="https://websyte.ai/dist/widget.js" async></script>` :
+            `<script src="https://websyte.ai/dist/widget.js" data-widget-id="your-widget-id" async></script>`
+          }
+          codeLanguage="html"
+        />
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            {isStandard ? "Perfect for:" : "Features:"}
+          </p>
+          <ul className="text-sm space-y-1 ml-4">
+            {isStandard ? (
+              <>
+                <li>• Blog posts and articles</li>
+                <li>• Product pages</li>
+                <li>• News and content sites</li>
+                <li>• Quick setup with zero configuration</li>
+              </>
+            ) : (
+              <>
+                <li>• Upload PDFs, docs, and images</li>
+                <li>• OCR text extraction</li>
+                <li>• Vector search with RAG</li>
+                <li>• One-click embed generation</li>
+              </>
+            )}
+          </ul>
+        </div>
+        {isStandard && (
+          <p className="text-xs text-muted-foreground">
+            ✨ <span className="font-semibold text-primary">Free to install</span> — No signup required
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Performance Stats Component
+export function PerformanceStats() {
+  const stats = [
+    {
+      icon: <Zap className="h-6 w-6 text-green-600" />,
+      title: "Lightning Fast",
+      metrics: [
+        { value: "~200KB", label: "Bundle size" },
+        { value: "<100ms", label: "Load time" }
+      ]
+    },
+    {
+      icon: <Shield className="h-6 w-6 text-blue-600" />,
+      title: "Secure & Reliable",
+      metrics: [
+        { value: "Cloudflare", label: "Edge computing" },
+        { value: "10/30", label: "Req/min limits" },
+        { value: "GDPR", label: "Compliant" },
+        { value: "90 days", label: "Auto cleanup" }
+      ]
+    },
+    {
+      icon: <Globe className="h-6 w-6 text-purple-600" />,
+      title: "Universal Compatibility",
+      metrics: [
+        { value: "Any site", label: "Works everywhere" },
+        { value: "All CMSs", label: "Platform agnostic" },
+        { value: "Mobile", label: "Responsive" },
+        { value: "Cross-browser", label: "Compatible" }
+      ]
+    }
+  ];
+
+  return (
+    <div className="grid md:grid-cols-3 gap-8">
+      {stats.map((stat, index) => (
+        <Card key={index}>
+          <CardHeader className="text-center">
+            <div className={cn("mx-auto p-3 rounded-full w-fit mb-4", 
+              stat.title.includes("Fast") ? "bg-green-100 dark:bg-green-900/20" :
+              stat.title.includes("Secure") ? "bg-blue-100 dark:bg-blue-900/20" :
+              "bg-purple-100 dark:bg-purple-900/20"
+            )}>
+              {stat.icon}
+            </div>
+            <CardTitle>{stat.title}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-2">
+            {stat.metrics.map((metric, i) => (
+              <div key={i}>
+                <div className="text-2xl font-bold">{metric.value}</div>
+                <div className="text-sm text-muted-foreground">{metric.label}</div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
