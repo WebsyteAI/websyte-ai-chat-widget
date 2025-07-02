@@ -328,7 +328,7 @@ body {
 /* Prose styles for markdown content */
 .prose {
   color: inherit;
-  max-width: 65ch;
+  max-width: none;
 }
 
 .prose [class~="lead"] {
