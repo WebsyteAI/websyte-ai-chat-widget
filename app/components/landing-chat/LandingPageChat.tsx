@@ -7,24 +7,15 @@ import type { Message, Recommendation } from "@/components/ChatWidget/types";
 import { v4 as uuidv4 } from "uuid";
 
 export function LandingPageChat() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [hasShownWelcome, setHasShownWelcome] = useState(false);
-
-  // Show welcome message on mount
-  useEffect(() => {
-    if (!hasShownWelcome) {
-      setTimeout(() => {
-        const welcomeMessage: Message = {
-          id: uuidv4(),
-          role: "assistant",
-          content: demoMessages.welcome.content,
-          timestamp: new Date(),
-        };
-        setMessages([welcomeMessage]);
-        setHasShownWelcome(true);
-      }, 500);
+  // Initialize with welcome message to prevent empty state flash
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: uuidv4(),
+      role: "assistant",
+      content: demoMessages.welcome.content,
+      timestamp: new Date(),
     }
-  }, [hasShownWelcome]);
+  ]);
 
   // Handle incoming messages
   const handleMessage = useCallback(async (content: string): Promise<Message> => {
@@ -164,6 +155,7 @@ function LandingChatWidget({
       componentRegistry={componentRegistry}
       enableComponents={true}
       fullWidthMessages={true}
+      showEmptyState={false}
     />
   );
 }

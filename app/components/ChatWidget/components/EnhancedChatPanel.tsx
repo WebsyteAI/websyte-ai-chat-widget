@@ -33,6 +33,7 @@ interface EnhancedChatPanelProps {
   enableComponents?: boolean;
   welcomeContent?: React.ReactNode;
   fullWidthMessages?: boolean;
+  showEmptyState?: boolean;
 }
 
 export function EnhancedChatPanel({
@@ -62,6 +63,7 @@ export function EnhancedChatPanel({
   enableComponents = false,
   welcomeContent,
   fullWidthMessages = false,
+  showEmptyState = true,
 }: EnhancedChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -110,7 +112,7 @@ export function EnhancedChatPanel({
         {/* Messages area - scrollable */}
         <div className="flex-1 overflow-y-auto min-h-0">
           <div className={`p-6 flex flex-col gap-4 ${fullWidthMessages ? 'max-w-[1024px]' : 'max-w-4xl'} mx-auto w-full ${isEmbed ? 'websyte-embed-messages' : ''}`}>
-            {messages.length === 0 && (
+            {messages.length === 0 && showEmptyState && (
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
                 {welcomeContent || (
                   <>

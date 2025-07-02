@@ -25,7 +25,8 @@ export function EnhancedChatMessage({
   fullWidth = false
 }: EnhancedChatMessageProps) {
   const sourcesRef = useRef<HTMLDivElement>(null);
-  const [processedContent, setProcessedContent] = useState<string>("");
+  // Initialize with message content to prevent empty flash
+  const [processedContent, setProcessedContent] = useState<string>(message.content);
   const [showSources, setShowSources] = useState(false);
   const [highlightedSource, setHighlightedSource] = useState<number | null>(null);
   const [referencedSources, setReferencedSources] = useState<Set<number>>(new Set());
@@ -147,7 +148,7 @@ export function EnhancedChatMessage({
             message.role === "user"
               ? "bg-blue-600 text-white"
               : "text-gray-800"
-          }`}
+          } ${fullWidth && message.role === "assistant" ? "w-full" : ""}`}
         >
         {message.role === "assistant" ? (
           <div className="text-base prose prose-base max-w-none prose-p:my-2 prose-headings:my-3 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-p:leading-relaxed">
