@@ -61,7 +61,7 @@ export function UnifiedChatMessage({
     const processedContent = processContent(message.content);
     
     return (
-      <div className="prose prose-sm max-w-none">
+      <div className="prose prose-base max-w-none">
         <ReactMarkdown
         components={enhanced ? {
           citation: ({ "data-index": dataIndex, children }: any) => {
@@ -102,7 +102,7 @@ export function UnifiedChatMessage({
   const renderBasicContent = () => {
     if (message.content.includes("```") || message.content.includes("**") || message.content.includes("##")) {
       return (
-        <div className="prose prose-sm max-w-none">
+        <div className="prose prose-base max-w-none">
           <ReactMarkdown>
             {message.content}
           </ReactMarkdown>
@@ -195,7 +195,7 @@ export function UnifiedChatMessage({
                       if (el) sourceRefs.current[source.id] = el;
                     }}
                     className={cn(
-                      "p-3 bg-gray-50 rounded-lg text-sm transition-all duration-300",
+                      "p-3 bg-gray-50 rounded-lg text-base transition-all duration-300",
                       highlightedSourceId === source.id && "ring-2 ring-blue-400 bg-blue-50"
                     )}
                   >

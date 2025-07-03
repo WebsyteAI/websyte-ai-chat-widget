@@ -79,7 +79,7 @@ export function ChatMessage({ message, showSources = true, showDebug = false, fu
           } ${fullWidth && message.role === "assistant" ? "w-full" : ""}`}
         >
           {message.role === "assistant" ? (
-            <div className="text-sm prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
+            <div className="text-base prose prose-base max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
               <ReactMarkdown 
                 remarkPlugins={[remarkGfm, remarkBreaks]}
                 components={{
@@ -116,7 +116,7 @@ export function ChatMessage({ message, showSources = true, showDebug = false, fu
               </ReactMarkdown>
             </div>
           ) : (
-            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+            <p className="text-base whitespace-pre-wrap">{message.content}</p>
           )}
           
           {/* Timestamp and metadata */}
@@ -138,7 +138,7 @@ export function ChatMessage({ message, showSources = true, showDebug = false, fu
             {/* Toggle button */}
             <button
               onClick={() => setIsSourcesExpanded(!isSourcesExpanded)}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors font-medium"
+              className="flex items-center gap-2 text-base text-gray-600 hover:text-gray-800 transition-colors font-medium"
             >
               <Search className="w-4 h-4" />
               <span>Sources ({referencedSources.size})</span>
@@ -222,7 +222,7 @@ export function ChatMessage({ message, showSources = true, showDebug = false, fu
                         </div>
                       </div>
                       {expandedSources.has(originalIndex) && (
-                        <div className="text-sm text-gray-700 leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-wrap mt-2">
+                        <div className="text-base text-gray-700 leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-wrap mt-2">
                           {source.chunk}
                         </div>
                       )}

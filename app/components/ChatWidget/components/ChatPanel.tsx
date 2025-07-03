@@ -101,7 +101,7 @@ export function ChatPanel({
         {/* Content wrapper with relative positioning */}
         <div className="flex-1 flex flex-col relative overflow-hidden">
           {/* Messages area - scrollable with padding for floating input */}
-          <div className="flex-1 overflow-y-auto min-h-0 pb-24">
+          <div className="flex-1 overflow-y-auto min-h-0 pb-24 scrollbar-stable">
             <div className={`p-6 flex flex-col gap-4 max-w-4xl mx-auto w-full ${isEmbed ? 'websyte-embed-messages' : ''}`}>
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
@@ -215,7 +215,7 @@ export function ChatPanel({
 
       {/* Content wrapper with relative positioning */}
       <div className="flex-1 flex flex-col relative overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 pb-24">
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 pb-24 scrollbar-stable">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full">
             <div className="text-center mb-8">

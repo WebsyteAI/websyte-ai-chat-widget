@@ -11,8 +11,9 @@ export const DynamicIslandProvider = React.forwardRef<
     setSize?: React.Dispatch<React.SetStateAction<DynamicIslandSize>>
     size?: DynamicIslandSize
     position?: "top" | "bottom" | "center"
+    dynamicHeight?: number
   }
->(({ children, size = "default", setSize, position = "top", className, ...props }, ref) => {
+>(({ children, size = "default", setSize, position = "top", dynamicHeight, className, ...props }, ref) => {
   const [islandSize, setIslandSize] = React.useState<DynamicIslandSize>(size)
 
   React.useEffect(() => {
@@ -39,11 +40,12 @@ export const DynamicIslandProvider = React.forwardRef<
             SIZE_VARIANTS[islandSize]?.size,
             className
           )}
-          initial={SIZE_VARIANTS[islandSize]?.motionProps.initial}
-          animate={SIZE_VARIANTS[islandSize]?.motionProps.animate}
-          exit={SIZE_VARIANTS[islandSize]?.motionProps.exit}
+          initial={dynamicHeight ? { ...SIZE_VARIANTS[islandSize]?.motionProps.initial, height: `${dynamicHeight}px` } : SIZE_VARIANTS[islandSize]?.motionProps.initial}
+          animate={dynamicHeight ? { ...SIZE_VARIANTS[islandSize]?.motionProps.animate, height: `${dynamicHeight}px` } : SIZE_VARIANTS[islandSize]?.motionProps.animate}
+          exit={dynamicHeight ? { ...SIZE_VARIANTS[islandSize]?.motionProps.exit, height: `${dynamicHeight}px` } : SIZE_VARIANTS[islandSize]?.motionProps.exit}
           style={{
-            maxWidth: 'min(90vw, 600px)'
+            maxWidth: 'min(90vw, 600px)',
+            ...(dynamicHeight ? { height: `${dynamicHeight}px` } : {})
           }}
         >
           <AnimatePresence>{children}</AnimatePresence>

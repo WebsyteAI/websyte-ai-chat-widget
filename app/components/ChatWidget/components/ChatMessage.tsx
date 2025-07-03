@@ -107,7 +107,7 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
           }`}
         >
         {message.role === "assistant" ? (
-          <div className="text-sm prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
+          <div className="text-base prose prose-base max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0">
             <ReactMarkdown 
               remarkPlugins={[remarkGfm, remarkBreaks]}
               components={{
@@ -144,7 +144,7 @@ export function ChatMessage({ message, avatarUrl, onSourceClick }: ChatMessagePr
             </ReactMarkdown>
           </div>
         ) : (
-          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+          <p className="text-base whitespace-pre-wrap">{message.content}</p>
         )}
         <p className={`text-xs mt-1 ${
           message.role === "user" ? "text-blue-100" : "text-gray-500"
