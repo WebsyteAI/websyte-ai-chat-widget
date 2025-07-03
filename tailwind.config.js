@@ -45,9 +45,9 @@ export default {
       //   "ring-offset": "hsl(var(--color-background))",
       //   "ring-offset-background": "hsl(var(--color-background))",
       // },
-      ringOffsetWidth: {
-        DEFAULT: "2px",
-      },
+      // ringOffsetWidth: {
+      //   DEFAULT: "2px",
+      // },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

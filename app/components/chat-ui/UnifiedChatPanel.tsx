@@ -126,7 +126,7 @@ export function UnifiedChatPanel({
     <div className={containerClass}>
       {config.showHeader !== false && (
         <div className={cn(
-          "flex items-center justify-between border-b bg-gray-50",
+          "flex items-center justify-between border-b bg-white",
           isFullScreen || isEmbedded ? "px-4 py-3" : "p-4"
         )}>
           <div className="flex items-center gap-2">

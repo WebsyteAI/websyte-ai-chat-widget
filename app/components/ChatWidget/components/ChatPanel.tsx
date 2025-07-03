@@ -67,7 +67,7 @@ export function ChatPanel({
   // Full-screen mode styling
   if (isFullScreen) {
     return (
-      <div className={`fixed inset-0 flex flex-col bg-gray-50 border border-gray-200 ${isEmbed ? 'websyte-embed-chat-panel' : ''}`}>
+      <div className={`fixed inset-0 flex flex-col bg-white border border-gray-200 ${isEmbed ? 'websyte-embed-chat-panel' : ''}`}>
         {/* Full-screen header - fixed */}
         <div className={`flex-shrink-0 flex flex-col items-center justify-center p-4 border-b border-gray-200 bg-white ${isEmbed ? 'websyte-embed-header' : ''}`}>
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
