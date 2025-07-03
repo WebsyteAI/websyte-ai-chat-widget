@@ -269,7 +269,7 @@ export function ChatPanel({
         )}
         
         {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
+          <ChatMessage key={message.id} message={message} avatarUrl={advertiserLogo} />
         ))}
         
         {isLoading && (
