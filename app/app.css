@@ -1163,11 +1163,6 @@
 
 /* Large iframe width (> 600px) - Desktop layout */
 @media (min-width: 601px) {
-  /* Maintain max content width for readability */
-  .websyte-embed-messages > div {
-    max-width: 48rem !important;
-  }
-  
   .websyte-embed-input > div {
     max-width: 48rem !important;
   }

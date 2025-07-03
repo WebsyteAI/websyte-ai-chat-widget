@@ -122,29 +122,35 @@ export function ChatPanel({
                 </div>
                 
                 
-                {/* Recommendations only */}
+                {/* Recommendations with marquee */}
                 <div className="w-full max-w-3xl">
                   <p className="text-sm text-gray-500 text-center mb-4">Try asking:</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {isLoadingRecommendations ? (
-                      Array.from({ length: 4 }).map((_, index) => (
-                        <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-6 animate-pulse">
-                          <div className="h-5 bg-gray-300 rounded mb-3"></div>
-                          <div className="h-4 bg-gray-200 rounded"></div>
-                        </div>
-                      ))
-                    ) : (
-                      recommendations.slice(0, 4).map((rec, index) => (
-                        <div 
-                          key={index} 
-                          className="bg-gray-50 border border-gray-200 rounded-lg p-6 cursor-pointer hover:bg-gray-100 transition-colors"
-                          onClick={() => onRecommendationClick(rec)}
-                        >
-                          <h3 className="font-semibold text-gray-900 mb-2">{rec.title}</h3>
-                          <p className="text-gray-600">{rec.description}</p>
-                        </div>
-                      ))
-                    )}
+                  <div className="relative">
+                    <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+                    
+                    <Marquee pauseOnHover className="[--gap:0.75rem]">
+                      {isLoadingRecommendations ? (
+                        // Loading state
+                        Array.from({ length: 4 }).map((_, index) => (
+                          <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex-shrink-0 w-64 animate-pulse">
+                            <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded"></div>
+                          </div>
+                        ))
+                      ) : (
+                        recommendations.slice(0, 4).map((rec, index) => (
+                          <div 
+                            key={index} 
+                            className="bg-gray-50 border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors flex-shrink-0 w-64"
+                            onClick={() => onRecommendationClick(rec)}
+                          >
+                            <h3 className="font-medium text-sm text-gray-900 mb-1">{rec.title}</h3>
+                            <p className="text-gray-600 text-sm">{rec.description}</p>
+                          </div>
+                        ))
+                      )}
+                    </Marquee>
                   </div>
                 </div>
               </div>

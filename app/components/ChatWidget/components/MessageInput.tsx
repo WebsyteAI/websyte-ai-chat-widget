@@ -1,5 +1,6 @@
 import { ArrowUp, Square } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { Textarea } from "~/components/ui/textarea";
 import { DynamicIslandProvider, DynamicIsland, type DynamicIslandSize } from "~/components/ui/dynamic-island";
 import { useState, useRef, useEffect } from "react";
 
@@ -26,7 +27,7 @@ export function MessageInput({
 }: MessageInputProps) {
   const [islandSize, setIslandSize] = useState<DynamicIslandSize>("long");
   const [isFocused, setIsFocused] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const blurTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Update island size based on state
@@ -59,8 +60,8 @@ export function MessageInput({
 
   const inputContent = (
     <div className="flex items-center w-full gap-2">
-      <textarea
-        ref={inputRef as any}
+      <Textarea
+        ref={inputRef}
         value={inputValue}
         onChange={(e) => onInputChange(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -77,7 +78,7 @@ export function MessageInput({
           }, 150);
         }}
         placeholder={placeholder}
-        className="flex-1 w-full bg-transparent border-0 focus:outline-none text-base text-gray-900 placeholder-gray-500 dark:text-white dark:placeholder-gray-400 resize-none min-h-[24px] max-h-[120px] py-1 px-2"
+        className="flex-1 w-full bg-transparent border-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-base text-gray-900 placeholder-gray-500 dark:text-white dark:placeholder-gray-400 resize-none min-h-[24px] max-h-[120px] py-1 px-2"
         disabled={isLoading}
         rows={1}
         style={{
@@ -112,7 +113,7 @@ export function MessageInput({
     return (
       <div className="p-4">
         <div className="flex items-center bg-gray-100 rounded-lg p-2">
-          <textarea
+          <Textarea
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
             onKeyDown={(e) => {
@@ -122,7 +123,7 @@ export function MessageInput({
               }
             }}
             placeholder={placeholder}
-            className="flex-1 px-3 py-2 bg-transparent border-0 focus:outline-none text-lg placeholder-gray-500 resize-none min-h-[28px] max-h-[120px]"
+            className="flex-1 px-3 py-2 bg-transparent border-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg placeholder-gray-500 resize-none min-h-[28px] max-h-[120px]"
             disabled={isLoading}
             rows={1}
           />

@@ -1,5 +1,6 @@
 import { ArrowUp, Square } from "lucide-react";
 import { Button } from "../ui/button";
+import { Textarea } from "../ui/textarea";
 import { cn } from "~/lib/utils";
 
 interface ChatInputProps {
@@ -52,12 +53,12 @@ export function ChatInput({
       <div className={`flex items-center bg-gray-100 rounded-lg p-2 ${
         disabled ? 'opacity-50' : ''
       }`}>
-        <textarea
+        <Textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={disabled ? "Create a widget to enable chat" : placeholder}
-          className="flex-1 px-3 py-2 bg-transparent border-0 focus:outline-none text-sm placeholder-gray-500 resize-none min-h-[2.5rem] max-h-32 self-end"
+          className="flex-1 px-3 py-2 bg-transparent border-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder-gray-500 resize-none min-h-[2.5rem] max-h-32 self-end"
           disabled={disabled || loading}
           maxLength={maxLength}
           rows={1}
