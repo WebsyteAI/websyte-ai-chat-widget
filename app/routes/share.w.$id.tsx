@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router";
 import type { MetaFunction } from "react-router";
-import { ChatWidget } from "../components/ChatWidget";
+import { ChatPanel } from "../components/chat-panel";
 
 interface Widget {
   id: string;
@@ -355,15 +355,14 @@ export default function ShareWidget() {
           backgroundColor: "#f8fafc",
           fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
         }}>
-          <ChatWidget 
+          <ChatPanel 
             widgetId={state.widget.id}
-            advertiserName={state.widget.name}
-            advertiserLogo={state.widget.logoUrl}
-            advertiserUrl="https://websyte.ai"
-            isFullScreen={true}
+            widgetName={state.widget.name}
+            widgetLogo={state.widget.logoUrl}
+            baseUrl=""
             saveChatMessages={true} // Save messages for public shared widgets
             hidePoweredBy={false} // Show "Powered by Websyte.ai" in chat header
-            isEmbed={true} // Pass embed mode to ChatWidget
+            isEmbed={true} // Pass embed mode to ChatPanel
           />
         </div>
       );
@@ -428,13 +427,12 @@ export default function ShareWidget() {
           </div>
         </div>
         
-        {/* Full-screen ChatWidget */}
-        <ChatWidget 
+        {/* Full-screen ChatPanel */}
+        <ChatPanel 
           widgetId={state.widget.id}
-          advertiserName={state.widget.name}
-          advertiserLogo={state.widget.logoUrl}
-          advertiserUrl="https://websyte.ai"
-          isFullScreen={true}
+          widgetName={state.widget.name}
+          widgetLogo={state.widget.logoUrl}
+          baseUrl=""
           saveChatMessages={true} // Save messages for public shared widgets
           hidePoweredBy={false} // Show "Powered by Websyte.ai" in chat header
         />

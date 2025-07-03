@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChatWidget } from '../ChatWidget';
+import { ChatPanel } from '../chat-panel';
 import { WidgetForm } from './WidgetForm';
 import { toast } from '../../lib/use-toast';
 import type { Widget } from '../../stores/types';
@@ -148,16 +148,13 @@ export function WidgetEditor({
         <div className="absolute inset-0 flex flex-col">
           {hasWidget ? (
             <div className="h-full overflow-hidden">
-              <ChatWidget 
+              <ChatPanel 
                 widgetId={createdWidget.id}
                 widgetName={createdWidget.name}
-                advertiserName={createdWidget.name}
-                advertiserLogo={createdWidget.logoUrl}
-                advertiserUrl="https://websyte.ai"
-                isFullScreen={true}
+                widgetLogo={createdWidget.logoUrl}
+                baseUrl=""
                 saveChatMessages={false} // Don't save test messages
                 hidePoweredBy={false}
-                baseUrl=""
                 isEmbed={true} // Use embed mode for proper styling
                 recommendations={createdWidget.recommendations}
               />
