@@ -93,7 +93,7 @@ export function MessageInput({
             }, 150);
           }}
           placeholder={placeholder}
-          className="w-full bg-transparent border-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none text-base text-gray-900 placeholder-gray-500 dark:text-white dark:placeholder-gray-400 resize-none min-h-[40px] max-h-[160px] py-2 px-3 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-opacity-50 hover:[&::-webkit-scrollbar-thumb]:bg-opacity-70 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600"
+          className="w-full bg-transparent border-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none text-base md:text-base text-gray-900 placeholder-gray-500 dark:text-white dark:placeholder-gray-400 resize-none min-h-[40px] max-h-[160px] py-2 px-3 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-opacity-50 hover:[&::-webkit-scrollbar-thumb]:bg-opacity-70 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600"
           disabled={isLoading}
           rows={2}
           style={{
@@ -149,7 +149,7 @@ export function MessageInput({
                 }
               }}
               placeholder={placeholder}
-              className="w-full px-3 py-2 bg-transparent border-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none text-lg placeholder-gray-500 resize-none min-h-[40px] max-h-[200px] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-opacity-50 hover:[&::-webkit-scrollbar-thumb]:bg-opacity-70"
+              className="w-full px-3 py-2 bg-transparent border-0 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none text-base md:text-base placeholder-gray-500 resize-none min-h-[40px] max-h-[200px] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-opacity-50 hover:[&::-webkit-scrollbar-thumb]:bg-opacity-70"
               disabled={isLoading}
               rows={2}
             />
