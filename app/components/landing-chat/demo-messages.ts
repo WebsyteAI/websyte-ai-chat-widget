@@ -9,98 +9,111 @@ function createMessage(role: "user" | "assistant", content: string): Omit<Messag
 export const demoMessages = {
   welcome: createMessage(
     "assistant",
-    `{{component:hero-section}}
+    `# Turn Every Page Into an Interactive Conversation
 
-## Why Your Visitors Will Actually Stay and Engage 🎯
+Your readers get instant answers, you get better engagement, all with one line of code that won't break your design.
+
+✨ **Free to install** instantly — no signup required
+
+## Why Your Visitors Will Actually Stay and Engage
 
 Stop watching analytics show high bounce rates. Give visitors the smart, instant help they're desperately looking for.
 
-{{component:full-feature-grid}}
+### Key Features:
+- **Context-Aware AI** - Understands page content and provides intelligent, relevant responses based on your article or webpage
+- **One-Click Summarization** - Instantly generate concise summaries of any page content with AI-powered analysis
+- **Flexible Injection** - Choose between fixed overlay or inject into specific DOM elements for seamless integration
+- **Shadow DOM Isolation** - Complete style isolation prevents conflicts with your existing website design and CSS
+- **Easy Integration** - Single script tag implementation with no external dependencies or complex setup required
+- **Customizable Branding** - Configure advertiser name, logo, positioning, and theme to match your brand identity
 
-## How Websyte AI Works 🔧
+## Ready to Get Started? It's This Simple
 
-### For Page-Based Chat:
-1. **Add one script tag** to your HTML
-2. **Widget reads your content** automatically
-3. **AI provides contextual answers** about your page
-4. **Visitors get instant help** without leaving
+Copy this one line of code and paste it anywhere on your website:
 
-### For Custom Widgets:
-{{component:workflow-steps}}
+\`\`\`html
+<script src="https://websyte.ai/dist/widget.js" async></script>
+\`\`\`
 
-## Quick Start Guide 🚀
+✨ **Free to install** instantly — no signup required
 
-{{component:quick-start-guide}}
-
-### Choose Your Widget Type:
-
-**Option 1: Standard Page Chat** - Perfect for immediate setup
-{{component:embed-demo type="standard"}}
-
-**Option 2: Custom AI Widget** {{component:feature-availability feature="customWidgets"}}
-{{component:embed-demo type="custom"}}
-
-### Platform-Specific Instructions:
-{{component:setup-instructions}}
-
-## Yes, It's Really Free! 🎉
-
-We believe every website should have AI-powered engagement:
-
-{{component:dynamic-pricing highlight="true"}}
-
-{{component:testimonial-carousel limit="3"}}
-
-{{component:live-stats type="messages" format="full"}}
-
-## Built for Performance & Security 🚀🔒
+## Built for Performance & Security
 
 Enterprise-grade infrastructure with modern web standards:
 
-{{component:performance-stats}}
-
-## See Why We're Different 🏆
-
-{{component:comparison-table}}
-
-{{component:tech-stack}}
-
-{{component:cta-button text="Get Started Free" href="/login?mode=register"}}
+- **Lightning Fast**: ~200KB bundle size, <100ms load time
+- **Secure & Reliable**: Cloudflare Workers, CORS Protection, API Key Security, Rate Limiting
+- **Universal Compatibility**: Works with any CMS, mobile responsive, Shadow DOM isolation
 
 ---
 
-💬 **Have questions?** Ask me anything about Websyte AI - features, pricing, technical details, or how to get started!`
+💬 **Have questions?** I can help you with:
+- 🚀 "How do I get started?" - Installation instructions
+- 🛠️ "Tell me about features" - Explore our capabilities
+- 📊 "Show me examples" - See it in action
+- 🤔 "How does it work?" - Technical details`
   ),
 
   features: createMessage(
     "assistant",
-    `## Explore Our Complete Feature Set 🚀
+    `## Why Your Visitors Will Actually Stay and Engage
 
-We've built everything you need for intelligent website engagement:
+Stop watching analytics show high bounce rates. Give visitors the smart, instant help they're desperately looking for.
 
-{{component:full-feature-grid}}
+### Core Features:
+
+**Context-Aware AI** 🧠
+Understands page content and provides intelligent, relevant responses based on your article or webpage.
+
+**One-Click Summarization** ⚡
+Instantly generate concise summaries of any page content with AI-powered analysis.
+
+**Flexible Injection** 🎯
+Choose between fixed overlay or inject into specific DOM elements for seamless integration.
+
+**Shadow DOM Isolation** 🛡️
+Complete style isolation prevents conflicts with your existing website design and CSS.
+
+**Easy Integration** 💻
+Single script tag implementation with no external dependencies or complex setup required.
+
+**Customizable Branding** 🎨
+Configure advertiser name, logo, positioning, and theme to match your brand identity.
 
 **Want to learn more?**
-- 🛠️ Ask "technical details" for our tech stack
-- 📝 Ask "how to embed" for setup instructions  
-- 🤖 Ask "custom widgets" for knowledge base features
-- 🏆 Ask "success stories" to see real results`
+- 🚀 Ask "how to get started" for installation
+- 🛠️ Ask "technical details" for performance specs
+- 📊 Ask "pricing" to confirm it's free
+- 🤔 Ask "how it works" for the technical explanation`
   ),
 
   getStarted: createMessage(
     "assistant",
-    `{{component:quick-start-guide}}
+    `## Ready to Get Started? It's This Simple
 
-### Choose Your Widget Type:
+Copy this one line of code and paste it anywhere on your website:
 
-**Option 1: Standard Page Chat** - Perfect for immediate setup
-{{component:embed-demo type="standard"}}
+\`\`\`html
+<script src="https://websyte.ai/dist/widget.js" async></script>
+\`\`\`
 
-**Option 2: Custom AI Widget** {{component:feature-availability feature="customWidgets"}}
-{{component:embed-demo type="custom"}}
+✨ **Free to install** instantly — no signup required
+
+### One Line Setup
+Paste this anywhere in your HTML and you're done!
+
+**That's it!** Your AI assistant will:
+- Automatically read your page content
+- Provide instant, contextual answers to visitors
+- Work perfectly with your existing design
+- Never conflict with your CSS or JavaScript
 
 ### Platform-Specific Instructions:
-{{component:setup-instructions}}
+
+**WordPress**: Install 'Insert Headers and Footers' plugin → Add script to footer → Save
+**Shopify**: Online Store → Themes → Edit code → Add before </body> in theme.liquid
+**Wix**: Open Wix Editor → Add HTML embed → Paste script
+**Static Sites**: Add script before closing </body> tag → Deploy
 
 **Need help?** Tell me your platform and I'll guide you through it!`
   ),
@@ -126,41 +139,69 @@ Want to try it yourself? Ask me "How do I get started?"`
     "assistant",
     `## Yes, It's Really Free! 🎉
 
-We believe every website should have AI-powered engagement:
+### Websyte AI is completely free forever:
+- ✅ **No credit card required**
+- ✅ **No trial periods**
+- ✅ **No hidden fees**
+- ✅ **No user limits**
+- ✅ **No page view limits**
+- ✅ **Full features included**
 
-{{component:dynamic-pricing highlight="true"}}
+### Why Free?
+We believe every website should have AI-powered engagement. Our mission is to democratize AI chat for the web.
 
-**Real user feedback:**
+### How We Stay Free:
+- Built on efficient edge computing (Cloudflare Workers)
+- Optimized AI usage with caching
+- Open source community contributions
+- Optional enterprise support (coming soon)
 
-{{component:testimonial-carousel limit="3"}}
+### No Catch, Just Great AI:
+- Instant setup with one line of code
+- Works on unlimited websites
+- No branding or "Powered by" badges
+- Your data stays yours
 
-**Why free?** We're building the future of web interactions and want everyone to be part of it.
+**Ready to join thousands of sites using Websyte AI?**
+\`\`\`html
+<script src="https://websyte.ai/dist/widget.js" async></script>
+\`\`\`
 
-{{component:live-stats type="messages" format="full"}}
-
-No tricks. No trials. Just powerful AI for your website.`
+✨ Copy, paste, done - forever free!`
   ),
 
   technical: createMessage(
     "assistant",
-    `## Built for Developers, Loved by Everyone 🛠️
+    `## Built for Performance & Security
 
-Here's what powers Websyte AI:
+Enterprise-grade infrastructure with modern web standards.
 
-{{component:tech-stack}}
+### Lightning Fast ⚡
+- **~200KB** Bundle size
+- **<100ms** Load time
+- Async loading doesn't block your page
+- Optimized for Core Web Vitals
 
-### Performance & Security
+### Secure & Reliable 🛡️
+- **Cloudflare Workers** for edge computing
+- **CORS Protection** built-in
+- **API Key Security** for your data
+- **Rate Limiting** (10 req/min anonymous, 30 req/min authenticated)
 
-{{component:performance-stats}}
+### Universal Compatibility 🌍
+- Works with **any CMS** (WordPress, Shopify, Wix, etc.)
+- **Mobile responsive** design
+- **Shadow DOM isolation** - zero CSS conflicts
+- **All modern browsers** supported
 
-**Developer-friendly features:**
-- RESTful API with bearer token auth
-- Cloudflare Workers for edge performance
-- PostgreSQL with pgvector for embeddings
-- React + Vite for the widget
-- Full TypeScript support
+### Technical Stack:
+- **Frontend**: React with Shadow DOM encapsulation
+- **Backend**: Cloudflare Workers (edge computing)
+- **Database**: PostgreSQL with pgvector
+- **AI**: OpenAI GPT-4o-mini + embeddings
+- **Security**: GDPR compliant with auto data cleanup
 
-Want to see the implementation details? Check out our [GitHub repo](https://github.com/websyte/ai-chat-widget)!`
+Want to know more? Ask about specific technical aspects!`
   ),
 
   customWidgets: createMessage(
