@@ -11,14 +11,65 @@ export const demoMessages = {
     "assistant",
     `{{component:hero-section}}
 
-**Scroll down to explore everything Websyte AI has to offer** 👇
+## Why Your Visitors Will Actually Stay and Engage 🎯
 
-We'll show you:
-- ✨ All our features
-- 🚀 How to get started
-- 💰 Transparent pricing
-- 🎯 Why visitors love it
-- And much more...`
+Stop watching analytics show high bounce rates. Give visitors the smart, instant help they're desperately looking for.
+
+{{component:full-feature-grid}}
+
+## How Websyte AI Works 🔧
+
+### For Page-Based Chat:
+1. **Add one script tag** to your HTML
+2. **Widget reads your content** automatically
+3. **AI provides contextual answers** about your page
+4. **Visitors get instant help** without leaving
+
+### For Custom Widgets:
+{{component:workflow-steps}}
+
+## Quick Start Guide 🚀
+
+{{component:quick-start-guide}}
+
+### Choose Your Widget Type:
+
+**Option 1: Standard Page Chat** - Perfect for immediate setup
+{{component:embed-demo type="standard"}}
+
+**Option 2: Custom AI Widget** {{component:feature-availability feature="customWidgets"}}
+{{component:embed-demo type="custom"}}
+
+### Platform-Specific Instructions:
+{{component:setup-instructions}}
+
+## Yes, It's Really Free! 🎉
+
+We believe every website should have AI-powered engagement:
+
+{{component:dynamic-pricing highlight="true"}}
+
+{{component:testimonial-carousel limit="3"}}
+
+{{component:live-stats type="messages" format="full"}}
+
+## Built for Performance & Security 🚀🔒
+
+Enterprise-grade infrastructure with modern web standards:
+
+{{component:performance-stats}}
+
+## See Why We're Different 🏆
+
+{{component:comparison-table}}
+
+{{component:tech-stack}}
+
+{{component:cta-button text="Get Started Free" href="/login?mode=register"}}
+
+---
+
+💬 **Have questions?** Ask me anything about Websyte AI - features, pricing, technical details, or how to get started!`
   ),
 
   features: createMessage(

@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -7,7 +6,6 @@ import {
   FileText, 
   Search, 
   Calendar, 
-  Download, 
   Edit, 
   Trash2, 
   Plus,
@@ -88,9 +86,6 @@ export function WidgetList({ onCreateWidget, onEditWidget, onDeleteWidget }: Wid
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">My Widgets</h2>
-          <p className="text-gray-600">
-            Create and manage your custom AI widgets with vector search
-          </p>
         </div>
         <Button onClick={onCreateWidget} className="flex items-center gap-2">
           <Plus className="w-4 h-4" />
@@ -120,15 +115,24 @@ export function WidgetList({ onCreateWidget, onEditWidget, onDeleteWidget }: Wid
             <Card key={widget.id} className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg line-clamp-1">
-                      {widget.name}
-                    </CardTitle>
-                    {widget.description && (
-                      <CardDescription className="line-clamp-2 mt-1">
-                        {widget.description}
-                      </CardDescription>
+                  <div className="flex items-start gap-3 flex-1">
+                    {widget.logoUrl && (
+                      <img 
+                        src={widget.logoUrl} 
+                        alt={`${widget.name} logo`}
+                        className="w-10 h-10 rounded-lg object-contain bg-gray-50 p-1 flex-shrink-0"
+                      />
                     )}
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg line-clamp-1">
+                        {widget.name}
+                      </CardTitle>
+                      {widget.description && (
+                        <CardDescription className="line-clamp-2 mt-1">
+                          {widget.description}
+                        </CardDescription>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-1 ml-2">
                     <Button
