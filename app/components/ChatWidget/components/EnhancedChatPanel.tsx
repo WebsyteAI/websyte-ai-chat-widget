@@ -78,7 +78,7 @@ export function EnhancedChatPanel({
   // Full-screen mode styling
   if (isFullScreen) {
     return (
-      <div className={`fixed inset-0 flex flex-col bg-white border border-gray-200 text-lg ${isEmbed ? 'websyte-embed-chat-panel' : ''}`}>
+      <div className={`${isEmbed ? 'absolute' : 'fixed'} inset-0 flex flex-col bg-background border border-border text-lg`}>
         {/* Header wrapped in Dynamic Island */}
         <DynamicIslandHeader
           advertiserName={advertiserName}
@@ -90,7 +90,7 @@ export function EnhancedChatPanel({
 
         {/* Messages area - scrollable with padding for floating header and input */}
         <div className="flex-1 overflow-y-auto min-h-0 pt-24 pb-28 scrollbar-stable z-0">
-          <div className={`p-6 flex flex-col gap-4 ${fullWidthMessages ? 'max-w-[1024px]' : 'max-w-4xl'} mx-auto w-full ${isEmbed ? 'websyte-embed-messages' : ''}`}>
+          <div className={`p-4 sm:p-5 md:p-6 flex flex-col gap-3 sm:gap-4 ${fullWidthMessages ? 'max-w-[1024px]' : 'max-w-4xl'} mx-auto w-full`}>
             {messages.length === 0 && showEmptyState && (
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
                 {welcomeContent || (

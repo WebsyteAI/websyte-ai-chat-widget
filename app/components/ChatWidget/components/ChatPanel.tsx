@@ -67,9 +67,9 @@ export function ChatPanel({
   // Full-screen mode styling
   if (isFullScreen) {
     return (
-      <div className={`fixed inset-0 flex flex-col bg-white border border-gray-200 ${isEmbed ? 'websyte-embed-chat-panel' : ''}`}>
+      <div className={`${isEmbed ? 'absolute' : 'fixed'} inset-0 flex flex-col bg-background border border-border`}>
         {/* Full-screen header - fixed */}
-        <div className={`flex-shrink-0 flex flex-col items-center justify-center p-4 border-b border-gray-200 bg-white ${isEmbed ? 'websyte-embed-header' : ''}`}>
+        <div className="flex-shrink-0 flex flex-col items-center justify-center p-3 sm:p-4 border-b border-border bg-background">
           <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <img 
               src={advertiserLogo || 'https://websyte.ai/websyte-ai-logo.svg'} 
@@ -102,7 +102,7 @@ export function ChatPanel({
         <div className="flex-1 flex flex-col relative overflow-hidden">
           {/* Messages area - scrollable with padding for floating input */}
           <div className="flex-1 overflow-y-auto min-h-0 pb-24 scrollbar-stable">
-            <div className={`p-6 flex flex-col gap-4 max-w-4xl mx-auto w-full ${isEmbed ? 'websyte-embed-messages' : ''}`}>
+            <div className="p-4 sm:p-5 md:p-6 flex flex-col gap-3 sm:gap-4 max-w-4xl mx-auto w-full">
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
                 <div className="text-center mb-4">

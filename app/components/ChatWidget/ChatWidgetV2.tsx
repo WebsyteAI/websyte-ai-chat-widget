@@ -433,7 +433,7 @@ export function ChatWidgetV2({
     const displayName = fetchedWidgetName || widgetName || advertiserName;
     
     return (
-      <div className={isEmbed ? "websyte-embed-container" : ""}>
+      <div className="w-full h-full text-base antialiased">
         <UnifiedChatPanel
           config={{
             ...enhancedChatConfig,
@@ -465,11 +465,11 @@ export function ChatWidgetV2({
   
   // Regular widget mode render
   return (
-    <div ref={widgetContainerRef} className={isEmbed ? "websyte-embed-container" : ""}>
+    <div ref={widgetContainerRef} className="w-full h-full text-base antialiased">
       {/* Action Bar / Audio Player */}
       <div className={`${isTargetedInjection ? 'relative top-0 left-0 mx-auto' : 'fixed top-4 left-1/2'} z-50 ${
         hasRendered ? (isTargetedInjection ? 'animate-fade-in' : 'animate-slide-in-from-top') : 'opacity-0 -translate-x-1/2'
-      } ${isEmbed ? 'websyte-embed-action-bar' : ''}`}>
+      }`}>
         <div className={`bg-white/98 action-bar-blur shadow-lg border border-gray-300 py-2 flex flex-col gap-2 ${
           currentContent === "audio" ? 'container-audio' : 'container-action'
         } ${

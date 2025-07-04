@@ -213,7 +213,7 @@ export function ChatPanel({
   };
 
   return (
-    <div ref={containerRef} className={`fixed inset-0 flex flex-col bg-white ${isEmbed ? 'websyte-embed-chat-panel' : ''} ${className}`}>
+    <div ref={containerRef} className={`${isEmbed ? 'absolute' : 'fixed'} inset-0 flex flex-col bg-background ${className}`}>
       {/* Header wrapped in Dynamic Island */}
       <DynamicIslandHeader
         advertiserName={widgetName}
@@ -227,7 +227,7 @@ export function ChatPanel({
       <div className="flex-1 flex flex-col relative overflow-hidden">
         {/* Messages area - scrollable with padding for floating header and input */}
         <div className="flex-1 overflow-y-auto min-h-0 pt-24 pb-28 scrollbar-stable z-0">
-          <div className={`p-6 flex flex-col gap-4 max-w-4xl mx-auto w-full ${isEmbed ? 'websyte-embed-messages' : ''}`}>
+          <div className="p-4 sm:p-5 md:p-6 flex flex-col gap-3 sm:gap-4 max-w-4xl mx-auto w-full">
             {messages.length === 0 && recommendations.length > 0 && (
               <div className="flex flex-col items-center justify-center py-8">
                 <div className="w-full max-w-3xl">
