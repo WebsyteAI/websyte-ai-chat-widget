@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { useChatMessages } from "../ChatWidget/hooks";
 import { ChatMessage } from "../ChatWidget/components/ChatMessage";
 import { MessageInput } from "../ChatWidget/components/MessageInput";
+import { DynamicIslandHeader } from "./DynamicIslandHeader";
 import { Marquee } from "../ui/marquee";
 import type { Recommendation, Message } from "../ChatWidget/types";
 
@@ -213,82 +214,42 @@ export function ChatPanel({
 
   return (
     <div ref={containerRef} className={`fixed inset-0 flex flex-col bg-white ${isEmbed ? 'websyte-embed-chat-panel' : ''} ${className}`}>
-      {/* Full-screen header - fixed */}
-      <div className={`flex-shrink-0 flex flex-col items-center justify-center p-4 border-b border-gray-200 bg-white ${isEmbed ? 'websyte-embed-header' : ''}`}>
-        <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-          <img 
-            src={widgetLogo || 'https://websyte.ai/websyte-ai-logo.svg'} 
-            alt={widgetName} 
-            className="w-6 h-6 rounded"
-          />
-          {widgetName}
-        </h1>
-        {!hidePoweredBy && (
-          <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
-            Powered by 
-            <a 
-              href="https://websyte.ai" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              <img 
-                src={`${baseUrl}/websyte-ai-logo.svg`} 
-                alt="Websyte.ai" 
-                className="w-4 h-4"
-              />
-              Websyte.ai
-            </a>
-          </p>
-        )}
-      </div>
+      {/* Header wrapped in Dynamic Island */}
+      <DynamicIslandHeader
+        advertiserName={widgetName}
+        advertiserLogo={widgetLogo}
+        baseUrl={baseUrl}
+        hidePoweredBy={hidePoweredBy}
+        isEmbed={isEmbed}
+      />
 
       {/* Content wrapper with relative positioning */}
       <div className="flex-1 flex flex-col relative overflow-hidden">
-        {/* Messages area - scrollable with padding for floating input */}
-        <div className="flex-1 overflow-y-auto min-h-0 pb-24 scrollbar-stable">
+        {/* Messages area - scrollable with padding for floating header and input */}
+        <div className="flex-1 overflow-y-auto min-h-0 pt-24 pb-28 scrollbar-stable z-0">
           <div className={`p-6 flex flex-col gap-4 max-w-4xl mx-auto w-full ${isEmbed ? 'websyte-embed-messages' : ''}`}>
-            {messages.length === 0 && (
-              <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
-                <div className="text-center mb-4">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                    <div>Welcome to</div>
-                    <div className="flex items-center justify-center gap-3 mt-2">
-                      {widgetLogo && (
-                        <img 
-                          src={widgetLogo} 
-                          alt={widgetName} 
-                          className="w-10 h-10 rounded"
-                        />
-                      )}
-                      {widgetName}
-                    </div>
-                  </h2>
-                </div>
-                
-                {/* Recommendations with marquee */}
-                {recommendations.length > 0 && (
-                  <div className="w-full max-w-3xl">
-                    <p className="text-sm text-gray-500 text-center mb-4">Try asking:</p>
-                    <div className="relative">
-                      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
-                      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
-                      
-                      <Marquee pauseOnHover className="[--gap:0.75rem]">
-                        {recommendations.slice(0, 4).map((rec, index) => (
-                          <div 
-                            key={index} 
-                            className="bg-gray-50 border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors flex-shrink-0 w-64"
-                            onClick={() => handleRecommendationClick(rec)}
-                          >
-                            <h3 className="font-medium text-sm text-gray-900 mb-1">{rec.title}</h3>
-                            <p className="text-gray-600 text-sm">{rec.description}</p>
-                          </div>
-                        ))}
-                      </Marquee>
-                    </div>
+            {messages.length === 0 && recommendations.length > 0 && (
+              <div className="flex flex-col items-center justify-center py-8">
+                <div className="w-full max-w-3xl">
+                  <p className="text-sm text-gray-500 text-center mb-4">Try asking:</p>
+                  <div className="relative">
+                    <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+                    
+                    <Marquee pauseOnHover className="[--gap:0.75rem]">
+                      {recommendations.slice(0, 4).map((rec, index) => (
+                        <div 
+                          key={index} 
+                          className="bg-gray-50 border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors flex-shrink-0 w-64"
+                          onClick={() => handleRecommendationClick(rec)}
+                        >
+                          <h3 className="font-medium text-sm text-gray-900 mb-1">{rec.title}</h3>
+                          <p className="text-gray-600 text-sm">{rec.description}</p>
+                        </div>
+                      ))}
+                    </Marquee>
                   </div>
-                )}
+                </div>
               </div>
             )}
             

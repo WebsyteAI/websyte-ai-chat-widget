@@ -2,8 +2,8 @@ import { useRef, useEffect } from "react";
 import type { Message, Recommendation, Summaries, ContentMode } from "../types";
 import { EnhancedChatMessage } from "./EnhancedChatMessage";
 import { MessageInput } from "./MessageInput";
+import { DynamicIslandHeader } from "../../chat-panel/DynamicIslandHeader";
 import { Marquee } from "../../ui/marquee";
-import { DynamicIslandProvider, DynamicIsland } from "../../ui/dynamic-island";
 import type { ComponentRegistry } from "../../landing-chat/component-registry";
 
 interface EnhancedChatPanelProps {
@@ -80,45 +80,16 @@ export function EnhancedChatPanel({
     return (
       <div className={`fixed inset-0 flex flex-col bg-white border border-gray-200 text-lg ${isEmbed ? 'websyte-embed-chat-panel' : ''}`}>
         {/* Header wrapped in Dynamic Island */}
-        <DynamicIslandProvider 
-          size="large"
-          position="top"
-          className="!w-[calc(100%-2rem)] !max-w-[600px] !z-50"
-        >
-          <DynamicIsland className="w-full">
-            <div className={`flex flex-col items-center justify-center px-4 py-3 ${isEmbed ? 'websyte-embed-header' : ''}`}>
-              <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <img 
-                  src={advertiserLogo || 'https://websyte.ai/websyte-ai-logo.svg'} 
-                  alt={advertiserName} 
-                  className="w-7 h-7 rounded"
-                />
-                {advertiserName}
-              </h1>
-              {!hidePoweredBy && (
-                <p className="text-sm text-gray-500 mt-0.5 flex items-center gap-1">
-                  Powered by 
-                  <a 
-                    href="https://websyte.ai" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-gray-500 hover:text-gray-700 transition-colors"
-                  >
-                    <img 
-                      src={`${baseUrl}/websyte-ai-logo.svg`} 
-                      alt="Websyte.ai" 
-                      className="w-3.5 h-3.5"
-                    />
-                    Websyte.ai
-                  </a>
-                </p>
-              )}
-            </div>
-          </DynamicIsland>
-        </DynamicIslandProvider>
+        <DynamicIslandHeader
+          advertiserName={advertiserName}
+          advertiserLogo={advertiserLogo}
+          baseUrl={baseUrl}
+          hidePoweredBy={hidePoweredBy}
+          isEmbed={isEmbed}
+        />
 
         {/* Messages area - scrollable with padding for floating header and input */}
-        <div className="flex-1 overflow-y-auto min-h-0 pt-24 pb-24 scrollbar-stable z-0">
+        <div className="flex-1 overflow-y-auto min-h-0 pt-24 pb-28 scrollbar-stable z-0">
           <div className={`p-6 flex flex-col gap-4 ${fullWidthMessages ? 'max-w-[1024px]' : 'max-w-4xl'} mx-auto w-full ${isEmbed ? 'websyte-embed-messages' : ''}`}>
             {messages.length === 0 && showEmptyState && (
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">

@@ -368,75 +368,16 @@ export default function ShareWidget() {
       );
     }
     
-    // Regular layout with header for non-embed mode
+    // Regular layout - render full-screen ChatPanel directly
     return (
-      <div style={{ 
-        minHeight: "100vh",
-        backgroundColor: "#f8fafc",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-      }}>
-        {/* Widget Header with Information */}
-        <div style={{
-          backgroundColor: "white",
-          borderBottom: "1px solid #e2e8f0",
-          padding: "1rem 2rem"
-        }}>
-          <div style={{ 
-            maxWidth: "1200px", 
-            margin: "0 auto",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "1rem"
-          }}>
-            <div>
-              <h1 style={{ 
-                fontSize: "1.5rem", 
-                fontWeight: "600", 
-                color: "#1f2937",
-                margin: "0 0 0.25rem 0"
-              }}>
-                {state.widget.name}
-              </h1>
-              {state.widget.description && (
-                <p style={{ 
-                  color: "#6b7280", 
-                  margin: 0,
-                  fontSize: "0.9rem"
-                }}>
-                  {state.widget.description}
-                </p>
-              )}
-              {(state.widget.fileCount || state.widget.embeddingsCount) && (
-                <div style={{ 
-                  marginTop: "0.5rem",
-                  fontSize: "0.8rem",
-                  color: "#9ca3af"
-                }}>
-                  Knowledge Base: {state.widget.fileCount || 0} files, {state.widget.embeddingsCount || 0} embeddings
-                </div>
-              )}
-            </div>
-            <div style={{ 
-              fontSize: "0.8rem", 
-              color: "#6b7280"
-            }}>
-              Powered by WebsyteAI
-            </div>
-          </div>
-        </div>
-        
-        {/* Full-screen ChatPanel */}
-        <ChatPanel 
-          widgetId={state.widget.id}
-          widgetName={state.widget.name}
-          widgetLogo={state.widget.logoUrl}
-          baseUrl=""
-          saveChatMessages={true} // Save messages for public shared widgets
-          hidePoweredBy={false} // Show "Powered by Websyte.ai" in chat header
-        />
-      </div>
+      <ChatPanel 
+        widgetId={state.widget.id}
+        widgetName={state.widget.name}
+        widgetLogo={state.widget.logoUrl}
+        baseUrl=""
+        saveChatMessages={true} // Save messages for public shared widgets
+        hidePoweredBy={false} // Show "Powered by Websyte.ai" in chat header
+      />
     );
   }
 

@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import { UnifiedChatMessage } from "./UnifiedChatMessage";
 import { UnifiedMessageInput } from "./UnifiedMessageInput";
 import { RecommendationsList } from "../ChatWidget/components/RecommendationsList";
+import { DynamicIslandHeader } from "../chat-panel/DynamicIslandHeader";
 import { useUnifiedChat } from "./hooks/useUnifiedChat";
 import { cn } from "../../lib/utils";
 import type { UnifiedChatPanelProps, Message } from "./types";
@@ -110,6 +111,7 @@ export function UnifiedChatPanel({
       "rounded-lg": !isFullScreen,
       "shadow-lg": config.showDropShadow && isEmbedded,
       "border": !isFullScreen && !config.showDropShadow,
+      "relative": isFullScreen,
     },
     className
   );
@@ -125,60 +127,70 @@ export function UnifiedChatPanel({
   return (
     <div className={containerClass}>
       {config.showHeader !== false && (
-        <div className={cn(
-          "flex items-center justify-between border-b bg-white",
-          isFullScreen || isEmbedded ? "px-4 py-3" : "p-4"
-        )}>
-          <div className="flex items-center gap-2">
-            {config.advertiserLogo && (
-              <img 
-                src={config.advertiserLogo} 
-                alt={config.advertiserName} 
-                className="w-6 h-6 rounded"
-              />
-            )}
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              {!config.advertiserLogo && <MessageCircle className="w-5 h-5" />}
-              {getHeaderTitle()}
-            </h2>
+        isFullScreen ? (
+          <DynamicIslandHeader
+            advertiserName={config.advertiserName || getHeaderTitle()}
+            advertiserLogo={config.advertiserLogo}
+            baseUrl={config.baseUrl}
+            hidePoweredBy={config.hidePoweredBy}
+            isEmbed={isEmbedded}
+          />
+        ) : (
+          <div className={cn(
+            "flex items-center justify-between border-b bg-white",
+            isEmbedded ? "px-4 py-3" : "p-4"
+          )}>
+            <div className="flex items-center gap-2">
+              {config.advertiserLogo && (
+                <img 
+                  src={config.advertiserLogo} 
+                  alt={config.advertiserName} 
+                  className="w-6 h-6 rounded"
+                />
+              )}
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                {!config.advertiserLogo && <MessageCircle className="w-5 h-5" />}
+                {getHeaderTitle()}
+              </h2>
+              
+              {config.mode === 'rag' && (
+                <Badge variant="secondary" className="text-xs">
+                  RAG
+                </Badge>
+              )}
+              
+              {!config.enabled && (
+                <Badge variant="outline" className="text-xs">
+                  Disabled
+                </Badge>
+              )}
+            </div>
             
-            {config.mode === 'rag' && (
-              <Badge variant="secondary" className="text-xs">
-                RAG
-              </Badge>
-            )}
-            
-            {!config.enabled && (
-              <Badge variant="outline" className="text-xs">
-                Disabled
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {config.showDebug && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {/* TODO: Handle debug toggle */}}
+                  className="p-1"
+                >
+                  <Settings className="w-4 h-4" />
+                </Button>
+              )}
+              
+              {onClose && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={onClose}
+                  className="p-1"
+                >
+                  <Minimize2 className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            {config.showDebug && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {/* TODO: Handle debug toggle */}}
-                className="p-1"
-              >
-                <Settings className="w-4 h-4" />
-              </Button>
-            )}
-            
-            {onClose && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={onClose}
-                className="p-1"
-              >
-                <Minimize2 className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        </div>
+        )
       )}
       
       {chat.error && (
@@ -198,7 +210,7 @@ export function UnifiedChatPanel({
       <div className={contentClass}>
         <div 
           ref={chatContainerRef}
-          className="flex-1 overflow-y-auto"
+          className={cn("flex-1 overflow-y-auto", isFullScreen && "pt-20")}
         >
           {chat.messages.length === 0 ? (
             getEmptyState()
