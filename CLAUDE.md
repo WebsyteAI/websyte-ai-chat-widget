@@ -1,156 +1,125 @@
 # Websyte AI Chat Widget
 
-Embeddable React-based AI chat widget for websites with content summarization and interactive chat.
+Embeddable AI chat widget for websites with RAG capabilities and knowledge base management.
 
-## 🚨 IMPORTANT - MUST READ FIRST
-**For detailed documentation, architecture details, API references, and development guides, refer to the `.claude/` directory.** This file provides only high-level overview.
+## 📚 Documentation
 
-## 📚 Documentation Table of Contents
+**All detailed documentation is in the `.claude/` directory.** See [.claude/README.md](.claude/README.md) for the complete documentation index.
 
-### Core Documentation
-- **[.claude/ARCHITECTURE.md](.claude/ARCHITECTURE.md)** - System architecture, component design, and technical stack
-- **[.claude/PLANNING.md](.claude/PLANNING.md)** - Project planning, future enhancements, and development workflow
-- **[.claude/TESTING.md](.claude/TESTING.md)** - Testing strategy, guidelines, and coverage requirements
-- **[.claude/CONTEXT.md](.claude/CONTEXT.md)** - Project context, goals, and high-level overview
-- **[.claude/API-REFERENCE.md](.claude/API-REFERENCE.md)** - Complete API documentation and endpoints
+### Quick Links
+- [Getting Started](.claude/GETTING-STARTED.md)
+- [API Documentation](.claude/API/README.md)
+- [Architecture Overview](.claude/ARCHITECTURE/README.md)
+- [Deployment Guide](.claude/DEPLOYMENT/README.md)
 
-### Feature Documentation
-- **[.claude/FEATURES/MESSAGE-PERSISTENCE.md](.claude/FEATURES/MESSAGE-PERSISTENCE.md)** - Chat message storage, analytics, and GDPR compliance
-- **[.claude/FEATURES/WEBSITE-CRAWLER.md](.claude/FEATURES/WEBSITE-CRAWLER.md)** - Apify integration for automated content crawling
-- **[.claude/FEATURES/WIDGET-SHARING.md](.claude/FEATURES/WIDGET-SHARING.md)** - Direct URL sharing and public widget access
-- **[.claude/FEATURES/WORKFLOW-VISUALIZATION.md](.claude/FEATURES/WORKFLOW-VISUALIZATION.md)** - (PLANNED) Cloudflare Workflows for content pipeline
+## 🚀 Quick Start
 
-### Embedding & Integration
-- **[.claude/EMBEDDING/IFRAME-API.md](.claude/EMBEDDING/IFRAME-API.md)** - PostMessage API for iframe communication
-- **[.claude/EMBEDDING/EMBED-CODE-USAGE.md](.claude/EMBEDDING/EMBED-CODE-USAGE.md)** - Widget embed code generation and best practices
-
-### Testing & Quality
-- **[.claude/TESTING-INTEGRATION.md](.claude/TESTING-INTEGRATION.md)** - Integration testing framework and guidelines
-
-### Development Guidelines
-- **[.claude/CLAUDE.md](.claude/CLAUDE.md)** - Development notes, coding standards, and Claude-specific instructions
-- **[.claude/README.md](.claude/README.md)** - Documentation index and quick links
-
-### Future Plans
-- **[.claude/FUTURE/stripe-payment-integration-plan.md](.claude/FUTURE/stripe-payment-integration-plan.md)** - Payment integration planning
-
-## Quick Start
 ```bash
-# Development
-pnpm dev              # Development server (port 5173)
-pnpm dev:widget       # Build widget in watch mode
-pnpm preview          # Preview production build locally
+# Install dependencies
+pnpm install
 
-# Building & Deployment
-pnpm build            # Production build
-pnpm typecheck        # TypeScript checks
-pnpm cf-typegen       # Generate Cloudflare types
+# Start development
+pnpm dev              # Main app (port 5173)
+pnpm dev:widget       # Widget development mode
+
+# Run tests
+pnpm test             # Unit tests
+pnpm test:integration # Integration tests
+pnpm test:all         # All tests
+
+# Deploy
+pnpm build            # Build for production
 pnpm deploy           # Deploy to Cloudflare
-
-# Testing
-pnpm test             # Run unit tests in watch mode
-pnpm test:run         # Run unit tests once
-pnpm test:integration # Run integration tests
-pnpm test:all         # Run all tests
-pnpm test:coverage    # Generate coverage report
-pnpm test:ui          # Run tests with Vitest UI
-
-# Database Management
-pnpm db:generate      # Generate database migrations
-pnpm db:push          # Push database changes
-pnpm db:studio        # Open Drizzle Studio
 ```
 
-## Tech Stack
-- React Router 7 + Vite
-- Hono on Cloudflare Workers
-- Neon PostgreSQL + Drizzle ORM
-- Better Auth
-- OpenAI API (GPT-4o-mini + text-embedding-3-small)
-- Vector Search with pgvector
-- OCR capabilities
+## 🛠 Tech Stack
 
-## Essential Files
+- **Frontend**: React Router 7, Vite, Tailwind CSS v4
+- **Backend**: Cloudflare Workers, Hono
+- **Database**: Neon PostgreSQL, Drizzle ORM, pgvector
+- **AI/ML**: OpenAI (GPT-4o-mini), Mistral AI (OCR)
+- **Storage**: Cloudflare R2
+- **Auth**: Better Auth with OAuth support
 
-### Backend Routes (Modular Architecture)
-- `workers/app.ts` - Main backend entry point
-- `workers/routes/index.ts` - Central route registration
-- `workers/routes/auth.routes.ts` - Authentication endpoints
-- `workers/routes/chat.routes.ts` - Chat API endpoints
-- `workers/routes/widget.routes.ts` - Widget management
-- `workers/routes/automation.routes.ts` - Bearer token API
-- `workers/routes/public.routes.ts` - Public widget access
-- `workers/routes/admin.routes.ts` - Admin endpoints
+## 📁 Project Structure
 
-### Core Services
-- `workers/db/schema.ts` - Database schema with public widgets & chat messages
-- `workers/services/rag-agent.ts` - RAG chat agent with inline citations
-- `workers/services/vector-search.ts` - Vector search & embeddings
-- `workers/services/widget.ts` - Widget management and public access
-- `workers/services/messages.ts` - Chat message persistence and session management
-- `workers/services/chat.ts` - Chat API with message persistence controls
-- `workers/services/apify-crawler.ts` - Website crawler integration
-- `workers/lib/rate-limiter.ts` - Rate limiting middleware for API protection
-- `workers/cron/cleanup-messages.ts` - Scheduled cleanup of old messages
-- `app/components/widgets/WidgetForm.tsx` - Embed code generation UI
-- `app/components/widgets/WidgetEditor.tsx` - Full-screen widget editor with live preview
-- `app/components/ChatWidget/components/RecommendationsList.tsx` - Smart prompt recommendations
-- `app/widget-entry.tsx` - Custom widget embed script entry
-- `app/routes/test.tsx` - Widget testing playground
-- `app/routes/share.w.$id.tsx` - Direct widget sharing page
-- `app/routes/dashboard.tsx` - Dashboard layout with nested routing
-- `app/routes/dashboard.widgets.*.tsx` - Widget management routes
-- `app/routes.ts` - React Router 7 route configuration
-- `app/` - Frontend code
-- `.claude/` - **Detailed documentation**
+```
+├── app/                    # React frontend
+│   ├── components/        # UI components
+│   ├── routes/           # React Router pages
+│   └── widget-entry.tsx  # Widget embed entry
+├── workers/               # Backend services
+│   ├── routes/           # API routes
+│   ├── services/         # Business logic
+│   ├── workflows/        # Cloudflare Workflows
+│   └── app.ts           # Main entry point
+├── test/                 # Test suites
+└── .claude/             # Documentation
+```
 
-### Testing Infrastructure
-- `test/integration/` - Integration test suite
-- `vitest.integration.config.ts` - Integration test configuration
-- `test/integration/api-test-factory.ts` - Test app factory with mocking
+## 🌟 Key Features
 
-## New Features
-- **Custom Widget Embed Scripts**: Generate embeddable AI assistants with custom knowledge bases
-- **RAG Chat Agent**: Context-aware chat with knowledge base retrieval and inline citations
-- **Vector Search**: Semantic search with embeddings and similarity matching
-- **Website Crawler**: Apify integration to crawl entire websites for knowledge base building
-- **Direct Widget Sharing**: Share widgets via direct URLs with full-screen chat interface
-- **Chat Message Persistence**: Secure storage of conversations for insights and audits
-- **Smart Message Controls**: Only save messages from embedded widgets, not test environments
-- **Session Management**: Secure session tracking with server-side ID generation
-- **Rate Limiting**: API protection with configurable limits (10/min anonymous, 30/min authenticated)
-- **Smart Prompt Recommendations**: Dynamic prompt suggestions with animated marquee display
-- **Embed Code Generation**: One-click script generation with public/private controls
-- **Public Widget API**: Anonymous access to public widgets for embedding
-- **OCR Support**: Extract text from images and PDFs using Mistral AI for knowledge bases
-- **AI Integration**: OpenAI GPT-4o-mini for chat, Mistral AI for OCR
-- **Testing Playground**: Comprehensive widget testing environment at `/test`
-- **Nested Dashboard Routes**: File-based routing with explicit route configuration
-- **Full-Screen Widget Editor**: Split-screen editor with form on left, chat preview on right
-- **GDPR Compliance**: Configurable IP storage and automatic data cleanup
-- **Inline Citations**: Markdown-formatted citations in chat responses with source references
-- **Auto Data Cleanup**: Scheduled cron jobs for automatic message retention management
-- **Toast Notifications**: User feedback for widget operations
-- **Enhanced Chat UX**: Fixed scrolling behavior when sources are displayed
-- **Full-Screen Chat UI**: Improved layout with fixed positioning and better responsive design
-- **API Automation**: Bearer token authentication for programmatic access via `/api/automation/*` routes
+### For End Users
+- **AI Chat Assistant**: Powered by your content
+- **Easy Embedding**: One-line script tag
+- **Knowledge Base**: Upload docs, crawl websites
+- **Smart Search**: Vector-based semantic search
+- **Custom Branding**: Logo, colors, prompts
 
-## API Automation
-Use bearer token authentication for programmatic access:
-- Generate token: `openssl rand -hex 32`
-- Add to environment: `API_BEARER_TOKEN=your-token`
-- Use header: `Authorization: Bearer your-token`
-- Available routes:
-  - `GET /api/automation/widgets` - List all widgets
-  - `POST /api/automation/widgets` - Create widgets
-  - `POST /api/automation/widgets/:id/crawl` - Start crawling
-  - `POST /api/automation/widgets/:id/recommendations` - Generate recommendations
+### For Developers
+- **RESTful API**: Full programmatic access
+- **Bearer Auth**: Secure automation
+- **Webhooks**: Real-time events (planned)
+- **TypeScript**: Full type safety
+- **100% Test Coverage**: Reliable codebase
 
-## Workflow Memories
-- When asked to update docs, update @CLAUDE.md and .claude/ directory
-- Use context7 mcp if you need up to date documentation on tools and libraries
-- Always use pnpm run deploy for deploying
+## 🔧 Development Workflow
 
-## Competitors
-- Save https://answerhq.co/ as a reference competitor
-- https://www.tawk.to/why-free/ as another competitor to follow
+### Environment Setup
+```bash
+cp .env.example .env
+# Fill in your API keys and database URL
+```
+
+### Database Setup
+```bash
+pnpm db:generate  # Generate migrations
+pnpm db:push      # Apply to database
+pnpm db:studio    # Visual editor
+```
+
+### Common Tasks
+
+**Add a new API endpoint**:
+1. Create route in `workers/routes/`
+2. Add to `workers/routes/index.ts`
+3. Document in `.claude/API/`
+4. Write tests
+
+**Update the widget**:
+1. Edit components in `app/components/ChatWidget/`
+2. Run `pnpm dev:widget` to see changes
+3. Test embedding with `/test` route
+
+**Debug production issues**:
+```bash
+wrangler tail  # Live logs
+```
+
+## 📝 Notes for AI Assistants
+
+- **Documentation**: Update `.claude/` directory for docs
+- **Package Manager**: Always use `pnpm`, never `npm`
+- **Deployment**: Use `pnpm deploy` for production
+- **Testing**: Maintain 100% coverage
+- **Context**: Use context7 MCP for library docs
+
+## 🔗 References
+
+- **Competitors**: answerhq.co, tawk.to
+- **Live Demo**: [Production URL]
+- **Issues**: [GitHub Issues]
+
+---
+
+For detailed documentation, see [.claude/README.md](.claude/README.md)

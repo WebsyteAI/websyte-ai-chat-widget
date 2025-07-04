@@ -48,6 +48,26 @@ export const defaultComponentRegistry: ComponentRegistry = {
   "tech-stack": LandingComponents.TechStack,
   "performance-stats": LandingComponents.PerformanceStats,
   "embed-demo": LandingComponents.EmbedDemo,
+  "original-features": LandingComponents.OriginalFeatures,
+  "one-line-setup": LandingComponents.OneLineSetup,
+  "free-forever": LandingComponents.FreeForever,
+  
+  // SaaS-specific components
+  "saas-features": LandingComponents.SaasFeatures,
+  "roi-calculator": LandingComponents.RoiCalculator,
+  "content-sources": LandingComponents.ContentSources,
+  "saas-case-studies": LandingComponents.SaasCaseStudies,
+  "saas-pricing": LandingComponents.SaasPricing,
+  "saas-integrations": LandingComponents.SaasIntegrations,
+  "saas-comparison-table": LandingComponents.SaasComparisonTable,
+  "support-metrics": LandingComponents.SupportMetrics,
+  "knowledge-base-transformation": LandingComponents.KnowledgeBaseTransformation,
+  "tech-architecture": LandingComponents.TechArchitecture,
+  "saas-tech-specs": LandingComponents.SaasTechSpecs,
+  "interactive-demo": LandingComponents.InteractiveDemo,
+  "integration-examples": LandingComponents.IntegrationExamples,
+  "testimonials": LandingComponents.Testimonials,
+  "comparison-cta": LandingComponents.ComparisonCta,
 };
 
 // Parser for component syntax: {{component:name prop1="value1" prop2="value2"}}

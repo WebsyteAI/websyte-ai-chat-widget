@@ -1,99 +1,99 @@
-# Websyte AI Chat Widget - Technical Documentation
+# Websyte AI Chat Widget Documentation
 
-This directory contains detailed technical documentation for the Websyte AI Chat Widget project.
+Welcome to the comprehensive documentation for Websyte AI Chat Widget - an embeddable AI assistant platform with RAG capabilities.
 
 ## 📚 Documentation Index
 
-### Core Documentation
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture, component design, and technical stack
-- **[PLANNING.md](./PLANNING.md)** - Project planning, future enhancements, and development workflow
-- **[CONTEXT.md](./CONTEXT.md)** - Project context, goals, and high-level overview
-- **[API-REFERENCE.md](./API-REFERENCE.md)** - Complete API documentation and endpoints
+### Getting Started
+- **[GETTING-STARTED.md](./GETTING-STARTED.md)** - Quick start guide, installation, and setup
+- **[../CLAUDE.md](../CLAUDE.md)** - Development workflow and commands reference
 
-### Testing
-- **[TESTING.md](./TESTING.md)** - Unit testing strategy and coverage
-- **[TESTING-INTEGRATION.md](./TESTING-INTEGRATION.md)** - Integration testing framework and guidelines
+### Architecture & Design
+- **[ARCHITECTURE/README.md](./ARCHITECTURE/README.md)** - System architecture overview
+- **[ARCHITECTURE/FRONTEND.md](./ARCHITECTURE/FRONTEND.md)** - React Router 7 app structure
+- **[ARCHITECTURE/BACKEND.md](./ARCHITECTURE/BACKEND.md)** - Cloudflare Workers and services
+- **[ARCHITECTURE/DATABASE.md](./ARCHITECTURE/DATABASE.md)** - Database schema and design
+- **[ARCHITECTURE/NAMING-CONVENTIONS.md](./ARCHITECTURE/NAMING-CONVENTIONS.md)** - Code standards and patterns
 
-### Feature Documentation
-- **[FEATURES/MESSAGE-PERSISTENCE.md](./FEATURES/MESSAGE-PERSISTENCE.md)** - Chat message storage, analytics, and GDPR compliance
-- **[FEATURES/WEBSITE-CRAWLER.md](./FEATURES/WEBSITE-CRAWLER.md)** - Apify integration for automated content crawling
-- **[FEATURES/WIDGET-SHARING.md](./FEATURES/WIDGET-SHARING.md)** - Direct URL sharing and public widget access
-- **[FEATURES/WORKFLOW-VISUALIZATION.md](./FEATURES/WORKFLOW-VISUALIZATION.md)** - Workflow visualization and bot detection
+### API Reference
+- **[API/README.md](./API/README.md)** - API overview and authentication
+- **[API/WIDGETS.md](./API/WIDGETS.md)** - Widget management endpoints
+- **[API/CHAT.md](./API/CHAT.md)** - Chat and RAG endpoints
+- **[API/DOCUMENTS.md](./API/DOCUMENTS.md)** - Document management and OCR
+- **[API/PUBLIC.md](./API/PUBLIC.md)** - Public widget access
+- **[API/AUTOMATION.md](./API/AUTOMATION.md)** - Bearer token automation API
+- **[API/ERROR-CODES.md](./API/ERROR-CODES.md)** - Error handling reference
+
+### Features
+- **[FEATURES/README.md](./FEATURES/README.md)** - Feature overview
+- **[FEATURES/RAG-SEARCH.md](./FEATURES/RAG-SEARCH.md)** - RAG agent and vector search
+- **[FEATURES/FILE-STORAGE.md](./FEATURES/FILE-STORAGE.md)** - R2 storage and OCR processing
+- **[FEATURES/MESSAGE-PERSISTENCE.md](./FEATURES/MESSAGE-PERSISTENCE.md)** - Chat conversation storage
+- **[FEATURES/WEBSITE-CRAWLER.md](./FEATURES/WEBSITE-CRAWLER.md)** - Apify web crawling
+- **[FEATURES/WIDGET-SHARING.md](./FEATURES/WIDGET-SHARING.md)** - Public widget sharing
+- **[FEATURES/WORKFLOWS.md](./FEATURES/WORKFLOWS.md)** - Cloudflare Workflows integration
 
 ### Embedding & Integration
+- **[EMBEDDING/EMBED-CODE-USAGE.md](./EMBEDDING/EMBED-CODE-USAGE.md)** - Widget embedding guide
 - **[EMBEDDING/IFRAME-API.md](./EMBEDDING/IFRAME-API.md)** - PostMessage API for iframe communication
-- **[EMBEDDING/EMBED-CODE-USAGE.md](./EMBEDDING/EMBED-CODE-USAGE.md)** - Widget embed code generation and best practices
 
-### Development Guidelines
-- **[CLAUDE.md](./CLAUDE.md)** - Development notes, coding standards, and Claude-specific instructions
+### Deployment & Operations
+- **[DEPLOYMENT/README.md](./DEPLOYMENT/README.md)** - Deployment overview
+- **[DEPLOYMENT/ENVIRONMENT.md](./DEPLOYMENT/ENVIRONMENT.md)** - Environment variables reference
+- **[DEPLOYMENT/SECURITY.md](./DEPLOYMENT/SECURITY.md)** - Security and authentication
+- **[DEPLOYMENT/MIGRATIONS.md](./DEPLOYMENT/MIGRATIONS.md)** - Database migration procedures
+- **[DEPLOYMENT/MONITORING.md](./DEPLOYMENT/MONITORING.md)** - Logging and monitoring
 
-### Future Plans
-- **[FUTURE/stripe-payment-integration-plan.md](./FUTURE/stripe-payment-integration-plan.md)** - Payment integration planning
+### Testing
+- **[TESTING/README.md](./TESTING/README.md)** - Testing overview
+- **[TESTING/UNIT-TESTS.md](./TESTING/UNIT-TESTS.md)** - Unit testing guide
+- **[TESTING/INTEGRATION-TESTS.md](./TESTING/INTEGRATION-TESTS.md)** - Integration testing
+- **[TESTING-INTEGRATION.md](./TESTING-INTEGRATION.md)** - Legacy integration test docs
 
-### Historical Archives
-- **[ARCHIVE/PLANNING-HISTORY.md](./ARCHIVE/PLANNING-HISTORY.md)** - Historical implementation logs and completed phases
+### Planning & Future
+- **[PLANNING.md](./PLANNING.md)** - Project roadmap and future enhancements
+- **[FUTURE/stripe-payment-integration-plan.md](./FUTURE/stripe-payment-integration-plan.md)** - Payment integration plans
+
+### Project Context
+- **[CONTEXT.md](./CONTEXT.md)** - Project background and goals
+- **[CLAUDE.md](./CLAUDE.md)** - Development notes and AI assistant instructions
+- **[CHANGELOG.md](./CHANGELOG.md)** - Version history and updates
 
 ## 🚀 Quick Links
 
-### Latest Features (2025-06-25)
-1. **Website Crawler** - Crawl entire websites to build knowledge bases
-2. **Widget Sharing** - Share widgets via direct URLs
-3. **Message Persistence** - Store conversations for analytics
-4. **Smart Prompts** - Dynamic prompt recommendations
-5. **Inline Citations** - Source references in responses
-6. **Rate Limiting** - API protection and security
+### For Developers
+1. Start here: [Getting Started](./GETTING-STARTED.md)
+2. Understand the system: [Architecture Overview](./ARCHITECTURE/README.md)
+3. Build integrations: [API Documentation](./API/README.md)
+4. Run tests: [Testing Guide](./TESTING/README.md)
 
-### Key Services
-- `workers/services/apify-crawler.ts` - Website crawling
-- `workers/services/messages.ts` - Message persistence
-- `workers/lib/rate-limiter.ts` - Rate limiting
-- `app/routes/share.w.$id.tsx` - Widget sharing
+### For DevOps
+1. Deploy to production: [Deployment Guide](./DEPLOYMENT/README.md)
+2. Configure environment: [Environment Variables](./DEPLOYMENT/ENVIRONMENT.md)
+3. Monitor the system: [Monitoring Guide](./DEPLOYMENT/MONITORING.md)
 
-### Environment Variables
-```bash
-# Core
-DATABASE_URL=postgresql://...
-OPENAI_API_KEY=sk-...
+### For Product Teams
+1. Feature overview: [Features Documentation](./FEATURES/README.md)
+2. Embedding guide: [Widget Embedding](./EMBEDDING/EMBED-CODE-USAGE.md)
+3. Future roadmap: [Planning Document](./PLANNING.md)
 
-# Features
-APIFY_API_TOKEN=apify_api_xxx
-MESSAGE_RETENTION_DAYS=90
-STORE_IP_ADDRESSES=false
+## 📋 Documentation Standards
 
-# Rate Limiting
-RATE_LIMIT_ANONYMOUS=10
-RATE_LIMIT_AUTHENTICATED=30
-```
+- All documentation uses Markdown format
+- Code examples include language hints for syntax highlighting
+- API examples show both request and response
+- Each document includes a clear table of contents for longer content
+- Cross-references use relative links
 
-## 📖 How to Use This Documentation
+## 🔄 Keeping Documentation Updated
 
-1. **New to the project?** Start with [CONTEXT.md](./CONTEXT.md) and [ARCHITECTURE.md](./ARCHITECTURE.md)
-2. **Implementing a feature?** Check the relevant feature documentation
-3. **Writing tests?** Follow guidelines in [TESTING.md](./TESTING.md)
-4. **Planning work?** Review [PLANNING.md](./PLANNING.md) for future enhancements
+When making changes:
+1. Update relevant documentation immediately
+2. Add entries to [CHANGELOG.md](./CHANGELOG.md)
+3. Update API docs when adding/modifying endpoints
+4. Keep examples working and tested
+5. Remove outdated information
 
-## 🔄 Documentation Updates
+## 🤝 Contributing
 
-When implementing new features or making significant changes:
-
-1. Update the relevant documentation files
-2. Add new documentation for major features
-3. Update this README.md index
-4. Keep CHANGELOG.md in project root current
-
-## 📊 Project Status
-
-- **Production URL**: https://websyte.ai
-- **Widget Bundle**: ~200KB optimized
-- **Test Coverage**: 100% for worker services
-- **Features**: 20+ major features implemented
-- **API Endpoints**: Full REST API with rate limiting
-
-## 🛠️ Technical Stack
-
-- **Frontend**: React Router 7, Vite, Tailwind CSS v4
-- **Backend**: Cloudflare Workers, Hono, PostgreSQL
-- **AI**: OpenAI GPT-4o-mini, Mistral AI, pgvector
-- **Services**: Apify crawler, Better Auth, Drizzle ORM
-
-For more details, see [ARCHITECTURE.md](./ARCHITECTURE.md).
+See [CLAUDE.md](./CLAUDE.md) for development workflow and standards.

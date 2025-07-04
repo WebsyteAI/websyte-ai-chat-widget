@@ -175,7 +175,7 @@ export function MessageInput({
       size={islandSize} 
       setSize={setIslandSize} 
       position="bottom"
-      className="!absolute !bottom-4 !left-1/2 !-translate-x-1/2 !z-50 !w-[calc(100%-2rem)] !max-w-[600px]"
+      className="!w-[calc(100%-2rem)] !max-w-[600px] !z-50"
       dynamicHeight={textareaHeight}
     >
       <DynamicIsland className="w-full py-2" style={{ height: `${textareaHeight}px` }}>

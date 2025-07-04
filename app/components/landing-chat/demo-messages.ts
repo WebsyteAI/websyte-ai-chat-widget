@@ -9,246 +9,239 @@ function createMessage(role: "user" | "assistant", content: string): Omit<Messag
 export const demoMessages = {
   welcome: createMessage(
     "assistant",
-    `# Turn Every Page Into an Interactive Conversation
+    `{{component:hero-section}}
 
-Your readers get instant answers, you get better engagement, all with one line of code that won't break your design.
+## The Problem Every SaaS Faces 😤
 
-✨ **Free to install** instantly — no signup required
+**Your customers can't find answers.**
+- 📚 Your docs are comprehensive but overwhelming
+- 🔍 Search returns too many irrelevant results  
+- 😵 Customers give up and flood your support team
+- 💸 Each support ticket costs you $25-50
 
-## Why Your Visitors Will Actually Stay and Engage
+## The Solution: AI That Knows Your Product 🚀
 
-Stop watching analytics show high bounce rates. Give visitors the smart, instant help they're desperately looking for.
+{{component:saas-features}}
 
-### Key Features:
-- **Context-Aware AI** - Understands page content and provides intelligent, relevant responses based on your article or webpage
-- **One-Click Summarization** - Instantly generate concise summaries of any page content with AI-powered analysis
-- **Flexible Injection** - Choose between fixed overlay or inject into specific DOM elements for seamless integration
-- **Shadow DOM Isolation** - Complete style isolation prevents conflicts with your existing website design and CSS
-- **Easy Integration** - Single script tag implementation with no external dependencies or complex setup required
-- **Customizable Branding** - Configure advertiser name, logo, positioning, and theme to match your brand identity
+## See the Impact
 
-## Ready to Get Started? It's This Simple
-
-Copy this one line of code and paste it anywhere on your website:
-
-\`\`\`html
-<script src="https://websyte.ai/dist/widget.js" async></script>
-\`\`\`
-
-✨ **Free to install** instantly — no signup required
-
-## Built for Performance & Security
-
-Enterprise-grade infrastructure with modern web standards:
-
-- **Lightning Fast**: ~200KB bundle size, <100ms load time
-- **Secure & Reliable**: Cloudflare Workers, CORS Protection, API Key Security, Rate Limiting
-- **Universal Compatibility**: Works with any CMS, mobile responsive, Shadow DOM isolation
+{{component:roi-calculator}}
 
 ---
 
-💬 **Have questions?** I can help you with:
-- 🚀 "How do I get started?" - Installation instructions
-- 🛠️ "Tell me about features" - Explore our capabilities
-- 📊 "Show me examples" - See it in action
-- 🤔 "How does it work?" - Technical details`
+💬 **I can help you with:**
+- 📊 "Show me ROI" - Calculate your savings
+- 🚀 "How to implement" - 5-minute setup guide
+- 🎯 "Success stories" - SaaS companies like yours
+- 🛠️ "Integration options" - Works with your stack`
   ),
 
   features: createMessage(
     "assistant",
-    `## Why Your Visitors Will Actually Stay and Engage
+    `## Built for SaaS Companies Like Yours 🎯
 
-Stop watching analytics show high bounce rates. Give visitors the smart, instant help they're desperately looking for.
+{{component:saas-features}}
 
-### Core Features:
+### Perfect For:
+- **📚 Documentation-heavy products** - Make your docs instantly searchable
+- **🆘 High support volume** - Deflect 40%+ of tickets automatically
+- **🌱 Growing startups** - Scale support without hiring
+- **🏢 SMB SaaS** - Enterprise features at startup prices
 
-**Context-Aware AI** 🧠
-Understands page content and provides intelligent, relevant responses based on your article or webpage.
+### Key Capabilities:
+- **🧠 Learns from ALL your content** - Docs, FAQs, blog posts, changelogs
+- **🎯 Accurate answers** - With citations to your exact documentation
+- **🔄 Always up-to-date** - Automatically syncs when you update content
+- **📊 Analytics included** - See what customers actually ask about
 
-**One-Click Summarization** ⚡
-Instantly generate concise summaries of any page content with AI-powered analysis.
-
-**Flexible Injection** 🎯
-Choose between fixed overlay or inject into specific DOM elements for seamless integration.
-
-**Shadow DOM Isolation** 🛡️
-Complete style isolation prevents conflicts with your existing website design and CSS.
-
-**Easy Integration** 💻
-Single script tag implementation with no external dependencies or complex setup required.
-
-**Customizable Branding** 🎨
-Configure advertiser name, logo, positioning, and theme to match your brand identity.
-
-**Want to learn more?**
-- 🚀 Ask "how to get started" for installation
-- 🛠️ Ask "technical details" for performance specs
-- 📊 Ask "pricing" to confirm it's free
-- 🤔 Ask "how it works" for the technical explanation`
+**Next steps:**
+- 💰 Ask "ROI calculator" to see your savings
+- 🚀 Ask "quick setup" for implementation
+- 📈 Ask "success metrics" for real results`
   ),
 
   getStarted: createMessage(
     "assistant",
-    `## Ready to Get Started? It's This Simple
+    `## 5-Minute Setup for Your SaaS 🚀
 
-Copy this one line of code and paste it anywhere on your website:
+### Step 1: Add Your Content Sources
+{{component:content-sources}}
 
-\`\`\`html
-<script src="https://websyte.ai/dist/widget.js" async></script>
-\`\`\`
+### Step 2: Customize Your Assistant
+- **🎨 Brand it** - Your logo, colors, and tone
+- **💬 Set greeting** - Welcome message for customers
+- **🎯 Add prompts** - Common questions as suggestions
+- **🔧 Configure behavior** - Response style and limits
 
-✨ **Free to install** instantly — no signup required
+### Step 3: Install on Your Site
+{{component:one-line-setup}}
 
-### One Line Setup
-Paste this anywhere in your HTML and you're done!
+### Step 4: Watch Support Tickets Drop 📉
 
-**That's it!** Your AI assistant will:
-- Automatically read your page content
-- Provide instant, contextual answers to visitors
-- Work perfectly with your existing design
-- Never conflict with your CSS or JavaScript
+**Common installation points:**
+- 📚 Documentation site
+- 🏠 Main marketing site  
+- 💡 Knowledge base
+- 🎓 Academy/learning portal
+- 👤 Customer portal
 
-### Platform-Specific Instructions:
+{{component:integration-examples}}
 
-**WordPress**: Install 'Insert Headers and Footers' plugin → Add script to footer → Save
-**Shopify**: Online Store → Themes → Edit code → Add before </body> in theme.liquid
-**Wix**: Open Wix Editor → Add HTML embed → Paste script
-**Static Sites**: Add script before closing </body> tag → Deploy
-
-**Need help?** Tell me your platform and I'll guide you through it!`
+**Need a demo?** I can show you exactly how it works for SaaS companies!`
   ),
 
   demo: createMessage(
     "assistant",
-    `## See Websyte AI in Action 🎬
+    `## See How SaaS Companies Use Websyte AI 🎬
 
-Watch how easy it is to add AI-powered conversations to any website:
+### Real Customer Success Stories:
 
-{{component:video-demo}}
+{{component:saas-case-studies}}
 
-**What you just saw:**
-- Real visitor interactions
-- Instant, contextual responses
-- Zero impact on page design
-- Happy, engaged users
+### Live Demo - Try It Yourself:
 
-Want to try it yourself? Ask me "How do I get started?"`
+{{component:interactive-demo}}
+
+**What our SaaS customers report:**
+- 📉 **42% reduction** in support tickets
+- ⏱️ **3x faster** time to first answer
+- 😍 **87% satisfaction** rate
+- 💵 **$2,400/month** saved on support costs
+
+{{component:cta-button text="See Demo with Your Content" href="/demo"}}`
   ),
 
   pricing: createMessage(
     "assistant",
-    `## Yes, It's Really Free! 🎉
+    `## Pricing Built for Growing SaaS 💰
 
-### Websyte AI is completely free forever:
-- ✅ **No credit card required**
-- ✅ **No trial periods**
-- ✅ **No hidden fees**
-- ✅ **No user limits**
-- ✅ **No page view limits**
-- ✅ **Full features included**
+{{component:saas-pricing}}
 
-### Why Free?
-We believe every website should have AI-powered engagement. Our mission is to democratize AI chat for the web.
+### ROI Calculator:
+{{component:roi-calculator}}
 
-### How We Stay Free:
-- Built on efficient edge computing (Cloudflare Workers)
-- Optimized AI usage with caching
-- Open source community contributions
-- Optional enterprise support (coming soon)
+### What's Included FREE:
+- ✅ Unlimited customer conversations
+- ✅ All your documentation indexed
+- ✅ Smart recommendations
+- ✅ Basic analytics
+- ✅ Standard support
 
-### No Catch, Just Great AI:
-- Instant setup with one line of code
-- Works on unlimited websites
-- No branding or "Powered by" badges
-- Your data stays yours
+### Enterprise Features (Coming Soon):
+- 🏢 Custom AI training on your data
+- 📊 Advanced analytics & insights
+- 🔐 SSO & advanced security
+- 🎯 Priority support
+- 🔧 Custom integrations
 
-**Ready to join thousands of sites using Websyte AI?**
-\`\`\`html
-<script src="https://websyte.ai/dist/widget.js" async></script>
-\`\`\`
+**No credit card required. No trial period. Just instant value.**
 
-✨ Copy, paste, done - forever free!`
+{{component:cta-button text="Start Reducing Support Tickets" href="/login?mode=register"}}`
   ),
 
   technical: createMessage(
     "assistant",
-    `## Built for Performance & Security
+    `## Enterprise-Grade Tech for Growing SaaS 🏢
 
-Enterprise-grade infrastructure with modern web standards.
+### Built for Scale:
 
-### Lightning Fast ⚡
-- **~200KB** Bundle size
-- **<100ms** Load time
-- Async loading doesn't block your page
-- Optimized for Core Web Vitals
+{{component:saas-tech-specs}}
 
-### Secure & Reliable 🛡️
-- **Cloudflare Workers** for edge computing
-- **CORS Protection** built-in
-- **API Key Security** for your data
-- **Rate Limiting** (10 req/min anonymous, 30 req/min authenticated)
+### Performance That Matters:
+- ⚡ **<100ms response time** - Instant answers
+- 🌐 **Global CDN** - Fast everywhere
+- 📦 **~200KB widget** - Smaller than one image
+- 🚀 **99.9% uptime** - Always available
 
-### Universal Compatibility 🌍
-- Works with **any CMS** (WordPress, Shopify, Wix, etc.)
-- **Mobile responsive** design
-- **Shadow DOM isolation** - zero CSS conflicts
-- **All modern browsers** supported
+### Security First:
+- 🔒 **TLS 1.3 encryption**
+- 🚫 **Rate limiting** per customer
+- 🔐 **API key authentication**
+- 🗜️ **Data isolation** per widget
 
-### Technical Stack:
-- **Frontend**: React with Shadow DOM encapsulation
-- **Backend**: Cloudflare Workers (edge computing)
-- **Database**: PostgreSQL with pgvector
-- **AI**: OpenAI GPT-4o-mini + embeddings
-- **Security**: GDPR compliant with auto data cleanup
+### Integrations:
+{{component:saas-integrations}}
 
-Want to know more? Ask about specific technical aspects!`
+### API Access:
+\`\`\`bash
+# List all widgets
+curl -H "Authorization: Bearer YOUR_TOKEN" \\
+  https://api.websyte.ai/automation/widgets
+
+# Update knowledge base
+curl -X POST -H "Authorization: Bearer YOUR_TOKEN" \\
+  https://api.websyte.ai/widgets/WIDGET_ID/crawl
+\`\`\`
+
+**Questions about integration?** I can help with your specific stack!`
   ),
 
   customWidgets: createMessage(
     "assistant",
-    `## Custom AI Widgets - Your Knowledge, Your Assistant 🤖
+    `## Turn Your SaaS Knowledge Base into an AI Expert 🤖
 
-Transform your documents into an intelligent AI assistant:
+### The Problem with Traditional Docs:
+- 😕 Customers can't find what they need
+- 🔍 Search returns 100+ results for simple questions
+- 🙄 They give up and contact support
+- 💸 Each ticket costs you time and money
 
-{{component:workflow-steps}}
+### The Websyte AI Solution:
 
-**What you can upload:**
-- 📄 PDFs and documents
-- 🖼️ Images with text (OCR supported)
-- 🌐 Entire websites via crawler
-- 📚 Multiple files for comprehensive knowledge
+{{component:knowledge-base-transformation}}
 
-**Your AI assistant will:**
-- Answer questions from your content
-- Provide inline citations [1] [2]
-- Offer smart recommendations
-- Learn from your specific domain
+### Content Sources We Support:
+- 📚 **Documentation sites** - GitBook, Docusaurus, ReadMe
+- 🔗 **Help centers** - Intercom, Zendesk, HelpScout
+- 📝 **Blog posts** - Product updates, tutorials
+- 📊 **PDFs** - Manuals, guides, whitepapers
+- 🌐 **Any public URL** - Crawl entire sites
 
-{{component:cta-button text="Build Your AI Assistant" href="/login?mode=register"}}
+### Your Custom AI Will:
+- 🎯 Answer with YOUR product knowledge
+- 🔗 Cite exact documentation pages
+- 💡 Suggest related features
+- 📊 Learn what customers struggle with
 
-It's like having a subject matter expert available 24/7!`
+{{component:cta-button text="Transform Your Docs Now" href="/login?mode=register"}}`
   ),
 
   howItWorks: createMessage(
     "assistant",
-    `## How Websyte AI Works 🔧
+    `## How Websyte AI Works for SaaS 🔧
 
-### For Page-Based Chat:
-1. **Add one script tag** to your HTML
-2. **Widget reads your content** automatically
-3. **AI provides contextual answers** about your page
-4. **Visitors get instant help** without leaving
+### The Smart Process:
 
-### For Custom Widgets:
-{{component:workflow-steps}}
+1️⃣ **Content Ingestion**
+   - Crawl your docs, help center, blog
+   - Extract and understand your content
+   - Create semantic search index
 
-**The magic behind it:**
-- **RAG (Retrieval-Augmented Generation)** ensures accurate answers
-- **Vector embeddings** for semantic search
-- **Smart chunking** preserves context
-- **Citation tracking** for transparency
+2️⃣ **AI Training**  
+   - Learn your product terminology
+   - Understand feature relationships
+   - Map common customer questions
 
-Ask me about specific features or try it yourself!`
+3️⃣ **Smart Responses**
+   - Customer asks a question
+   - AI searches your knowledge base
+   - Generates accurate answer with sources
+
+4️⃣ **Continuous Learning**
+   - Track what customers ask
+   - Identify documentation gaps
+   - Improve over time
+
+### The Technology:
+{{component:tech-architecture}}
+
+### Security & Privacy:
+- 🔒 Your data stays yours
+- 🌐 Hosted on secure edge network
+- 🔐 SOC2 compliant infrastructure
+- 🇪🇺 GDPR ready
+
+**Want the technical details?** Ask about our architecture!`
   ),
 
   embedInstructions: createMessage(
@@ -380,36 +373,36 @@ Websyte AI offers complete programmatic control:
 
   help: createMessage(
     "assistant",
-    `## How Can I Help You? 🤝
+    `## How Can I Help Your SaaS? 🤝
 
-Here are some things you can ask me:
+I'm here to show you how Websyte AI can transform your customer support. Ask me:
 
-### 🚀 Getting Started
-- "How do I get started?"
-- "Show me the embed code"
-- "How does it work?"
+### 📈 Business Impact
+- "Calculate my ROI" - See your potential savings
+- "Show me SaaS examples" - Real success stories
+- "How to reduce tickets" - Our proven approach
 
-### 💡 Features & Capabilities
-- "What features do you have?"
-- "Show me a demo"
-- "How do custom widgets work?"
+### 🚀 Implementation
+- "How does setup work?" - 5-minute guide
+- "What content can it learn?" - Docs, FAQs, more
+- "Integration options" - Your existing tools
 
-### 💰 Pricing & Plans
-- "Is it really free?"
-- "What's the catch?"
-- "Any limitations?"
+### 💰 Pricing & Value
+- "Is it really free?" - Yes, here's how
+- "ROI calculator" - Your specific savings
+- "vs competitors" - Compare to Intercom/Zendesk
 
-### 🛠️ Technical Details
-- "What's your tech stack?"
-- "API documentation?"
-- "Performance stats?"
+### 🔧 Technical
+- "How does it work?" - RAG architecture
+- "Security & privacy" - Enterprise-grade
+- "API access" - Automation options
 
-### 🎯 Use Cases
-- "Good for blogs?"
-- "E-commerce support?"
-- "Documentation sites?"
+### 🎯 Your Use Case
+- "SaaS documentation" - Perfect fit
+- "Customer portal" - In-app help
+- "Support deflection" - Reduce load
 
-Or just type your question - I'm here to help!`
+What's your biggest support challenge? Let's solve it together!`
   ),
 
   // Missing sections from original landing page
@@ -560,20 +553,217 @@ Upload your knowledge base, generate embed codes, and deploy intelligent AI assi
 Ready to build your custom AI assistant? 
 {{component:auth-button action="signup" text="Get Started Free"}}`
   ),
+
+  // SaaS-specific messages
+  roiCalculator: createMessage(
+    "assistant",
+    `## ROI Calculator for Your SaaS 📊
+
+### Let's Calculate Your Savings:
+
+{{component:roi-calculator}}
+
+### Industry Averages:
+- 🎫 **Average support ticket cost**: $25-50
+- 📉 **Ticket reduction with AI**: 35-45%
+- ⏱️ **Average handle time saved**: 8 minutes/ticket
+- 💰 **Monthly savings**: $2,000-10,000
+
+### Real SaaS Examples:
+
+**B2B Project Management SaaS**
+- Before: 850 tickets/month
+- After: 490 tickets/month (42% reduction)
+- Savings: $9,000/month
+
+**Developer Tools Startup**
+- Before: 320 tickets/month  
+- After: 195 tickets/month (39% reduction)
+- Savings: $3,125/month
+
+**Marketing Automation Platform**
+- Before: 1,200 tickets/month
+- After: 720 tickets/month (40% reduction)
+- Savings: $12,000/month
+
+{{component:cta-button text="Start Saving Today" href="/login?mode=register"}}`
+  ),
+
+  saasExamples: createMessage(
+    "assistant",
+    `## Success Stories from SaaS Companies 🏆
+
+{{component:saas-case-studies}}
+
+### Common Use Cases:
+
+**1️⃣ Documentation Site**
+- Embed on docs.yourproduct.com
+- Answer "how-to" questions instantly
+- Reduce "where is X feature" tickets
+
+**2️⃣ Main Marketing Site**
+- Help prospects understand features
+- Answer pricing questions
+- Guide to right plan/demo
+
+**3️⃣ Customer Portal**
+- In-app help without leaving
+- Feature discovery
+- Reduce churn from confusion
+
+**4️⃣ Knowledge Base**
+- Make articles instantly searchable
+- Connect related content
+- Track what's missing
+
+### Results You Can Expect:
+- 🔥 **Week 1**: 20% ticket reduction
+- 📊 **Month 1**: 35% reduction
+- 🚀 **Month 3**: 40%+ reduction
+- 🎯 **Ongoing**: Better docs from insights
+
+{{component:testimonials}}`
+  ),
+
+  integrations: createMessage(
+    "assistant",
+    `## Seamless Integration with Your SaaS Stack 🔗
+
+{{component:saas-integrations}}
+
+### Documentation Platforms:
+- 📘 **GitBook** - Auto-sync content
+- 🤖 **Docusaurus** - Direct crawling
+- 📚 **ReadMe** - API integration
+- 📝 **Notion** - Export & sync
+- 🌐 **Any public docs** - URL crawler
+
+### Help Desk Integration:
+- 📧 **Intercom** - Articles & FAQs
+- 🎫 **Zendesk** - Knowledge base sync
+- 💙 **HelpScout** - Docs integration
+- 📨 **Front** - Help center content
+
+### Analytics & Tracking:
+- 📊 **Google Analytics** - Event tracking
+- 📋 **Segment** - Customer insights
+- 🎯 **Mixpanel** - Behavior analytics
+- 🔍 **Heap** - Auto-capture events
+
+### Developer Tools:
+- 🔧 **REST API** - Full control
+- 💙 **Webhooks** - Real-time events
+- 🧑‍💻 **SDKs** - Coming soon
+- 🚀 **CI/CD** - Automation ready
+
+**Your stack not listed?** We can integrate with any tool that has docs or an API!`
+  ),
+
+  supportReduction: createMessage(
+    "assistant",
+    `## How We Reduce Support Tickets by 40% 📉
+
+### The Support Ticket Problem:
+
+**Before Websyte AI:**
+- 😩 Customer can't find answer in docs
+- 🔍 Searches return too many results
+- 😤 Gets frustrated, contacts support
+- ⏱️ Agent spends 15 mins on basic question
+- 💸 Costs you $25-50 per ticket
+
+**With Websyte AI:**
+- 😊 Customer asks question naturally
+- 🤖 Gets instant, accurate answer
+- 🔗 Sees source documentation
+- ✅ Problem solved in seconds
+- 💰 No ticket created!
+
+### Top Deflected Ticket Types:
+1. **"How do I..."** questions (setup, configuration)
+2. **"Where is..."** feature location questions  
+3. **"What does..."** feature explanation
+4. **"Why can't I..."** troubleshooting
+5. **"Is it possible to..."** capability questions
+
+### The Compound Effect:
+- 🌱 Fewer tickets = happier support team
+- 🚀 Faster responses = happier customers
+- 📊 More time for complex issues
+- 💡 Insights into documentation gaps
+
+{{component:support-metrics}}`
+  ),
+
+  competitorComparison: createMessage(
+    "assistant",
+    `## Why SaaS Companies Choose Websyte AI 🏆
+
+{{component:saas-comparison-table}}
+
+### Vs. Traditional Support Tools:
+
+**🤖 Intercom Fin ($$$)**
+- Pros: Great UI, team features
+- Cons: Expensive, complex setup, overkill for SMBs
+- Price: $0.99 per resolution 😱
+
+**💬 Zendesk Answer Bot ($$)**  
+- Pros: Integrated with Zendesk
+- Cons: Requires Zendesk, limited AI
+- Price: $50+/agent/month
+
+**🎯 Drift ($$$)**
+- Pros: Sales-focused features
+- Cons: Not for support, very expensive
+- Price: $2,500+/month
+
+**✨ Websyte AI**
+- Pros: Free, easy setup, powerful AI
+- Cons: Less sales features (by design)
+- Price: $0 forever for core features
+
+### Why We Win for SaaS:
+1. **🚀 5-minute setup** vs hours/days
+2. **💰 Free** vs $500-5000/month
+3. **🤖 Latest AI** (GPT-4) vs basic bots
+4. **🎯 Built for support** not sales
+5. **🔒 Your data stays yours**
+
+{{component:comparison-cta}}`
+  ),
 };
 
 // Response matcher to find the best response for a user query
 export function findBestResponse(query: string): typeof demoMessages[keyof typeof demoMessages] | null {
   const q = query.toLowerCase();
   
-  // Direct matches
+  // SaaS-specific matches
+  if (q.includes("roi") || q.includes("calculat") || q.includes("save") || q.includes("savings")) {
+    return demoMessages.roiCalculator;
+  }
+  if (q.includes("example") || q.includes("case") || q.includes("success") || q.includes("stories")) {
+    return demoMessages.saasExamples;
+  }
+  if (q.includes("integrat") || q.includes("connect") || q.includes("tool") || q.includes("stack")) {
+    return demoMessages.integrations;
+  }
+  if (q.includes("support") || q.includes("ticket") || q.includes("reduc")) {
+    return demoMessages.supportReduction;
+  }
+  if (q.includes("compar") || q.includes("competitor") || q.includes("vs") || q.includes("intercom") || q.includes("zendesk")) {
+    return demoMessages.competitorComparison;
+  }
+  
+  // Original matches
   if (q.includes("feature") || q.includes("what can") || q.includes("capabilities")) {
     return demoMessages.features;
   }
-  if (q.includes("start") || q.includes("begin") || q.includes("embed") || q.includes("install")) {
+  if (q.includes("start") || q.includes("begin") || q.includes("setup") || q.includes("implement")) {
     return demoMessages.getStarted;
   }
-  if (q.includes("demo") || q.includes("video") || q.includes("see it") || q.includes("watch")) {
+  if (q.includes("demo") || q.includes("video") || q.includes("see it") || q.includes("action")) {
     return demoMessages.demo;
   }
   if (q.includes("free") || q.includes("cost") || q.includes("price") || q.includes("pricing")) {
@@ -582,7 +772,7 @@ export function findBestResponse(query: string): typeof demoMessages[keyof typeo
   if (q.includes("tech") || q.includes("stack") || q.includes("performance") || q.includes("api")) {
     return demoMessages.technical;
   }
-  if (q.includes("custom") || q.includes("widget") || q.includes("knowledge")) {
+  if (q.includes("custom") || q.includes("widget") || q.includes("knowledge") || q.includes("docs")) {
     return demoMessages.customWidgets;
   }
   if (q.includes("work") || q.includes("how does") || q.includes("function")) {
@@ -599,9 +789,6 @@ export function findBestResponse(query: string): typeof demoMessages[keyof typeo
   }
   if (q.includes("help") || q.includes("what can i ask") || q.includes("?")) {
     return demoMessages.help;
-  }
-  if (q.includes("compar") || q.includes("competitor") || q.includes("vs") || q.includes("better") || q.includes("different")) {
-    return demoMessages.competitors;
   }
   if (q.includes("benefit") || q.includes("why use") || q.includes("value")) {
     return demoMessages.benefits;
@@ -626,27 +813,27 @@ export function findBestResponse(query: string): typeof demoMessages[keyof typeo
 // Demo recommendations that appear in the chat
 export const demoRecommendations = [
   {
-    title: "Show me the features",
-    description: "Explore our powerful AI capabilities"
+    title: "Calculate my ROI",
+    description: "See how much you'll save on support"
   },
   {
-    title: "How do I get started?",
-    description: "Get your embed code in seconds"
+    title: "Show me SaaS examples",
+    description: "Success stories from companies like yours"
   },
   {
-    title: "Is it really free?",
-    description: "Learn about our forever-free pricing"
+    title: "How does setup work?",
+    description: "5-minute implementation guide"
   },
   {
-    title: "Show me a demo",
-    description: "Watch Websyte AI in action"
+    title: "What content can it learn?",
+    description: "Docs, FAQs, blogs, and more"
   },
   {
-    title: "How do custom widgets work?",
-    description: "Build AI assistants with your content"
+    title: "Integration options",
+    description: "Works with your existing tools"
   },
   {
-    title: "What's your tech stack?",
-    description: "See what powers our platform"
+    title: "See it in action",
+    description: "Live demo for SaaS companies"
   }
 ];

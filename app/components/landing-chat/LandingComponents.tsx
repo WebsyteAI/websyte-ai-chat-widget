@@ -48,41 +48,36 @@ import {
   Users,
   Star,
   AlertCircle,
+  Target,
+  Palette,
+  Calculator,
 } from "lucide-react";
 
 // Hero Section Component
 export function HeroSection() {
   return (
     <div className="space-y-6 text-center">
-      <div className="flex flex-wrap justify-center gap-2">
-        <Badge variant="secondary" className="flex items-center gap-1">
-          <Sparkles className="h-3 w-3" />
-          NEW: Website Crawler & Widget Sharing
+      <h1 className="text-4xl font-bold">
+        Stop Losing Customers Who Can't Find Answers
+      </h1>
+      <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+        Your SaaS has great docs, but customers can't find what they need. 
+        Websyte AI instantly answers their questions, reducing support tickets by 40%.
+      </p>
+      <div className="flex flex-wrap justify-center gap-4 mt-4">
+        <Badge variant="outline" className="py-1 px-3">
+          <TrendingUp className="w-4 h-4 mr-1" />
+          40% Fewer Tickets
         </Badge>
-        <Badge variant="outline" className="flex items-center gap-1">
-          <MessageSquareQuote className="h-3 w-3" />
-          Inline Citations
+        <Badge variant="outline" className="py-1 px-3">
+          <Timer className="w-4 h-4 mr-1" />
+          5-Minute Setup
         </Badge>
-        <Badge variant="outline">GDPR Compliant</Badge>
+        <Badge variant="outline" className="py-1 px-3">
+          <Brain className="w-4 h-4 mr-1" />
+          Learns Your Product
+        </Badge>
       </div>
-      
-      <div className="space-y-4">
-        <h1 className="text-4xl font-bold">
-          Turn Every Page Into an Interactive Conversation
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Your readers get instant answers, you get better engagement, all
-          with one line of code that won't break your design.
-        </p>
-      </div>
-      
-      <Alert className="max-w-2xl mx-auto border-green-200 bg-green-50/50 dark:bg-green-950/20">
-        <AlertCircle className="h-4 w-4 text-green-600" />
-        <AlertTitle>Completely Free Forever</AlertTitle>
-        <AlertDescription>
-          No credit card required, no hidden fees, no trial periods
-        </AlertDescription>
-      </Alert>
     </div>
   );
 }
@@ -787,5 +782,832 @@ export function PerformanceStats() {
         </Card>
       ))}
     </div>
+  );
+}
+
+// Original Features Grid Component (6 features from original landing page)
+export function OriginalFeatures() {
+  const features = [
+    {
+      icon: <Brain className="h-6 w-6" />,
+      title: "Context-Aware AI",
+      description:
+        "Understands page content and provides intelligent, relevant responses based on your article or webpage.",
+    },
+    {
+      icon: <Zap className="h-6 w-6" />,
+      title: "One-Click Summarization",
+      description:
+        "Instantly generate concise summaries of any page content with AI-powered analysis.",
+    },
+    {
+      icon: <Target className="h-6 w-6" />,
+      title: "Flexible Injection",
+      description:
+        "Choose between fixed overlay or inject into specific DOM elements for seamless integration.",
+    },
+    {
+      icon: <Shield className="h-6 w-6" />,
+      title: "Shadow DOM Isolation",
+      description:
+        "Complete style isolation prevents conflicts with your existing website design and CSS.",
+    },
+    {
+      icon: <Code className="h-6 w-6" />,
+      title: "Easy Integration",
+      description:
+        "Single script tag implementation with no external dependencies or complex setup required.",
+    },
+    {
+      icon: <Palette className="h-6 w-6" />,
+      title: "Customizable Branding",
+      description:
+        "Configure advertiser name, logo, positioning, and theme to match your brand identity.",
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold mb-4">
+          Why Your Visitors Will Actually Stay and Engage
+        </h2>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          Stop watching analytics show high bounce rates. Give visitors the
+          smart, instant help they're desperately looking for.
+        </p>
+      </div>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {features.map((feature, index) => (
+          <Card key={index} className="h-full">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                  {feature.icon}
+                </div>
+                <CardTitle className="text-lg">{feature.title}</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription className="text-base">
+                {feature.description}
+              </CardDescription>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Simple One-Line Setup Component
+export function OneLineSetup() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Code className="h-5 w-5" />
+          One Line Setup
+        </CardTitle>
+        <CardDescription>
+          Paste this anywhere in your HTML and you're done
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ScriptCopyBtn
+          code={`<script src="https://websyte.ai/dist/widget.js" async></script>`}
+          codeLanguage="html"
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
+// Free Forever Component
+export function FreeForever() {
+  return (
+    <Card className="border-green-200 bg-green-50/50 dark:bg-green-950/20">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl">Yes, It's Really Free! 🎉</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <p className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              No credit card required
+            </p>
+            <p className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              No trial periods
+            </p>
+            <p className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              No hidden fees
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              No user limits
+            </p>
+            <p className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              No page view limits
+            </p>
+            <p className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Full features included
+            </p>
+          </div>
+        </div>
+        <Separator />
+        <p className="text-center text-muted-foreground">
+          We believe every website should have AI-powered engagement.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// SaaS-specific components
+
+// SaaS Features Component
+export function SaasFeatures() {
+  const features = [
+    {
+      icon: TrendingUp,
+      title: "40% Fewer Support Tickets",
+      description: "Customers find answers instantly instead of creating tickets"
+    },
+    {
+      icon: Timer,
+      title: "24/7 Instant Answers",
+      description: "Your AI never sleeps, always ready with accurate responses"
+    },
+    {
+      icon: Brain,
+      title: "Learns Your Product",
+      description: "Trained on your docs, FAQs, and help articles"
+    },
+    {
+      icon: Search,
+      title: "Better Than Search",
+      description: "Understands questions, not just keywords"
+    }
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {features.map((feature, i) => (
+        <Card key={i} className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <feature.icon className="h-5 w-5 text-primary" />
+              {feature.title}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">{feature.description}</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// ROI Calculator Component
+export function RoiCalculator() {
+  return (
+    <Card className="border-primary/20">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calculator className="h-5 w-5" />
+          Your Monthly Savings Calculator
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm text-muted-foreground">Support tickets/month</p>
+            <p className="text-2xl font-bold">500</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Avg cost per ticket</p>
+            <p className="text-2xl font-bold">$25</p>
+          </div>
+        </div>
+        <Separator />
+        <div>
+          <p className="text-sm text-muted-foreground">With 40% reduction</p>
+          <p className="text-3xl font-bold text-green-600">Save $5,000/month</p>
+          <p className="text-sm text-muted-foreground mt-1">200 fewer tickets × $25 = $5,000 saved</p>
+        </div>
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Most SaaS companies see 35-45% ticket reduction in the first month
+          </AlertDescription>
+        </Alert>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Content Sources Component
+export function ContentSources() {
+  const sources = [
+    { icon: FileText, label: "Documentation", examples: "GitBook, Docusaurus, Notion" },
+    { icon: MessageCircle, label: "Help Articles", examples: "Zendesk, Intercom, HelpScout" },
+    { icon: Globe, label: "Website Pages", examples: "Features, Pricing, Blog posts" },
+    { icon: Database, label: "Knowledge Base", examples: "FAQs, Guides, Tutorials" }
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {sources.map((source, i) => (
+        <div key={i} className="flex items-start gap-3 p-4 border rounded-lg">
+          <source.icon className="h-5 w-5 text-primary mt-0.5" />
+          <div>
+            <p className="font-medium">{source.label}</p>
+            <p className="text-sm text-muted-foreground">{source.examples}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// SaaS Case Studies Component
+export function SaasCaseStudies() {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle>Project Management SaaS</CardTitle>
+              <CardDescription>850 support tickets/month → 490 tickets/month</CardDescription>
+            </div>
+            <Badge className="bg-green-100 text-green-800">42% reduction</Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">
+            "Our customers were constantly asking about features that were clearly documented. 
+            Now they get instant answers and we can focus on real product issues."
+          </p>
+          <div className="flex items-center gap-4 text-sm">
+            <span className="flex items-center gap-1">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              Saves $9,000/month
+            </span>
+            <span className="flex items-center gap-1">
+              <Timer className="h-4 w-4 text-blue-600" />
+              8 hours/week saved
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle>Developer Tools Startup</CardTitle>
+              <CardDescription>320 tickets/month → 195 tickets/month</CardDescription>
+            </div>
+            <Badge className="bg-green-100 text-green-800">39% reduction</Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">
+            "Our docs are technical and comprehensive. Websyte AI helps developers find exactly 
+            what they need without digging through 100+ pages."
+          </p>
+          <div className="flex items-center gap-4 text-sm">
+            <span className="flex items-center gap-1">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              Saves $3,125/month
+            </span>
+            <span className="flex items-center gap-1">
+              <Users className="h-4 w-4 text-blue-600" />
+              NPS increased 15 points
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// SaaS Pricing Component
+export function SaasPricing() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <Card className="border-2">
+        <CardHeader>
+          <CardTitle>Free Forever</CardTitle>
+          <CardDescription>Perfect for growing SaaS</CardDescription>
+          <div className="text-3xl font-bold">$0</div>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Unlimited conversations
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              All your docs indexed
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Basic analytics
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Email support
+            </li>
+          </ul>
+        </CardContent>
+        <CardFooter>
+          <Button className="w-full">Get Started Free</Button>
+        </CardFooter>
+      </Card>
+
+      <Card className="border-2 border-primary relative">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <Badge>Most Popular</Badge>
+        </div>
+        <CardHeader>
+          <CardTitle>Pro</CardTitle>
+          <CardDescription>For scaling SaaS</CardDescription>
+          <div className="text-3xl font-bold">Coming Soon</div>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Everything in Free
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Advanced analytics
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Custom AI training
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Priority support
+            </li>
+          </ul>
+        </CardContent>
+        <CardFooter>
+          <Button className="w-full" variant="secondary">Join Waitlist</Button>
+        </CardFooter>
+      </Card>
+
+      <Card className="border-2">
+        <CardHeader>
+          <CardTitle>Enterprise</CardTitle>
+          <CardDescription>For large teams</CardDescription>
+          <div className="text-3xl font-bold">Custom</div>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Everything in Pro
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              SSO & Security
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Custom integrations
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Dedicated support
+            </li>
+          </ul>
+        </CardContent>
+        <CardFooter>
+          <Button className="w-full" variant="outline">Contact Sales</Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+
+// SaaS Integrations Component
+export function SaasIntegrations() {
+  const integrations = [
+    { name: "GitBook", category: "Docs", icon: "📚" },
+    { name: "Docusaurus", category: "Docs", icon: "🦖" },
+    { name: "Zendesk", category: "Support", icon: "🎫" },
+    { name: "Intercom", category: "Support", icon: "💬" },
+    { name: "Notion", category: "Knowledge", icon: "📝" },
+    { name: "HelpScout", category: "Support", icon: "💙" },
+    { name: "Google Analytics", category: "Analytics", icon: "📊" },
+    { name: "Segment", category: "Analytics", icon: "📈" }
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {integrations.map((integration, i) => (
+        <div key={i} className="flex flex-col items-center gap-2 p-4 border rounded-lg hover:border-primary transition-colors">
+          <span className="text-2xl">{integration.icon}</span>
+          <p className="font-medium text-sm">{integration.name}</p>
+          <p className="text-xs text-muted-foreground">{integration.category}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// SaaS Comparison Table Component  
+export function SaasComparisonTable() {
+  return (
+    <Table>
+      <TableCaption>Compare Websyte AI with expensive alternatives</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Feature</TableHead>
+          <TableHead className="text-center">Websyte AI</TableHead>
+          <TableHead className="text-center">Intercom</TableHead>
+          <TableHead className="text-center">Zendesk</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell className="font-medium">Setup Time</TableCell>
+          <TableCell className="text-center">✅ 5 minutes</TableCell>
+          <TableCell className="text-center">❌ Days/Weeks</TableCell>
+          <TableCell className="text-center">❌ Days/Weeks</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell className="font-medium">Pricing</TableCell>
+          <TableCell className="text-center">✅ Free</TableCell>
+          <TableCell className="text-center">❌ $499+/mo</TableCell>
+          <TableCell className="text-center">❌ $55+/agent</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell className="font-medium">AI Quality</TableCell>
+          <TableCell className="text-center">✅ GPT-4</TableCell>
+          <TableCell className="text-center">⚠️ Basic</TableCell>
+          <TableCell className="text-center">⚠️ Basic</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell className="font-medium">Learn from Docs</TableCell>
+          <TableCell className="text-center">✅ Automatic</TableCell>
+          <TableCell className="text-center">⚠️ Manual</TableCell>
+          <TableCell className="text-center">⚠️ Manual</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell className="font-medium">No Lock-in</TableCell>
+          <TableCell className="text-center">✅ Yes</TableCell>
+          <TableCell className="text-center">❌ Contract</TableCell>
+          <TableCell className="text-center">❌ Contract</TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  );
+}
+
+// Support Metrics Component
+export function SupportMetrics() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-4xl font-bold text-green-600">42%</CardTitle>
+          <CardDescription>Average ticket reduction</CardDescription>
+        </CardHeader>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-4xl font-bold text-blue-600">3x</CardTitle>
+          <CardDescription>Faster response time</CardDescription>
+        </CardHeader>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-4xl font-bold text-purple-600">87%</CardTitle>
+          <CardDescription>Customer satisfaction</CardDescription>
+        </CardHeader>
+      </Card>
+    </div>
+  );
+}
+
+// Knowledge Base Transformation Component
+export function KnowledgeBaseTransformation() {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <span className="text-2xl">📚</span>
+              <ArrowRight className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <CardTitle className="text-lg">1. Add Your Content</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Point us to your docs, help center, or upload files
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <span className="text-2xl">🤖</span>
+              <ArrowRight className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <CardTitle className="text-lg">2. AI Learns</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              We index and understand your entire knowledge base
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <span className="text-2xl">✨</span>
+            <CardTitle className="text-lg">3. Customers Get Answers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Instant, accurate responses with source citations
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// Tech Architecture Component
+export function TechArchitecture() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>How It Works Under the Hood</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
+            <Badge variant="outline">1</Badge>
+            <div>
+              <p className="font-medium">Content Processing</p>
+              <p className="text-sm text-muted-foreground">
+                Your docs are chunked, embedded, and indexed for semantic search
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Badge variant="outline">2</Badge>
+            <div>
+              <p className="font-medium">RAG Pipeline</p>
+              <p className="text-sm text-muted-foreground">
+                Questions trigger retrieval of relevant content chunks
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Badge variant="outline">3</Badge>
+            <div>
+              <p className="font-medium">AI Generation</p>
+              <p className="text-sm text-muted-foreground">
+                GPT-4 generates accurate answers using retrieved context
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Badge variant="outline">4</Badge>
+            <div>
+              <p className="font-medium">Citation Tracking</p>
+              <p className="text-sm text-muted-foreground">
+                Every answer includes links to source documentation
+              </p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// SaaS Tech Specs Component
+export function SaasTechSpecs() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Infrastructure</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2 text-sm">
+            <li>• Cloudflare Workers (150+ locations)</li>
+            <li>• PostgreSQL with pgvector</li>
+            <li>• R2 object storage</li>
+            <li>• Global CDN delivery</li>
+          </ul>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">AI & Processing</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2 text-sm">
+            <li>• OpenAI GPT-4o-mini</li>
+            <li>• text-embedding-3-small</li>
+            <li>• Mistral AI for OCR</li>
+            <li>• RAG with citations</li>
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Interactive Demo Component
+export function InteractiveDemo() {
+  return (
+    <Card className="border-2 border-primary">
+      <CardHeader>
+        <CardTitle>Try It With Your Own Question!</CardTitle>
+        <CardDescription>
+          This chat is powered by Websyte AI. Ask anything about our product!
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Alert>
+          <Sparkles className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Try asking:</strong> "How can Websyte AI help reduce my support tickets?"
+          </AlertDescription>
+        </Alert>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Integration Examples Component
+export function IntegrationExamples() {
+  return (
+    <Tabs defaultValue="docs" className="w-full">
+      <TabsList className="grid grid-cols-3 w-full">
+        <TabsTrigger value="docs">Documentation</TabsTrigger>
+        <TabsTrigger value="app">In-App Help</TabsTrigger>
+        <TabsTrigger value="portal">Customer Portal</TabsTrigger>
+      </TabsList>
+      <TabsContent value="docs">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">docs.yourproduct.com</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Add to your documentation site to help users find specific answers
+            </p>
+            <ScriptCopyBtn
+              code={`<!-- Add before </body> -->
+<script src="https://websyte.ai/dist/widget.js" 
+  data-widget-id="YOUR_WIDGET_ID" 
+  async>
+</script>`}
+              codeLanguage="html"
+            />
+          </CardContent>
+        </Card>
+      </TabsContent>
+      <TabsContent value="app">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">app.yourproduct.com</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Embed in your SaaS app for contextual help
+            </p>
+            <ScriptCopyBtn
+              code={`// React/Next.js component
+useEffect(() => {
+  const script = document.createElement('script');
+  script.src = 'https://websyte.ai/dist/widget.js';
+  script.setAttribute('data-widget-id', 'YOUR_WIDGET_ID');
+  script.async = true;
+  document.body.appendChild(script);
+}, []);`}
+              codeLanguage="javascript"
+            />
+          </CardContent>
+        </Card>
+      </TabsContent>
+      <TabsContent value="portal">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">portal.yourproduct.com</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Add to customer portal for self-service support
+            </p>
+            <ScriptCopyBtn
+              code={`<!-- Customer portal integration -->
+<script>
+  window.websyteConfig = {
+    widgetId: 'YOUR_WIDGET_ID',
+    userId: currentUser.id, // Optional user tracking
+    metadata: {
+      plan: currentUser.plan,
+      accountType: currentUser.type
+    }
+  };
+</script>
+<script src="https://websyte.ai/dist/widget.js" async></script>`}
+              codeLanguage="html"
+            />
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+// Testimonials Component
+export function Testimonials() {
+  const testimonials = [
+    {
+      quote: "Cut our support tickets by 42% in the first month. Best ROI we've seen.",
+      author: "Sarah Chen",
+      role: "Head of Support",
+      company: "ProjectHub"
+    },
+    {
+      quote: "Our docs are complex. Websyte AI makes them instantly accessible.",
+      author: "Marcus Rodriguez", 
+      role: "CTO",
+      company: "DevTools Pro"
+    },
+    {
+      quote: "Setup took 5 minutes. Savings started immediately. No brainer.",
+      author: "Emily Watson",
+      role: "Customer Success Lead",
+      company: "MarketingOS"
+    }
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {testimonials.map((testimonial, i) => (
+        <Card key={i}>
+          <CardContent className="pt-6">
+            <div className="flex mb-2">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              ))}
+            </div>
+            <p className="text-sm mb-4 italic">"{testimonial.quote}"</p>
+            <div>
+              <p className="font-medium text-sm">{testimonial.author}</p>
+              <p className="text-xs text-muted-foreground">
+                {testimonial.role}, {testimonial.company}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// Comparison CTA Component
+export function ComparisonCta() {
+  return (
+    <Card className="bg-primary text-primary-foreground">
+      <CardContent className="pt-6 text-center">
+        <h3 className="text-2xl font-bold mb-4">
+          Stop Overpaying for Basic Chatbots
+        </h3>
+        <p className="mb-6">
+          Get better AI, easier setup, and zero monthly fees.
+        </p>
+        <Button size="lg" variant="secondary">
+          Start Free - No Credit Card
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
