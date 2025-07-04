@@ -62,7 +62,7 @@ export function ChatPanel({
     if (widgetId && !propRecommendations) {
       fetch(`${baseUrl}/api/public/widget/${widgetId}`)
         .then(res => res.json())
-        .then(data => {
+        .then((data: any) => {
           if (data.recommendations && data.recommendations.length > 0) {
             setRecommendations(data.recommendations);
             setPlaceholder(`Ask me about ${widgetName}...`);
