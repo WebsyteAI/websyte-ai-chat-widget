@@ -3,6 +3,7 @@ import type { ComponentType, ReactElement } from "react";
 import * as DemoComponents from "./DemoComponents";
 import * as SmartComponents from "./SmartComponents";
 import * as LandingComponents from "./LandingComponents";
+import { ModernHeroSection } from "./ModernHeroSection";
 import type { ComponentPropsMap } from "./component-types";
 
 // Enhanced component config
@@ -36,7 +37,7 @@ export const defaultComponentRegistry: ComponentRegistry = {
   "activity-feed": SmartComponents.ActivityFeed,
   
   // Landing page components
-  "hero-section": LandingComponents.HeroSection,
+  "hero-section": ModernHeroSection,
   "full-feature-grid": LandingComponents.FullFeatureGrid,
   "comparison-table": LandingComponents.ComparisonTable,
   "setup-instructions": LandingComponents.SetupInstructions,

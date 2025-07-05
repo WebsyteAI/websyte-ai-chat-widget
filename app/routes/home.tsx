@@ -1,5 +1,5 @@
 import type { Route } from "./+types/home";
-import { LandingPageChat } from "../components/landing-chat";
+import { LandingPage } from "../components/LandingPage";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -17,5 +17,5 @@ export function loader() {
 }
 
 export default function Home() {
-  return <LandingPageChat />;
+  return <LandingPage />;
 }
