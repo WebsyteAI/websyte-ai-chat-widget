@@ -1,4 +1,3 @@
-export { LandingPageChat } from "./LandingPageChat";
 export * from "./DemoComponents";
 export * from "./SmartComponents";
 export { demoMessages } from "./demo-messages";

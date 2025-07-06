@@ -101,7 +101,7 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-y-auto">
         {/* Conditionally apply max-width for non-editor routes */}
         {location.pathname.includes('/widgets/new') || location.pathname.includes('/edit') ? (
           <div className="h-full">
