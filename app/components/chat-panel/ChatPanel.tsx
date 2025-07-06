@@ -34,9 +34,14 @@ export function ChatPanel({
   const { messages, addMessage } = useChatMessages();
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [abortController, setAbortController] = useState<AbortController | null>(null);
-  const [recommendations, setRecommendations] = useState<Recommendation[]>(propRecommendations || []);
-  const [placeholder, setPlaceholder] = useState(propPlaceholder || "Ask me anything...");
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>(
+    propRecommendations || []
+  );
+  const [placeholder, setPlaceholder] = useState(
+    propPlaceholder || "Ask me anything..."
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -47,29 +52,33 @@ export function ChatPanel({
   const focusInput = () => {
     // Find the textarea in the MessageInput component and focus it
     setTimeout(() => {
-      const textarea = containerRef.current?.querySelector('textarea');
+      const textarea = containerRef.current?.querySelector("textarea");
       if (textarea) {
-        textarea.focus();
+        // textarea.focus();
       }
     }, 100); // Small delay to ensure DOM is updated
   };
 
   useEffect(() => {
-    scrollToBottom();
+    if (messages.length > 1) {
+      scrollToBottom();
+    }
   }, [messages]);
 
   // Load widget recommendations if not provided
   useEffect(() => {
     if (widgetId && !propRecommendations) {
       fetch(`${baseUrl}/api/public/widget/${widgetId}`)
-        .then(res => res.json())
+        .then((res) => res.json())
         .then((data: any) => {
           if (data.recommendations && data.recommendations.length > 0) {
             setRecommendations(data.recommendations);
             setPlaceholder(`Ask me about ${widgetName}...`);
           }
         })
-        .catch(err => console.error('Failed to load widget recommendations:', err));
+        .catch((err) =>
+          console.error("Failed to load widget recommendations:", err)
+        );
     }
   }, [widgetId, widgetName, baseUrl, propRecommendations]);
 
@@ -86,7 +95,7 @@ export function ChatPanel({
       role: "user",
       content: messageContent,
     });
-    
+
     setInputValue("");
     setIsLoading(true);
 
@@ -112,15 +121,18 @@ export function ChatPanel({
         throw new Error("Failed to send message");
       }
 
-      const data = await response.json() as { message?: string; sources?: any[] };
-      
+      const data = (await response.json()) as {
+        message?: string;
+        sources?: any[];
+      };
+
       addMessage({
         role: "assistant",
         content: data.message || "Sorry, I couldn't process your request.",
         sources: data.sources,
       });
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         addMessage({
           role: "assistant",
           content: "Message cancelled.",
@@ -128,7 +140,8 @@ export function ChatPanel({
       } else {
         addMessage({
           role: "assistant",
-          content: "Sorry, I'm having trouble connecting right now. Please try again.",
+          content:
+            "Sorry, I'm having trouble connecting right now. Please try again.",
         });
       }
     } finally {
@@ -160,7 +173,7 @@ export function ChatPanel({
       role: "user",
       content: rec.title,
     });
-    
+
     setIsLoading(true);
 
     const controller = new AbortController();
@@ -185,15 +198,18 @@ export function ChatPanel({
         throw new Error("Failed to send message");
       }
 
-      const data = await response.json() as { message?: string; sources?: any[] };
-      
+      const data = (await response.json()) as {
+        message?: string;
+        sources?: any[];
+      };
+
       addMessage({
         role: "assistant",
         content: data.message || "Sorry, I couldn't process your request.",
         sources: data.sources,
       });
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         addMessage({
           role: "assistant",
           content: "Message cancelled.",
@@ -201,7 +217,8 @@ export function ChatPanel({
       } else {
         addMessage({
           role: "assistant",
-          content: "Sorry, I'm having trouble connecting right now. Please try again.",
+          content:
+            "Sorry, I'm having trouble connecting right now. Please try again.",
         });
       }
     } finally {
@@ -213,7 +230,10 @@ export function ChatPanel({
   };
 
   return (
-    <div ref={containerRef} className={`${isEmbed ? 'absolute' : 'fixed'} inset-0 flex flex-col bg-background ${className}`}>
+    <div
+      ref={containerRef}
+      className={`${isEmbed ? "absolute" : "fixed"} inset-0 flex flex-col bg-background ${className}`}
+    >
       {/* Header wrapped in Dynamic Island */}
       <DynamicIslandHeader
         advertiserName={widgetName}
@@ -231,20 +251,26 @@ export function ChatPanel({
             {messages.length === 0 && recommendations.length > 0 && (
               <div className="flex flex-col items-center justify-center py-8">
                 <div className="w-full max-w-3xl">
-                  <p className="text-sm text-gray-500 text-center mb-4">Try asking:</p>
+                  <p className="text-sm text-gray-500 text-center mb-4">
+                    Try asking:
+                  </p>
                   <div className="relative">
                     <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
                     <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
-                    
+
                     <Marquee pauseOnHover className="[--gap:0.75rem]">
                       {recommendations.slice(0, 4).map((rec, index) => (
-                        <div 
-                          key={index} 
+                        <div
+                          key={index}
                           className="bg-gray-50 border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors flex-shrink-0 w-64"
                           onClick={() => handleRecommendationClick(rec)}
                         >
-                          <h3 className="font-medium text-sm text-gray-900 mb-1">{rec.title}</h3>
-                          <p className="text-gray-600 text-sm">{rec.description}</p>
+                          <h3 className="font-medium text-sm text-gray-900 mb-1">
+                            {rec.title}
+                          </h3>
+                          <p className="text-gray-600 text-sm">
+                            {rec.description}
+                          </p>
                         </div>
                       ))}
                     </Marquee>
@@ -252,16 +278,20 @@ export function ChatPanel({
                 </div>
               </div>
             )}
-            
+
             {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} avatarUrl={widgetLogo} />
+              <ChatMessage
+                key={message.id}
+                message={message}
+                avatarUrl={widgetLogo}
+              />
             ))}
-            
+
             {isLoading && (
               <div className="flex flex-col items-start max-w-[80%]">
                 <div className="mb-2 px-3">
-                  <img 
-                    src={widgetLogo || 'https://websyte.ai/websyte-ai-logo.svg'} 
+                  <img
+                    src={widgetLogo || "https://websyte.ai/websyte-ai-logo.svg"}
                     alt="AI Assistant"
                     className="w-6 h-6 rounded-full"
                   />
@@ -269,13 +299,19 @@ export function ChatPanel({
                 <div className="text-gray-800 p-3 rounded-lg">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                    <div
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.1s" }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.2s" }}
+                    ></div>
                   </div>
                 </div>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
         </div>

@@ -12,10 +12,8 @@ import {
   ActionBar,
   AudioPlayer,
   ChatPanel,
-  EnhancedChatPanel,
   RecommendationsList,
 } from "./components";
-import { UnifiedChatPanel } from "../chat-ui";
 import type {
   ChatWidgetProps,
   Recommendation,
@@ -23,7 +21,6 @@ import type {
   ContentMode,
   Message,
 } from "./types";
-import type { UnifiedChatConfig } from "../chat-ui/types";
 
 const logger = createLogger('ChatWidget');
 
