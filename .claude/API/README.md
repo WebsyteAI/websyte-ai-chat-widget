@@ -49,8 +49,23 @@ Used for programmatic access and automation tools.
 
 Select endpoints allow anonymous access for embedded widgets.
 
-- **Usage**: Public widget data, embedded chat
-- **Rate Limits**: 10 requests per minute per IP
+## API Documentation Files
+
+### Core APIs
+- **[Widgets API](./WIDGETS.md)** - Widget CRUD operations
+- **[Widget Links API](./widgets-links.md)** - Important links extraction
+- **[Widget Crawl API](./widget-crawl.md)** - Website crawling endpoints
+- **[Chat API](./CHAT.md)** - Chat conversation endpoints
+- **[Documents API](./DOCUMENTS.md)** - File upload and management
+
+### Service APIs
+- **[Search API](./SEARCH.md)** - Vector search functionality
+- **[Services API](./SERVICES.md)** - General service endpoints
+
+### Access Control APIs
+- **[Automation API](./AUTOMATION.md)** - Bearer token authenticated endpoints
+- **[Public API](./PUBLIC.md)** - Public widget access
+- **[Admin API](./admin.md)** - System administration
 
 ## API Categories
 

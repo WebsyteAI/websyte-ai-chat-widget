@@ -57,6 +57,13 @@
       "when": 1751268013747,
       "tag": "0007_heavy_master_chief",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1751775367942,
+      "tag": "0008_familiar_tenebrous",
+      "breakpoints": true
     }
   ]
 }

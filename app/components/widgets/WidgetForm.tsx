@@ -35,6 +35,8 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
   const [generatingRecommendations, setGeneratingRecommendations] = useState(false);
   const [recommendations, setRecommendations] = useState(widget?.recommendations || []);
   const [showCrawlDebug, setShowCrawlDebug] = useState(false);
+  const [links, setLinks] = useState(widget?.links || []);
+  const [generatingLinks, setGeneratingLinks] = useState(false);
   const {
     widgetFormData,
     updateWidgetFormField,
@@ -62,6 +64,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       setCrawlPageCount(widget.crawlPageCount || 0);
       setWorkflowId(widget.workflowId || null);
       setRecommendations(widget.recommendations || []);
+      setLinks(widget.links || []);
     } else {
       resetWidgetForm();
       setExistingFiles([]);
@@ -71,6 +74,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       setCrawlPageCount(0);
       setWorkflowId(null);
       setRecommendations([]);
+      setLinks([]);
     }
   }, [widget, updateWidgetFormField, resetWidgetForm]);
   
@@ -506,6 +510,58 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       toast.error('Failed to generate recommendations. Please ensure your widget has content.');
     } finally {
       setGeneratingRecommendations(false);
+    }
+  };
+
+  const handleRegenerateLinks = async () => {
+    if (!widget?.id) return;
+    
+    setGeneratingLinks(true);
+    
+    try {
+      const response = await fetch(`/api/widgets/${widget.id}/links/regenerate`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to regenerate links');
+      }
+
+      const result = await response.json() as { success: boolean; links: Array<{ url: string; text: string; importance: string; category: string }> };
+      
+      if (result.links) {
+        setLinks(result.links);
+        toast.success('Important links regenerated successfully');
+        
+        // Fetch the updated widget to ensure we have all the latest data
+        try {
+          const widgetResponse = await fetch(`/api/widgets/${widget.id}`, {
+            credentials: 'include'
+          });
+          
+          if (widgetResponse.ok) {
+            const { widget: updatedWidget } = await widgetResponse.json() as { widget: Widget };
+            console.log('[WidgetForm] Updated widget with links:', updatedWidget);
+            // Notify parent component about the update with full widget data
+            onWidgetUpdated?.(updatedWidget);
+          }
+        } catch (error) {
+          console.error('Error fetching updated widget:', error);
+          // Fallback to updating with just links
+          if (onWidgetUpdated) {
+            onWidgetUpdated({
+              ...widget,
+              links: result.links
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error regenerating links:', error);
+      toast.error('Failed to regenerate links. Please ensure your widget has crawled content.');
+    } finally {
+      setGeneratingLinks(false);
     }
   };
 
@@ -1075,6 +1131,85 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
                       <h4 className="text-sm font-medium text-yellow-900">No Recommendations Yet</h4>
                       <p className="text-sm text-yellow-800">
                         Click "Regenerate" to create AI-powered conversation starters based on your widget content.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Important Links Section - Only show for existing widgets with crawled content */}
+          {widget?.id && (widget.crawlPageCount ?? 0) > 0 && (
+            <div className="pt-6 border-t border-gray-200 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Important Links</h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Key pages automatically extracted from your website
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRegenerateLinks}
+                  disabled={generatingLinks}
+                >
+                  {generatingLinks ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                      Extracting...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Regenerate
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {links.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {links.map((link, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-gray-900 mb-1 truncate">
+                            {link.text || new URL(link.url).pathname.split('/').filter(Boolean).pop() || 'Home'}
+                          </h4>
+                          <p className="text-sm text-gray-600 truncate">{link.url}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            link.importance === 'critical' 
+                              ? 'bg-red-100 text-red-700'
+                              : link.importance === 'high'
+                              ? 'bg-orange-100 text-orange-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}>
+                            {link.importance}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {link.category}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex gap-3">
+                    <Info className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-yellow-900">No Important Links Extracted</h4>
+                      <p className="text-sm text-yellow-800">
+                        Click "Regenerate" to extract important links like contact, pricing, and documentation pages from your crawled content.
                       </p>
                     </div>
                   </div>

@@ -28,6 +28,12 @@ export const widget = pgTable('widget', {
     title: string;
     description: string;
   }>>().default([]),
+  links: json('links').$type<Array<{
+    url: string;
+    text: string;
+    importance: string;
+    category: string;
+  }>>().default([]),
   cacheEnabled: boolean('cache_enabled').default(false).notNull(),
   isPublic: boolean('is_public').default(false).notNull(), // Allow public embedding
   crawlUrl: text('crawl_url'),

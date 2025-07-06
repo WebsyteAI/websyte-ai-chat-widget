@@ -146,6 +146,40 @@ widgetDocsRoutes.post('/:id/recommendations', authMiddleware, async (c) => {
   }
 });
 
+// Regenerate important links for a widget
+widgetDocsRoutes.post('/:id/links/regenerate', authMiddleware, async (c) => {
+  const auth = c.get('auth');
+  if (!auth?.user) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    const widget = await c.get('services').widget.getWidget(id, auth.user.id);
+    if (!widget) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+
+    // Extract important links
+    await c.get('services').widget.extractImportantLinks(id);
+    
+    // Get updated widget with links
+    const updatedWidget = await c.get('services').widget.getWidget(id, auth.user.id);
+    
+    return c.json({ 
+      success: true,
+      links: updatedWidget?.links || []
+    });
+  } catch (error) {
+    console.error('Error regenerating links:', error);
+    return c.json({ error: 'Failed to regenerate links' }, 500);
+  }
+});
+
 // Refresh embeddings for a widget
 widgetDocsRoutes.post('/:id/embeddings/refresh', authMiddleware, async (c) => {
   const auth = c.get('auth');

@@ -298,7 +298,36 @@ export class WidgetContentPipeline extends WorkflowEntrypoint<Env, WidgetContent
         .where(eq(widget.id, widgetId));
     });
 
-    // Step 7: Generate recommendations (optional)
+    // Step 7: Extract important links from crawled content
+    await step.do('extract-important-links', async () => {
+      try {
+        // Check if we have enough time left
+        const elapsedTime = Date.now() - workflowStartTime;
+        if (elapsedTime >= MAX_WORKFLOW_DURATION_MS) {
+          console.warn(`[WORKFLOW] Skipping link extraction - approaching 10-minute limit (${Math.floor(elapsedTime / 1000)}s elapsed)`);
+          return;
+        }
+        
+        const db = new DatabaseService(this.env.DATABASE_URL);
+        const fileStorage = new FileStorageService(this.env.WIDGET_FILES, db);
+        const { WidgetService } = await import('../services/widget');
+        const widgetService = new WidgetService(
+          db,
+          new VectorSearchService(this.env.OPENAI_API_KEY, db),
+          fileStorage,
+          new ApifyCrawlerService(this.env.APIFY_API_TOKEN),
+          this.env.OPENAI_API_KEY
+        );
+        
+        await widgetService.extractImportantLinks(widgetId);
+        console.log('[WORKFLOW] Successfully extracted important links');
+      } catch (error) {
+        console.error('[WORKFLOW] Failed to extract important links:', error);
+        // Don't fail the workflow if link extraction fails
+      }
+    });
+
+    // Step 8: Generate recommendations (optional)
     await step.do('generate-recommendations', async () => {
       try {
         // Check if we have enough time left for recommendations

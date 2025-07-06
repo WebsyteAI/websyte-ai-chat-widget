@@ -23,16 +23,64 @@ All messages follow this structure:
 ### Configure Widget
 ```javascript
 // Send configuration updates to the widget
-window.frames[0].postMessage({
+const iframe = document.getElementById('chat-widget-iframe');
+iframe.contentWindow.postMessage({
   type: 'websyte-ai-chat-widget',
   action: 'configure',
   data: {
     config: {
       hidePoweredBy: true,
+      primaryColor: 'oklch(0.37 0.123 285.885)',
+      position: 'bottom-left',
+      welcomeMessage: 'How can I help you today?',
+      placeholder: 'Type your question...',
       // Other ChatWidgetProps...
     }
   }
 }, '*');
+```
+
+#### Full Configuration Example
+```javascript
+// Complete widget configuration
+function configureWidget() {
+  const widgetFrame = document.querySelector('#chat-widget iframe');
+  
+  widgetFrame.contentWindow.postMessage({
+    type: 'websyte-ai-chat-widget',
+    action: 'configure',
+    data: {
+      config: {
+        // Appearance
+        primaryColor: 'oklch(0.37 0.123 285.885)',
+        position: 'bottom-right',
+        displayMode: 'standalone',
+        hidePoweredBy: false,
+        
+        // Behavior
+        autoOpen: false,
+        saveMessages: true,
+        enableAudio: true,
+        
+        // Content
+        welcomeMessage: 'Welcome! How can I assist you?',
+        placeholder: 'Ask me anything...',
+        
+        // Advanced
+        cacheEnabled: true,
+        ragEnabled: true
+      }
+    }
+  }, widgetFrame.src);
+}
+
+// Wait for widget to be ready
+window.addEventListener('message', (event) => {
+  if (event.data.type === 'websyte-ai-chat-widget' && 
+      event.data.action === 'ready') {
+    configureWidget();
+  }
+});
 ```
 
 ### Send Message
@@ -262,3 +310,161 @@ iframeMessagingConfig: {
 ```
 
 The parent should handle resize events to adjust the iframe dimensions accordingly for a seamless user experience.
+
+## Complete Integration Example
+
+### React Component
+```typescript
+import React, { useEffect, useRef, useState } from 'react';
+
+interface WidgetMessage {
+  type: 'websyte-ai-chat-widget';
+  action: string;
+  data?: any;
+}
+
+export function ChatWidgetIntegration() {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 400, height: 600 });
+  
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent<WidgetMessage>) => {
+      // Validate origin
+      if (event.origin !== 'https://your-widget-domain.com') return;
+      
+      // Validate message type
+      if (event.data.type !== 'websyte-ai-chat-widget') return;
+      
+      switch (event.data.action) {
+        case 'ready':
+          setIsReady(true);
+          configureWidget();
+          break;
+          
+        case 'resize':
+          setDimensions(event.data.data);
+          break;
+          
+        case 'message-sent':
+          console.log('User sent:', event.data.data.message);
+          trackEvent('chat_message_sent');
+          break;
+          
+        case 'chat-opened':
+          trackEvent('chat_opened');
+          break;
+      }
+    };
+    
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+  
+  const configureWidget = () => {
+    if (!iframeRef.current) return;
+    
+    iframeRef.current.contentWindow?.postMessage({
+      type: 'websyte-ai-chat-widget',
+      action: 'configure',
+      data: {
+        config: {
+          primaryColor: 'oklch(0.37 0.123 285.885)',
+          welcomeMessage: 'Welcome to our support!',
+          enableAudio: true
+        }
+      }
+    }, 'https://your-widget-domain.com');
+  };
+  
+  const sendMessage = (message: string) => {
+    if (!iframeRef.current || !isReady) return;
+    
+    iframeRef.current.contentWindow?.postMessage({
+      type: 'websyte-ai-chat-widget',
+      action: 'send-message',
+      data: { message }
+    }, 'https://your-widget-domain.com');
+  };
+  
+  return (
+    <div>
+      <iframe
+        ref={iframeRef}
+        src="https://your-widget-domain.com/embed/widget-id"
+        width={dimensions.width}
+        height={dimensions.height}
+        style={{ border: 'none' }}
+        allow="microphone"
+      />
+      
+      <button onClick={() => sendMessage('Help with pricing')}>
+        Ask about pricing
+      </button>
+    </div>
+  );
+}
+```
+
+### Vue.js Component
+```vue
+<template>
+  <div class="chat-widget-container">
+    <iframe
+      ref="widgetFrame"
+      :src="widgetUrl"
+      :width="dimensions.width"
+      :height="dimensions.height"
+      frameborder="0"
+      allow="microphone"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+
+const widgetFrame = ref(null);
+const dimensions = ref({ width: 400, height: 600 });
+const widgetUrl = 'https://your-widget-domain.com/embed/widget-id';
+const allowedOrigin = 'https://your-widget-domain.com';
+
+const handleMessage = (event) => {
+  if (event.origin !== allowedOrigin) return;
+  if (event.data.type !== 'websyte-ai-chat-widget') return;
+  
+  switch (event.data.action) {
+    case 'resize':
+      dimensions.value = event.data.data;
+      break;
+    // Handle other actions...
+  }
+};
+
+const sendMessage = (action, data) => {
+  if (!widgetFrame.value) return;
+  
+  widgetFrame.value.contentWindow.postMessage({
+    type: 'websyte-ai-chat-widget',
+    action,
+    data
+  }, allowedOrigin);
+};
+
+onMounted(() => {
+  window.addEventListener('message', handleMessage);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('message', handleMessage);
+});
+</script>
+```
+
+## Related Documentation
+
+- **[Embed Code Usage](./EMBED-CODE-USAGE.md)** - Script tag embedding guide
+- **[Widget Architecture](../ARCHITECTURE/WIDGET-EMBED.md)** - Technical implementation details
+- **[Security Best Practices](../DEVELOPMENT/SECURITY.md)** - Security considerations
+- **[Enhanced Chat Components](../FEATURES/ENHANCED-CHAT.md)** - Chat UI features
+- **[Public API](../API/PUBLIC.md)** - REST API for widget access

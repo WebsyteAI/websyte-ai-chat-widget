@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Support Bot Example - Websyte AI Chat Widget</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .feature-list li:before {
+            content: "✓ ";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        .controls button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .controls button:hover {
+            background: #1976D2;
+        }
+        .status {
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Customer Support Bot Example</h1>
+        <p class="subtitle">This example demonstrates a fully-featured customer support implementation</p>
+
+        <div class="demo-section">
+            <h2>Features Demonstrated</h2>
+            <ul class="feature-list">
+                <li>Custom branding with company colors and logo</li>
+                <li>Predefined welcome message and suggested questions</li>
+                <li>Business hours awareness</li>
+                <li>Escalation to human support</li>
+                <li>Multi-language support detection</li>
+                <li>Analytics tracking integration</li>
+                <li>Custom response handling</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>Interactive Controls</h2>
+            <div class="controls">
+                <button onclick="openChat()">Open Chat</button>
+                <button onclick="closeChat()">Close Chat</button>
+                <button onclick="sendPredefinedMessage()">Send Test Message</button>
+                <button onclick="changeTheme()">Toggle Theme</button>
+                <button onclick="simulateBusinessHours()">Toggle Business Hours</button>
+            </div>
+            <div id="status" class="status"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Implementation Code</h2>
+            <pre class="code-block"><code>&lt;script 
+    src="https://your-domain.com/dist/widget.js"
+    data-widget-id="YOUR_WIDGET_ID"
+    data-position="bottom-right"
+    data-primary-color="oklch(0.37 0.123 285.885)"
+    data-logo-url="https://example.com/logo.png"
+    data-welcome-message="👋 Hi! I'm your support assistant. How can I help you today?"
+    data-placeholder="Type your question or choose a topic..."
+    data-recommendations='[
+        "I need help with my order",
+        "What are your business hours?",
+        "How do I reset my password?",
+        "I want to speak to a human",
+        "Billing question"
+    ]'
+    data-save-messages="true"
+    data-enable-audio="true"
+    data-enable-citations="true"
+    async&gt;
+&lt;/script&gt;</code></pre>
+        </div>
+
+        <div class="demo-section">
+            <h2>Event Handling Example</h2>
+            <pre class="code-block"><code>// Listen for widget events
+window.addEventListener('message', (event) => {
+    if (event.data.type === 'websyte-ai-chat-widget') {
+        switch (event.data.action) {
+            case 'chat-opened':
+                console.log('Chat opened by user');
+                trackEvent('Support_Chat_Opened');
+                break;
+                
+            case 'message-sent':
+                const message = event.data.data.message;
+                console.log('User sent:', message);
+                
+                // Check for escalation keywords
+                if (message.toLowerCase().includes('human') || 
+                    message.toLowerCase().includes('agent')) {
+                    initiateHandoff();
+                }
+                break;
+                
+            case 'response-received':
+                console.log('AI responded');
+                checkResponseQuality(event.data.data);
+                break;
+        }
+    }
+});</code></pre>
+        </div>
+    </div>
+
+    <!-- Websyte AI Chat Widget -->
+    <script 
+        src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js"
+        data-widget-id="YOUR_WIDGET_ID"
+        data-position="bottom-right"
+        data-primary-color="oklch(0.37 0.123 285.885)"
+        data-logo-url="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiMwMDY2Y2MiLz4KPHBhdGggZD0iTTI2IDE2SDE0QzEzLjQ0NzcgMTYgMTMgMTYuNDQ3NyAxMyAxN1YyM0MxMyAyMy41NTIzIDEzLjQ0NzcgMjQgMTQgMjRIMThMMjAgMjdMMjIgMjRIMjZDMjYuNTUyMyAyNCAyNyAyMy41NTIzIDI3IDIzVjE3QzI3IDE2LjQ0NzcgMjYuNTUyMyAxNiAyNiAxNloiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg=="
+        data-welcome-message="👋 Hi! I'm your support assistant. How can I help you today?"
+        data-placeholder="Type your question or choose a topic..."
+        data-recommendations='[
+            "I need help with my order",
+            "What are your business hours?",
+            "How do I reset my password?",
+            "I want to speak to a human",
+            "Billing question"
+        ]'
+        data-save-messages="true"
+        data-enable-audio="true"
+        data-enable-citations="true"
+        async>
+    </script>
+
+    <script>
+        // Demo functionality
+        let currentTheme = 'light';
+        let businessHours = true;
+
+        // Show status messages
+        function showStatus(message) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.display = 'block';
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+
+        // Widget control functions
+        function openChat() {
+            sendToWidget('open');
+            showStatus('Chat opened programmatically');
+        }
+
+        function closeChat() {
+            sendToWidget('close');
+            showStatus('Chat closed programmatically');
+        }
+
+        function sendPredefinedMessage() {
+            sendToWidget('send-message', {
+                message: 'What are your refund policies?'
+            });
+            showStatus('Test message sent');
+        }
+
+        function changeTheme() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            const newColor = currentTheme === 'dark' 
+                ? 'oklch(0.25 0.1 285.885)' 
+                : 'oklch(0.37 0.123 285.885)';
+            
+            sendToWidget('configure', {
+                config: {
+                    primaryColor: newColor
+                }
+            });
+            showStatus(`Theme changed to ${currentTheme}`);
+        }
+
+        function simulateBusinessHours() {
+            businessHours = !businessHours;
+            const message = businessHours 
+                ? "We're currently open! How can I help you?"
+                : "We're currently closed. I can still help with general questions, or you can leave a message for our team.";
+            
+            sendToWidget('configure', {
+                config: {
+                    welcomeMessage: message
+                }
+            });
+            showStatus(`Business hours: ${businessHours ? 'Open' : 'Closed'}`);
+        }
+
+        // Helper function to send messages to widget
+        function sendToWidget(action, data = {}) {
+            const iframe = document.querySelector('#websyte-widget-container iframe');
+            if (iframe) {
+                iframe.contentWindow.postMessage({
+                    type: 'websyte-ai-chat-widget',
+                    action,
+                    data
+                }, '*');
+            }
+        }
+
+        // Analytics tracking (example)
+        function trackEvent(eventName, eventData = {}) {
+            console.log('Analytics Event:', eventName, eventData);
+            // Your analytics implementation here
+            // gtag('event', eventName, eventData);
+            // analytics.track(eventName, eventData);
+        }
+
+        // Human handoff simulation
+        function initiateHandoff() {
+            showStatus('Initiating handoff to human agent...');
+            // Your handoff implementation here
+            // Could integrate with Intercom, Zendesk, etc.
+            console.log('Handoff requested');
+        }
+
+        // Response quality check
+        function checkResponseQuality(responseData) {
+            if (responseData.sources && responseData.sources.length > 0) {
+                console.log('Response included sources:', responseData.sources);
+            }
+            
+            // Check if response seems incomplete or needs escalation
+            if (responseData.response && responseData.response.includes("I don't")) {
+                console.log('AI uncertain - consider escalation');
+            }
+        }
+
+        // Listen for widget events
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'websyte-ai-chat-widget') {
+                switch (event.data.action) {
+                    case 'ready':
+                        showStatus('Chat widget loaded and ready');
+                        // Configure based on business hours
+                        simulateBusinessHours();
+                        break;
+
+                    case 'chat-opened':
+                        console.log('Chat opened by user');
+                        trackEvent('Support_Chat_Opened', {
+                            timestamp: new Date().toISOString(),
+                            page: window.location.pathname
+                        });
+                        break;
+                        
+                    case 'message-sent':
+                        const message = event.data.data.message;
+                        console.log('User sent:', message);
+                        trackEvent('Support_Message_Sent', {
+                            message: message.substring(0, 100), // Truncate for privacy
+                            wordCount: message.split(' ').length
+                        });
+                        
+                        // Check for escalation keywords
+                        const escalationKeywords = ['human', 'agent', 'representative', 'help', 'urgent'];
+                        if (escalationKeywords.some(keyword => 
+                            message.toLowerCase().includes(keyword))) {
+                            console.log('Escalation keyword detected');
+                            setTimeout(() => initiateHandoff(), 2000);
+                        }
+                        break;
+                        
+                    case 'response-received':
+                        console.log('AI responded');
+                        checkResponseQuality(event.data.data);
+                        trackEvent('Support_Response_Received');
+                        break;
+
+                    case 'chat-closed':
+                        console.log('Chat closed');
+                        trackEvent('Support_Chat_Closed', {
+                            sessionDuration: Date.now()
+                        });
+                        break;
+
+                    case 'error':
+                        console.error('Widget error:', event.data.data);
+                        trackEvent('Support_Widget_Error', {
+                            error: event.data.data.error
+                        });
+                        break;
+                }
+            }
+        });
+
+        // Simulate different user scenarios
+        window.demoScenarios = {
+            angryCustomer: () => {
+                sendToWidget('send-message', {
+                    message: "I'm very frustrated! My order hasn't arrived and it's been 2 weeks!"
+                });
+            },
+            
+            technicalIssue: () => {
+                sendToWidget('send-message', {
+                    message: "I'm getting an error 'ERR_CONNECTION_REFUSED' when trying to access my account"
+                });
+            },
+            
+            billingQuestion: () => {
+                sendToWidget('send-message', {
+                    message: "Why was I charged twice for my subscription this month?"
+                });
+            },
+            
+            featureRequest: () => {
+                sendToWidget('send-message', {
+                    message: "Do you have an API I can use to integrate with my system?"
+                });
+            }
+        };
+
+        console.log('Customer Support Bot Example Loaded');
+        console.log('Try window.demoScenarios.angryCustomer() to simulate different scenarios');
+    </script>
+</body>
+</html>

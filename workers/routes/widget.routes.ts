@@ -201,6 +201,38 @@ widgetRoutes.delete('/:id', authMiddleware, async (c) => {
   }
 });
 
+// Get important links from widget
+widgetRoutes.get('/:id/links', authMiddleware, async (c) => {
+  const auth = c.get('auth');
+  if (!auth?.user) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    const widget = await c.get('services').widget.getWidget(id, auth.user.id);
+    if (!widget) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+
+    // Get links from the dedicated column
+    const links = widget.links || [];
+
+    return c.json({
+      widgetId: id,
+      links: links,
+      totalLinks: links.length
+    });
+  } catch (error) {
+    console.error('Error getting widget links:', error);
+    return c.json({ error: 'Failed to get widget links' }, 500);
+  }
+});
+
 // Get public widget info
 widgetRoutes.get('/:id/public', async (c) => {
   const widgetId = c.req.param('id');
@@ -224,6 +256,7 @@ widgetRoutes.get('/:id/public', async (c) => {
       isPublic: widget.isPublic,
       cacheEnabled: widget.cacheEnabled,
       recommendations: widget.recommendations || [],
+      links: widget.links || [],
       files: widget.files || [],
       embeddings: widget.embeddings || []
     });

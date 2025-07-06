@@ -837,6 +837,209 @@ ${page.markdown}
     }
   }
 
+  async extractImportantLinks(widgetId: string): Promise<void> {
+    try {
+      // Get widget details
+      const [widgetRecord] = await this.db.getDatabase()
+        .select()
+        .from(widget)
+        .where(eq(widget.id, widgetId))
+        .limit(1);
+
+      if (!widgetRecord) {
+        throw new Error('Widget not found');
+      }
+
+      // Get all crawled content to extract links
+      const files = await this.fileStorage.getWidgetFiles(widgetId, true);
+      const pageFiles = files.filter(f => (f.filename.includes('page-') || f.filename.includes('page_')) && f.filename.endsWith('.md'));
+      
+      console.log('[WidgetService] Found page files for link extraction:', pageFiles.length);
+      console.log('[WidgetService] Total files:', files.length);
+      console.log('[WidgetService] File names:', files.map(f => f.filename));
+      
+      if (pageFiles.length === 0) {
+        console.log('[WidgetService] No page files found for link extraction');
+        return;
+      }
+
+      // Extract all links from crawled pages
+      const allLinks: Array<{ url: string; text: string; pageUrl: string }> = [];
+      
+      for (const file of pageFiles) {
+        try {
+          const content = await this.fileStorage.getFileContent(file.id, widgetId);
+          if (!content) {
+            console.log('[WidgetService] No content found for file:', file.filename);
+            continue;
+          }
+          const textContent = content;
+          
+          // Extract URL from metadata header
+          const urlMatch = textContent.match(/url:\s*(.+)/i);
+          const pageUrl = urlMatch ? urlMatch[1].trim() : '';
+          
+          // Extract all markdown links [text](url)
+          const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+          let match;
+          
+          while ((match = linkRegex.exec(textContent)) !== null) {
+            const [, text, url] = match;
+            if (url && !url.startsWith('#') && !url.startsWith('javascript:')) {
+              allLinks.push({ url: url.trim(), text: text.trim(), pageUrl });
+            }
+          }
+          
+          // Also extract plain URLs that might be in the content
+          const urlRegex = /https?:\/\/[^\s<>"{}|\\^\[\]`]+/g;
+          let urlMatch2;
+          
+          while ((urlMatch2 = urlRegex.exec(textContent)) !== null) {
+            const url = urlMatch2[0];
+            // Check if this URL is not already captured as a markdown link
+            if (!allLinks.some(link => link.url === url)) {
+              allLinks.push({ url: url.trim(), text: '', pageUrl });
+            }
+          }
+        } catch (error) {
+          console.error('[WidgetService] Error processing file:', file.filename, error);
+        }
+      }
+      
+      console.log('[WidgetService] Total links extracted:', allLinks.length);
+      
+      if (allLinks.length === 0) {
+        console.log('[WidgetService] No links found in crawled content');
+        return;
+      }
+
+      // Check if API key exists
+      if (!this.openaiApiKey) {
+        console.log('[WidgetService] OpenAI API key not configured, using heuristic ranking');
+        // Fallback to heuristic-based ranking
+        const rankedLinks = this.rankLinksHeuristically(allLinks, widgetRecord.crawlUrl || '');
+        await this.storeImportantLinks(widgetId, rankedLinks);
+        return;
+      }
+
+      // Use OpenAI to rank links by importance
+      const openai = new OpenAIService(this.openaiApiKey);
+      const rankedLinks = await openai.rankImportantLinks(
+        allLinks,
+        widgetRecord.name,
+        widgetRecord.crawlUrl || widgetRecord.url || ''
+      );
+
+      await this.storeImportantLinks(widgetId, rankedLinks);
+      
+    } catch (error) {
+      console.error('[WidgetService] Error extracting important links:', error);
+      throw error;
+    }
+  }
+
+  private rankLinksHeuristically(links: Array<{ url: string; text: string; pageUrl: string }>, baseUrl: string): Array<{ url: string; text: string; importance: string; category: string }> {
+    // Define importance patterns
+    const importancePatterns = [
+      { pattern: /contact|support|help/i, category: 'contact', importance: 'critical' },
+      { pattern: /about|company|team/i, category: 'company', importance: 'high' },
+      { pattern: /pricing|plans|cost/i, category: 'pricing', importance: 'high' },
+      { pattern: /docs|documentation|guide|tutorial/i, category: 'documentation', importance: 'high' },
+      { pattern: /blog|news|articles/i, category: 'content', importance: 'medium' },
+      { pattern: /privacy|terms|legal/i, category: 'legal', importance: 'medium' },
+      { pattern: /login|signin|signup|register/i, category: 'auth', importance: 'medium' },
+      { pattern: /api|developer|integration/i, category: 'technical', importance: 'medium' },
+      { pattern: /faq|questions/i, category: 'support', importance: 'medium' },
+      { pattern: /download|apps/i, category: 'product', importance: 'medium' }
+    ];
+    
+    // Score and categorize each link
+    const scoredLinks = links.map(link => {
+      let score = 0;
+      let category = 'other';
+      let importance = 'low';
+      
+      // Check URL and text against patterns
+      for (const { pattern, category: cat, importance: imp } of importancePatterns) {
+        if (pattern.test(link.url) || pattern.test(link.text)) {
+          score += imp === 'critical' ? 100 : imp === 'high' ? 50 : 25;
+          category = cat;
+          importance = imp;
+          break;
+        }
+      }
+      
+      // Boost score for links on the homepage
+      const baseHost = new URL(baseUrl).hostname;
+      const linkHost = new URL(link.url, baseUrl).hostname;
+      if (linkHost === baseHost && link.pageUrl === baseUrl) {
+        score += 10;
+      }
+      
+      // Penalize external links slightly
+      if (linkHost !== baseHost) {
+        score -= 5;
+      }
+      
+      return { ...link, score, category, importance };
+    });
+    
+    // Sort by score and take top 15
+    const sorted = scoredLinks
+      .filter(link => link.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 15);
+    
+    // Remove duplicates based on URL
+    const uniqueLinks = new Map<string, typeof sorted[0]>();
+    for (const link of sorted) {
+      const normalizedUrl = link.url.replace(/\/$/, ''); // Remove trailing slash
+      if (!uniqueLinks.has(normalizedUrl)) {
+        uniqueLinks.set(normalizedUrl, link);
+      }
+    }
+    
+    return Array.from(uniqueLinks.values()).map(({ url, text, importance, category }) => ({
+      url,
+      text: text || this.extractTextFromUrl(url),
+      importance,
+      category
+    }));
+  }
+
+  private extractTextFromUrl(url: string): string {
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      if (pathname && pathname !== '/') {
+        // Extract last segment and clean it up
+        const segments = pathname.split('/').filter(Boolean);
+        const lastSegment = segments[segments.length - 1];
+        return lastSegment
+          .replace(/[-_]/g, ' ')
+          .replace(/\.\w+$/, '') // Remove file extension
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      }
+      return urlObj.hostname;
+    } catch {
+      return url;
+    }
+  }
+
+  private async storeImportantLinks(widgetId: string, links: Array<{ url: string; text: string; importance: string; category: string }>): Promise<void> {
+    // Store links in the dedicated links column
+    await this.db.getDatabase()
+      .update(widget)
+      .set({
+        links: links
+      })
+      .where(eq(widget.id, widgetId));
+    
+    console.log('[WidgetService] Stored important links for widget:', widgetId, 'count:', links.length);
+  }
+
   async resetStuckCrawl(widgetId: string, userId: string): Promise<boolean> {
     console.log('[WidgetService] resetStuckCrawl called:', { widgetId, userId });
     

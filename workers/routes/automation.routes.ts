@@ -145,3 +145,30 @@ automationRoutes.post('/widgets/:id/recommendations', bearerTokenMiddleware, asy
     return c.json({ error: 'Failed to generate recommendations' }, 500);
   }
 });
+
+// Get important links for a widget (automation API)
+automationRoutes.get('/widgets/:id/links', bearerTokenMiddleware, async (c) => {
+  const id = c.req.param('id');
+  if (!id) {
+    return c.json({ error: 'Widget ID is required' }, 400);
+  }
+
+  try {
+    const widget = await c.get('services').widget.getPublicWidget(id);
+    if (!widget) {
+      return c.json({ error: 'Widget not found' }, 404);
+    }
+
+    // Get links from the dedicated column
+    const links = widget.links || [];
+
+    return c.json({
+      widgetId: id,
+      links: links,
+      totalLinks: links.length
+    });
+  } catch (error) {
+    console.error('Error getting widget links:', error);
+    return c.json({ error: 'Failed to get widget links' }, 500);
+  }
+});

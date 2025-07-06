@@ -29,6 +29,12 @@ export interface Widget {
     title: string;
     description: string;
   }>;
+  links?: Array<{
+    url: string;
+    text: string;
+    importance: string;
+    category: string;
+  }>;
 }
 
 export interface SearchResult {

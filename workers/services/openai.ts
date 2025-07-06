@@ -280,4 +280,146 @@ Response format:
       return FallbackResponses.getRecommendationsResponse();
     }
   }
+
+  async rankImportantLinks(
+    links: Array<{ url: string; text: string; pageUrl: string }>,
+    siteName: string,
+    baseUrl: string,
+    signal?: AbortSignal
+  ): Promise<Array<{ url: string; text: string; importance: string; category: string }>> {
+    // Limit links to process (to avoid token limits)
+    const linksToProcess = links.slice(0, 100);
+    
+    const messages: ChatMessage[] = [
+      {
+        role: "system",
+        content: `You are an expert at analyzing website navigation and identifying the most important links for users.
+        You are analyzing links from the website "${siteName}" (${baseUrl}).
+        
+        Your task is to identify and rank the 15 most important links that users would typically need, such as:
+        - Contact/Support pages (critical importance)
+        - About/Company information (high importance)
+        - Pricing/Plans (high importance)
+        - Documentation/Guides (high importance)
+        - Login/Signup (medium importance)
+        - Blog/News (medium importance)
+        - Legal pages (medium importance)
+        - FAQ/Help (medium importance)
+        
+        Analyze the provided links and return a JSON array of the 15 most important links with this structure:
+        [
+          {
+            "url": "full URL",
+            "text": "link text or descriptive title",
+            "importance": "critical" | "high" | "medium",
+            "category": "contact" | "company" | "pricing" | "documentation" | "auth" | "content" | "legal" | "support" | "product" | "technical" | "other"
+          }
+        ]
+        
+        Prioritize links that help users:
+        1. Contact the company or get support
+        2. Understand what the company does
+        3. See pricing/plans
+        4. Access documentation or guides
+        5. Login or sign up
+        6. Find important resources
+        
+        Return ONLY the JSON array, no additional text.`
+      },
+      {
+        role: "user",
+        content: `Analyze these links and return the 15 most important ones:\n\n${JSON.stringify(linksToProcess, null, 2)}`
+      }
+    ];
+
+    try {
+      const responseContent = await this.chatCompletion(messages, {
+        model: "gpt-4.1-mini",
+        temperature: 0.3,
+        maxTokens: 800,
+        signal
+      });
+
+      console.log('[OpenAI] Raw link ranking response:', responseContent);
+
+      // Try to parse as JSON
+      const parsed = JSON.parse(responseContent);
+      if (!Array.isArray(parsed)) {
+        throw new Error('Response is not an array');
+      }
+      
+      // Validate and clean the response
+      const validLinks = parsed
+        .filter(link => link.url && typeof link.url === 'string')
+        .slice(0, 15)
+        .map(link => ({
+          url: link.url,
+          text: link.text || this.extractTextFromUrl(link.url),
+          importance: ['critical', 'high', 'medium'].includes(link.importance) ? link.importance : 'medium',
+          category: link.category || 'other'
+        }));
+      
+      console.log('[OpenAI] Parsed important links:', validLinks.length);
+      return validLinks;
+      
+    } catch (error) {
+      console.error('[OpenAI] Failed to parse link ranking response:', error);
+      // Fallback to heuristic ranking
+      return this.fallbackLinkRanking(links, baseUrl);
+    }
+  }
+
+  private extractTextFromUrl(url: string): string {
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      if (pathname && pathname !== '/') {
+        const segments = pathname.split('/').filter(Boolean);
+        const lastSegment = segments[segments.length - 1];
+        return lastSegment
+          .replace(/[-_]/g, ' ')
+          .replace(/\.\w+$/, '')
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      }
+      return urlObj.hostname;
+    } catch {
+      return url;
+    }
+  }
+
+  private fallbackLinkRanking(links: Array<{ url: string; text: string; pageUrl: string }>, baseUrl: string): Array<{ url: string; text: string; importance: string; category: string }> {
+    // Basic heuristic ranking as fallback
+    const importancePatterns = [
+      { pattern: /contact|support/i, category: 'contact', importance: 'critical' },
+      { pattern: /about|company/i, category: 'company', importance: 'high' },
+      { pattern: /pricing|plans/i, category: 'pricing', importance: 'high' },
+      { pattern: /docs|documentation/i, category: 'documentation', importance: 'high' },
+      { pattern: /login|signin/i, category: 'auth', importance: 'medium' },
+      { pattern: /blog|news/i, category: 'content', importance: 'medium' }
+    ];
+    
+    const rankedLinks: Array<{ url: string; text: string; importance: string; category: string }> = [];
+    const seen = new Set<string>();
+    
+    for (const link of links) {
+      if (seen.has(link.url) || rankedLinks.length >= 15) continue;
+      
+      for (const { pattern, category, importance } of importancePatterns) {
+        if (pattern.test(link.url) || pattern.test(link.text)) {
+          seen.add(link.url);
+          rankedLinks.push({
+            url: link.url,
+            text: link.text || this.extractTextFromUrl(link.url),
+            importance,
+            category
+          });
+          break;
+        }
+      }
+    }
+    
+    return rankedLinks;
+  }
 }
