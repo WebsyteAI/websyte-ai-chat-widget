@@ -4,7 +4,7 @@ import { EnhancedChatMessage } from "./EnhancedChatMessage";
 import { MessageInput } from "./MessageInput";
 import { DynamicIslandHeader } from "../../chat-panel/DynamicIslandHeader";
 import { Marquee } from "../../ui/marquee";
-import type { ComponentRegistry } from "../../landing-chat/component-registry";
+import type { ComponentRegistry } from "../component-registry";
 
 interface EnhancedChatPanelProps {
   currentView: "main" | "chat";

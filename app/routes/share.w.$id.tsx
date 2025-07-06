@@ -22,15 +22,6 @@ interface LoadingState {
 
 // Meta function for SEO
 export const meta: MetaFunction = ({ params, data, location }: any) => {
-  const searchParams = new URLSearchParams(location.search);
-  const isEmbed = searchParams.get('embed') === 'true';
-  
-  // Prevent search engine indexing for embed URLs
-  const baseMetaTags = isEmbed ? [
-    { name: "robots", content: "noindex, nofollow" },
-    { name: "googlebot", content: "noindex, nofollow" },
-  ] : [];
-  
   if (data?.widget) {
     const widget = data.widget;
     const title = `${widget.name} - WebsyteAI`;
@@ -38,7 +29,6 @@ export const meta: MetaFunction = ({ params, data, location }: any) => {
     const url = `https://websyte.ai/share/w/${widget.id}`;
     
     return [
-      ...baseMetaTags,
       { title },
       { name: "description", content: description },
       { property: "og:title", content: title },
@@ -53,7 +43,6 @@ export const meta: MetaFunction = ({ params, data, location }: any) => {
   }
   
   return [
-    ...baseMetaTags,
     { title: "Widget - WebsyteAI" },
     { name: "description", content: "AI-powered chat widget" },
   ];
@@ -64,9 +53,15 @@ export default function ShareWidget() {
   const [searchParams] = useSearchParams();
   const [state, setState] = useState<LoadingState>({ loading: true });
   
-  // Detect embed mode from URL params or iframe context
-  const isEmbedParam = searchParams.get('embed') === 'true' || searchParams.get('embedded') === 'true';
+  // Detect embed mode from iframe context only
   const [isInIframe, setIsInIframe] = useState(false);
+  
+  // Handle autoScroll and noFocus parameters
+  const autoScrollParam = searchParams.get('autoScroll');
+  const autoScroll = autoScrollParam === null ? true : autoScrollParam === 'true';
+  
+  const noFocusParam = searchParams.get('noFocus');
+  const noFocus = noFocusParam === 'true';
   
   useEffect(() => {
     // Check if we're running in an iframe
@@ -78,7 +73,7 @@ export default function ShareWidget() {
     }
   }, []);
   
-  const isEmbed = isEmbedParam || isInIframe;
+  const isEmbed = isInIframe;
 
   useEffect(() => {
     if (!id) {

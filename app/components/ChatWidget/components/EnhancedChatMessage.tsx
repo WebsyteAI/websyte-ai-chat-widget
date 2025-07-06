@@ -4,8 +4,8 @@ import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import { FileText, ChevronDown, ChevronUp, Globe, Maximize2, Minimize2 } from "lucide-react";
 import type { Message } from "../types";
-import { parseComponentSyntax, renderComponent } from "../../landing-chat/component-registry";
-import type { ComponentRegistry } from "../../landing-chat/component-registry";
+import { parseComponentSyntax, renderComponent } from "../component-registry";
+import type { ComponentRegistry } from "../component-registry";
 
 interface EnhancedChatMessageProps {
   message: Message;

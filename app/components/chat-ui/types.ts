@@ -1,4 +1,4 @@
-import type { ComponentRegistry } from "../landing-chat/component-registry";
+import type { ComponentRegistry } from "../ChatWidget/component-registry";
 
 export interface Message {
   id: string;

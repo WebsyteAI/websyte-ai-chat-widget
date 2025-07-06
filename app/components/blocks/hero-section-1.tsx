@@ -185,7 +185,6 @@ export function HeroSection1({ showDemoFade = false }: HeroSection1Props) {
                     src="/share/w/386afbd3-805e-45c5-985c-9ba7ee991403"
                     className="w-full h-[600px] md:h-[700px] lg:h-[800px] rounded-xl border-0"
                     title="Websyte AI Chat Demo"
-                    loading="eager"
                   />
                 </div>
               </div>
