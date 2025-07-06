@@ -33,8 +33,8 @@ export const DynamicIslandProvider = React.forwardRef<
           ref={ref}
           className={cn(
             "absolute left-1/2 z-50 flex min-h-10 -translate-x-1/2 items-center justify-center overflow-hidden rounded-2xl shadow-lg",
-            "bg-gray-100 border border-gray-200",
-            "dark:bg-gray-900/95 dark:border-gray-800 dark:backdrop-blur-md",
+            "bg-background/50 backdrop-blur-lg border border-gray-200",
+            "dark:bg-background/50 dark:border-gray-800 dark:backdrop-blur-lg",
             "max-w-[90vw] sm:max-w-[600px]",
             positionClasses[position],
             SIZE_VARIANTS[islandSize]?.size,
