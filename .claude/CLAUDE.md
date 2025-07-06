@@ -136,6 +136,7 @@ Documentation is now organized into subdirectories for better maintainability:
 - **Test Coverage**: 235 tests with 100% coverage
 
 ### Latest Improvements
+- **AI-Powered Link Extraction** (2025-01-06): Vector search-based link discovery with categorization and ranking ✅ **NEW**
 - **Documentation Reorganization** (2025-01-01): Restructured docs into subdirectories for better maintainability
 - **Route Modularization**: Backend routes split into separate files in `workers/routes/`
 - **Integration Testing**: New test framework with mocking support for CI/CD

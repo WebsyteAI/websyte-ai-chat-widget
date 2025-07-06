@@ -28,6 +28,7 @@ interface ChatPanelProps {
   onRecommendationClick: (recommendation: Recommendation) => Promise<void>;
   isFullScreen?: boolean;
   isEmbed?: boolean;
+  autoScroll?: boolean;
 }
 
 export function ChatPanel({
@@ -53,6 +54,7 @@ export function ChatPanel({
   onRecommendationClick,
   isFullScreen = false,
   isEmbed = false,
+  autoScroll = false,
 }: ChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -61,8 +63,10 @@ export function ChatPanel({
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (autoScroll) {
+      scrollToBottom();
+    }
+  }, [messages, autoScroll]);
 
   // Full-screen mode styling
   if (isFullScreen) {

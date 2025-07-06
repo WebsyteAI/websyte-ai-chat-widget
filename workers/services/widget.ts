@@ -850,66 +850,82 @@ ${page.markdown}
         throw new Error('Widget not found');
       }
 
-      // Get all crawled content to extract links
-      const files = await this.fileStorage.getWidgetFiles(widgetId, true);
-      const pageFiles = files.filter(f => (f.filename.includes('page-') || f.filename.includes('page_')) && f.filename.endsWith('.md'));
-      
-      console.log('[WidgetService] Found page files for link extraction:', pageFiles.length);
-      console.log('[WidgetService] Total files:', files.length);
-      console.log('[WidgetService] File names:', files.map(f => f.filename));
-      
-      if (pageFiles.length === 0) {
-        console.log('[WidgetService] No page files found for link extraction');
-        return;
-      }
+      // Use vector search to find content chunks that contain links
+      // Search for content that typically contains important links
+      const searchQueries = [
+        'links navigation menu',
+        'http https www url website',
+        'contact us email phone address',
+        'pricing plans cost subscription',
+        'about company team mission',
+        'documentation docs guide help',
+        'privacy policy terms legal',
+        'social media twitter facebook linkedin github',
+        'resources downloads support'
+      ];
 
-      // Extract all links from crawled pages
       const allLinks: Array<{ url: string; text: string; pageUrl: string }> = [];
-      
-      for (const file of pageFiles) {
+      const seenUrls = new Set<string>();
+
+      // Search for each query and extract links from results
+      for (const query of searchQueries) {
         try {
-          const content = await this.fileStorage.getFileContent(file.id, widgetId);
-          if (!content) {
-            console.log('[WidgetService] No content found for file:', file.filename);
-            continue;
-          }
-          const textContent = content;
+          const searchResults = await this.vectorSearch.searchSimilarContent(query, widgetId, 20);
           
-          // Extract URL from metadata header
-          const urlMatch = textContent.match(/url:\s*(.+)/i);
-          const pageUrl = urlMatch ? urlMatch[1].trim() : '';
-          
-          // Extract all markdown links [text](url)
-          const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-          let match;
-          
-          while ((match = linkRegex.exec(textContent)) !== null) {
-            const [, text, url] = match;
-            if (url && !url.startsWith('#') && !url.startsWith('javascript:')) {
-              allLinks.push({ url: url.trim(), text: text.trim(), pageUrl });
+          for (const result of searchResults) {
+            // Vector search returns 'chunk' property
+            const content = result.chunk || result.content || result.contentChunk || '';
+            const pageUrl = result.metadata?.url || '';
+            
+            if (!content) {
+              console.log('[WidgetService] No content in search result, skipping');
+              continue;
             }
-          }
-          
-          // Also extract plain URLs that might be in the content
-          const urlRegex = /https?:\/\/[^\s<>"{}|\\^\[\]`]+/g;
-          let urlMatch2;
-          
-          while ((urlMatch2 = urlRegex.exec(textContent)) !== null) {
-            const url = urlMatch2[0];
-            // Check if this URL is not already captured as a markdown link
-            if (!allLinks.some(link => link.url === url)) {
-              allLinks.push({ url: url.trim(), text: '', pageUrl });
+            
+            // Log content preview for debugging
+            console.log('[WidgetService] Search result content preview:', content.substring(0, 200));
+            
+            // Extract all markdown links [text](url)
+            const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+            let match;
+            let linkCount = 0;
+            
+            while ((match = linkRegex.exec(content)) !== null) {
+              const [, text, url] = match;
+              if (url && !url.startsWith('#') && !url.startsWith('javascript:') && !seenUrls.has(url)) {
+                seenUrls.add(url);
+                allLinks.push({ url: url.trim(), text: text.trim(), pageUrl });
+                linkCount++;
+              }
+            }
+            
+            // Also extract plain URLs that might be in the content
+            const urlRegex = /https?:\/\/[^\s<>"{}|\\^\[\]`]+/g;
+            let urlMatch;
+            
+            while ((urlMatch = urlRegex.exec(content)) !== null) {
+              const url = urlMatch[0];
+              // Check if this URL is not already captured
+              if (!seenUrls.has(url)) {
+                seenUrls.add(url);
+                allLinks.push({ url: url.trim(), text: '', pageUrl });
+                linkCount++;
+              }
+            }
+            
+            if (linkCount > 0) {
+              console.log('[WidgetService] Found', linkCount, 'links in this result');
             }
           }
         } catch (error) {
-          console.error('[WidgetService] Error processing file:', file.filename, error);
+          console.error('[WidgetService] Error searching for query:', query, error);
         }
       }
       
-      console.log('[WidgetService] Total links extracted:', allLinks.length);
+      console.log('[WidgetService] Total unique links extracted from vector search:', allLinks.length);
       
       if (allLinks.length === 0) {
-        console.log('[WidgetService] No links found in crawled content');
+        console.log('[WidgetService] No links found in vector search results');
         return;
       }
 

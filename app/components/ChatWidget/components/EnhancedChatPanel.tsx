@@ -34,6 +34,7 @@ interface EnhancedChatPanelProps {
   welcomeContent?: React.ReactNode;
   fullWidthMessages?: boolean;
   showEmptyState?: boolean;
+  autoScroll?: boolean;
 }
 
 export function EnhancedChatPanel({
@@ -64,6 +65,7 @@ export function EnhancedChatPanel({
   welcomeContent,
   fullWidthMessages = false,
   showEmptyState = true,
+  autoScroll = false,
 }: EnhancedChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -72,8 +74,10 @@ export function EnhancedChatPanel({
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (autoScroll) {
+      scrollToBottom();
+    }
+  }, [messages, autoScroll]);
 
   // Full-screen mode styling
   if (isFullScreen) {

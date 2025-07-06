@@ -11,6 +11,7 @@ This directory contains detailed documentation for specific features of the Webs
 - [**WORKFLOW-VISUALIZATION.md**](./WORKFLOW-VISUALIZATION.md) - Real-time workflow status tracking
 - [**FILE-STORAGE.md**](./FILE-STORAGE.md) - R2 file storage and processing system
 - [**ENHANCED-CHAT.md**](./ENHANCED-CHAT.md) ✅ **NEW** - Enhanced chat UI with citations and sources
+- [**LINK-EXTRACTION.md**](./LINK-EXTRACTION.md) ✅ **NEW** - AI-powered link extraction from crawled content
 
 ### AI & Search Features
 - **RAG System** - See [RAG Pipeline](../ARCHITECTURE/RAG-PIPELINE.md)
@@ -19,6 +20,7 @@ This directory contains detailed documentation for specific features of the Webs
 - **Smart Recommendations** - Contextual chat suggestions with performance tracking
 - **Streaming Responses** - Real-time SSE-based response streaming
 - **Citation Support** ✅ **NEW** - Automatic source citation in responses
+- **Link Extraction** ✅ **NEW** - AI-powered extraction and categorization of important links
 
 ### Widget Features
 - **Custom Branding** - Logo, colors (OKLCH format), and welcome messages
@@ -82,6 +84,7 @@ Track widget usage and performance:
 - Content caching with LRU eviction
 - Streaming SSE responses
 - Mobile responsive design
+- AI-powered link extraction with categorization
 
 ### In Development 🚧
 - Advanced analytics dashboard
