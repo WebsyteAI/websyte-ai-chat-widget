@@ -157,6 +157,7 @@ export function WidgetEditor({
                 hidePoweredBy={false}
                 isEmbed={true} // Use embed mode for proper styling
                 recommendations={createdWidget.recommendations}
+                autoFocus={true} // Auto-focus the input field
               />
             </div>
           ) : (

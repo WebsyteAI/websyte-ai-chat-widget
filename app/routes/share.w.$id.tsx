@@ -358,6 +358,7 @@ export default function ShareWidget() {
             saveChatMessages={true} // Save messages for public shared widgets
             hidePoweredBy={false} // Show "Powered by Websyte.ai" in chat header
             isEmbed={true} // Pass embed mode to ChatPanel
+            autoFocus={true} // Auto-focus the chat input
           />
         </div>
       );
@@ -372,6 +373,7 @@ export default function ShareWidget() {
         baseUrl=""
         saveChatMessages={true} // Save messages for public shared widgets
         hidePoweredBy={false} // Show "Powered by Websyte.ai" in chat header
+        autoFocus={true} // Auto-focus the chat input
       />
     );
   }

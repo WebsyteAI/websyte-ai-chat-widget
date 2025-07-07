@@ -17,6 +17,7 @@ interface ChatPanelProps {
   isEmbed?: boolean;
   className?: string;
   saveChatMessages?: boolean;
+  autoFocus?: boolean;
 }
 
 export function ChatPanel({
@@ -30,6 +31,7 @@ export function ChatPanel({
   isEmbed = false,
   className = "",
   saveChatMessages = false,
+  autoFocus = false,
 }: ChatPanelProps) {
   const { messages, addMessage } = useChatMessages();
   const [inputValue, setInputValue] = useState("");
@@ -50,11 +52,12 @@ export function ChatPanel({
   };
 
   const focusInput = () => {
+    if (!autoFocus) return;
     // Find the textarea in the MessageInput component and focus it
     setTimeout(() => {
       const textarea = containerRef.current?.querySelector("textarea");
       if (textarea) {
-        // textarea.focus();
+        textarea.focus();
       }
     }, 100); // Small delay to ensure DOM is updated
   };
