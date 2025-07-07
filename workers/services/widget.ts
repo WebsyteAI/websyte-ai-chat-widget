@@ -499,6 +499,15 @@ export class WidgetService {
     }
   }
 
+  public async getCrawlStatus(widgetId: string, userId: string) {
+    // Get the widget to verify ownership and get crawl status
+    const widgetRecord = await this.getWidget(widgetId, userId);
+    if (!widgetRecord) {
+      return null;
+    }
+    return widgetRecord;
+  }
+
   public async checkCrawlStatus(widgetId: string, runId: string, userId: string) {
     console.log('[WidgetService] checkCrawlStatus called:', { widgetId, runId });
     

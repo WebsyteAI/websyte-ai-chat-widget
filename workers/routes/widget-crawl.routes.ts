@@ -17,10 +17,16 @@ widgetCrawlRoutes.post('/:id/crawl', authMiddleware, async (c) => {
   }
 
   try {
+    console.log('Crawl endpoint: parsing request body');
     const body = await c.req.json();
-    const { url, maxPages = 25 } = body;
+    console.log('Crawl endpoint: body received:', body);
+    const { url, crawlUrl, maxPages = 25 } = body;
 
-    if (!url) {
+    // Support both 'url' and 'crawlUrl' field names for backwards compatibility
+    const targetUrl = url || crawlUrl;
+
+    if (!targetUrl) {
+      console.log('Crawl endpoint: URL is missing from body');
       return c.json({ error: 'URL is required' }, 400);
     }
 
@@ -31,7 +37,9 @@ widgetCrawlRoutes.post('/:id/crawl', authMiddleware, async (c) => {
     }
 
     // Check if already crawling
+    console.log('Crawl endpoint: widget status:', widget.crawlStatus);
     if (widget.crawlStatus === 'crawling') {
+      console.log('Crawl endpoint: widget already crawling');
       return c.json({ error: 'Crawl already in progress' }, 400);
     }
 
@@ -39,7 +47,7 @@ widgetCrawlRoutes.post('/:id/crawl', authMiddleware, async (c) => {
     const workflow = await c.env.WIDGET_CONTENT_WORKFLOW.create({
       params: {
         widgetId: id,
-        crawlUrl: url,
+        crawlUrl: targetUrl,
         maxPages,
         isRecrawl: !!widget.crawlRunId
       }
@@ -96,8 +104,7 @@ widgetCrawlRoutes.get('/:id/crawl/status', authMiddleware, async (c) => {
       status: widget.crawlStatus || 'idle',
       runId: widget.crawlRunId || null,
       pageCount: widget.crawlPageCount || 0,
-      lastCrawlAt: widget.lastCrawlAt || null,
-      error: widget.crawlError || null
+      lastCrawlAt: widget.lastCrawlAt || null
     });
   } catch (error) {
     console.error('Error getting crawl status:', error);
