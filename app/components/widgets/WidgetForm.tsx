@@ -5,7 +5,7 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Upload, X, FileText, Trash2, Lock, ArrowLeft, Info, Globe, RefreshCw, Sparkles } from 'lucide-react';
+import { Upload, X, FileText, Trash2, Lock, ArrowLeft, Info, Globe, RefreshCw, Sparkles, FileEdit, Settings } from 'lucide-react';
 import { useUIStore, type Widget } from '../../stores';
 import { toast } from '@/lib/use-toast';
 import { EmbedCodeGenerator } from './EmbedCodeGenerator';
@@ -618,9 +618,20 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
         >
           <Tabs defaultValue="basic" className="w-full">
             <TabsList className={`grid w-full ${isEditing ? 'grid-cols-3' : 'grid-cols-2'}`}>
-              <TabsTrigger value="basic">Basic Info</TabsTrigger>
-              <TabsTrigger value="content">Content</TabsTrigger>
-              {isEditing && <TabsTrigger value="settings">Settings</TabsTrigger>}
+              <TabsTrigger value="basic" className="flex items-center gap-2">
+                <Info className="w-4 h-4" />
+                Basic Info
+              </TabsTrigger>
+              <TabsTrigger value="content" className="flex items-center gap-2">
+                <FileEdit className="w-4 h-4" />
+                Content
+              </TabsTrigger>
+              {isEditing && (
+                <TabsTrigger value="settings" className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  Settings
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="basic" className="space-y-6 mt-6">
@@ -673,57 +684,49 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
               rows={3}
             />
           </div>
-        </TabsContent>
 
-        <TabsContent value="content" className="space-y-6 mt-6">
-          {/* Content */}
+          {/* Crawl URL in Basic Info for better flow */}
           <div className="space-y-2">
-            <Label htmlFor="content">Text Content (optional)</Label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => updateWidgetFormField('content', e.target.value)}
-              placeholder="Add any text content you want to include in the widget's knowledge base..."
-              rows={6}
+            <Label htmlFor="crawlUrl">Website Base URL for Crawling (optional)</Label>
+            <Input
+              id="crawlUrl"
+              type="url"
+              value={crawlUrl}
+              onChange={(e) => setCrawlUrl(e.target.value)}
+              placeholder="https://example.com"
+              disabled={!isEditing || crawlStatus === 'crawling' || crawlStarting}
             />
             <p className="text-sm text-gray-600">
-              This content will be processed and made searchable via vector embeddings.
+              {!isEditing ? (
+                "Website crawling will be available after creating the widget."
+              ) : (
+                "Enter only the base domain to crawl up to 25 pages."
+              )}
             </p>
           </div>
 
-          {/* Website Crawling Section */}
-          <div className="space-y-4">
-            <Label>Website Crawling (optional)</Label>
-            
-            {!isEditing ? (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <Lock className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-gray-700">Save Widget to Enable Crawling</h4>
-                    <p className="text-sm text-gray-600">
-                      Website crawling will be available after creating the widget.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-            
-            {isEditing && (
+          {/* Website Crawling Section - Status and Controls */}
+          {isEditing && crawlUrl && (
+            <div className="space-y-4">
+              <Label>Website Crawling Status & Controls</Label>
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="crawlUrl">Base URL</Label>
-                  <Input
-                    id="crawlUrl"
-                    type="url"
-                    value={crawlUrl}
-                    onChange={(e) => setCrawlUrl(e.target.value)}
-                    placeholder="https://example.com"
-                    disabled={crawlStatus === 'crawling' || crawlStarting}
-                  />
-                  <p className="text-sm text-gray-600">
-                    Enter only the base domain. Up to 25 pages will be crawled automatically.
-                  </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex gap-3">
+                      <Globe className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-blue-900">Crawling: {crawlUrl}</h4>
+                        <p className="text-sm text-blue-800">
+                          Use the controls below to manage crawling.
+                        </p>
+                        <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside ml-2">
+                          <li>Maximum 25 pages per crawl</li>
+                          <li>Only pages within the base domain will be crawled</li>
+                          <li>Content is converted to markdown and indexed for search</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                   
                   {/* Crawl Status */}
                   {(crawlStatus || crawlStarting) && (
@@ -887,29 +890,27 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
                     </div>
                   )}
                 </div>
-                
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex gap-3">
-                    <Globe className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-blue-900">Crawl Website Content</h4>
-                      <p className="text-sm text-blue-800">
-                        Enter a base URL to automatically crawl and index pages from that website.
-                      </p>
-                      <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside ml-2">
-                        <li>Only the base domain will be crawled (e.g., websyte.ai)</li>
-                        <li>Crawler will discover and process accessible pages</li>
-                        <li>Content will be converted to markdown and indexed</li>
-                        <li>One URL per widget allowed</li>
-                        <li><strong>Maximum 25 pages per crawl</strong></li>
-                        <li>Default depth of 2 levels</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
               </>
-            )}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="content" className="space-y-6 mt-6">
+          {/* Content */}
+          <div className="space-y-2">
+            <Label htmlFor="content">Text Content (optional)</Label>
+            <Textarea
+              id="content"
+              value={content}
+              onChange={(e) => updateWidgetFormField('content', e.target.value)}
+              placeholder="Add any text content you want to include in the widget's knowledge base..."
+              rows={6}
+            />
+            <p className="text-sm text-gray-600">
+              This content will be processed and made searchable via vector embeddings.
+            </p>
           </div>
+
 
           {/* File Upload */}
           <div className="space-y-4">
