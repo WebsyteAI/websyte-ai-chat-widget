@@ -4,6 +4,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Upload, X, FileText, Trash2, Lock, ArrowLeft, Info, Globe, RefreshCw, Sparkles } from 'lucide-react';
 import { useUIStore, type Widget } from '../../stores';
 import { toast } from '@/lib/use-toast';
@@ -192,7 +193,7 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ crawlUrl })
+        body: JSON.stringify({ url: crawlUrl })
       });
       
       if (!response.ok) {
@@ -615,8 +616,16 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
           }}
           className="space-y-6"
         >
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className={`grid w-full ${isEditing ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              <TabsTrigger value="basic">Basic Info</TabsTrigger>
+              <TabsTrigger value="content">Content</TabsTrigger>
+              {isEditing && <TabsTrigger value="settings">Settings</TabsTrigger>}
+            </TabsList>
+
+            <TabsContent value="basic" className="space-y-6 mt-6">
+              {/* Basic Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Widget Name *</Label>
               <Input
@@ -664,7 +673,9 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
               rows={3}
             />
           </div>
+        </TabsContent>
 
+        <TabsContent value="content" className="space-y-6 mt-6">
           {/* Content */}
           <div className="space-y-2">
             <Label htmlFor="content">Text Content (optional)</Label>
@@ -1068,21 +1079,24 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
               </div>
             </div>
           )}
+        </TabsContent>
 
-          {/* Embed Code Section - Only show for existing widgets */}
-          {widget?.id && (
-            <div className="pt-6 border-t border-gray-200">
-              <EmbedCodeGenerator
-                widgetId={widget.id}
-                isPublic={isPublic}
-                onTogglePublic={toggleWidgetPublic}
-              />
-            </div>
-          )}
+        {isEditing && (
+          <TabsContent value="settings" className="space-y-6 mt-6">
+            {/* Embed Code Section - Only show for existing widgets */}
+            {widget?.id && (
+              <div>
+                <EmbedCodeGenerator
+                  widgetId={widget.id}
+                  isPublic={isPublic}
+                  onTogglePublic={toggleWidgetPublic}
+                />
+              </div>
+            )}
 
-          {/* Recommendations Section - Only show for existing widgets with content */}
-          {widget?.id && ((widget.embeddingsCount > 0) || ((widget.crawlPageCount ?? 0) > 0)) && (
-            <div className="pt-6 border-t border-gray-200 space-y-4">
+            {/* Recommendations Section - Only show for existing widgets with content */}
+            {widget?.id && ((widget.embeddingsCount > 0) || ((widget.crawlPageCount ?? 0) > 0)) && (
+              <div className="pt-6 border-t border-gray-200 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-medium text-gray-900">Smart Recommendations</h3>
@@ -1217,9 +1231,12 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
               )}
             </div>
           )}
+          </TabsContent>
+        )}
+      </Tabs>
 
-          {/* Form Actions */}
-          <div className="flex items-center gap-3 pt-6">
+      {/* Form Actions */}
+      <div className="flex items-center gap-3 pt-6">
             <Button type="submit" disabled={loading || !name.trim() || uploadingFiles.size > 0}>
               {loading ? (
                 <>

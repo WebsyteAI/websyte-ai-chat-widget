@@ -20,12 +20,9 @@ widgetCrawlRoutes.post('/:id/crawl', authMiddleware, async (c) => {
     console.log('Crawl endpoint: parsing request body');
     const body = await c.req.json();
     console.log('Crawl endpoint: body received:', body);
-    const { url, crawlUrl, maxPages = 25 } = body;
+    const { url, maxPages = 25 } = body;
 
-    // Support both 'url' and 'crawlUrl' field names for backwards compatibility
-    const targetUrl = url || crawlUrl;
-
-    if (!targetUrl) {
+    if (!url) {
       console.log('Crawl endpoint: URL is missing from body');
       return c.json({ error: 'URL is required' }, 400);
     }
@@ -47,7 +44,7 @@ widgetCrawlRoutes.post('/:id/crawl', authMiddleware, async (c) => {
     const workflow = await c.env.WIDGET_CONTENT_WORKFLOW.create({
       params: {
         widgetId: id,
-        crawlUrl: targetUrl,
+        crawlUrl: url,
         maxPages,
         isRecrawl: !!widget.crawlRunId
       }
