@@ -40,6 +40,13 @@ export interface Recommendation {
   description: string;
 }
 
+export interface WidgetLink {
+  url: string;
+  text: string;
+  importance?: string;
+  category?: string;
+}
+
 export interface Summaries {
   short: string;
   medium: string;

@@ -162,6 +162,7 @@ export class WidgetService {
 
     return {
       ...widgetRecord,
+      links: widgetRecord.links || [], // Ensure links is always an array
       files: files.map(f => ({
         id: f.id,
         filename: f.filename,

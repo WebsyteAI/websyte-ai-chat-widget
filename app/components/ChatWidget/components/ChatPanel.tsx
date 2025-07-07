@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react";
 import { Minimize2 } from "lucide-react";
-import type { Message, Recommendation, Summaries, ContentMode } from "../types";
+import type { Message, Recommendation, WidgetLink, Summaries, ContentMode } from "../types";
 import { ChatMessage } from "./ChatMessage";
 import { MessageInput } from "./MessageInput";
 import { Marquee } from "../../ui/marquee";
@@ -29,6 +29,7 @@ interface ChatPanelProps {
   isFullScreen?: boolean;
   isEmbed?: boolean;
   autoScroll?: boolean;
+  links?: WidgetLink[];
 }
 
 export function ChatPanel({
@@ -55,6 +56,7 @@ export function ChatPanel({
   isFullScreen = false,
   isEmbed = false,
   autoScroll = false,
+  links = [],
 }: ChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -196,6 +198,7 @@ export function ChatPanel({
             onKeyDown={onKeyDown}
             onSend={onSendMessage}
             onCancel={onCancelMessage}
+            links={links}
           />
         </div>
       </div>
@@ -312,6 +315,7 @@ export function ChatPanel({
           onKeyDown={onKeyDown}
           onSend={onSendMessage}
           onCancel={onCancelMessage}
+          links={links}
         />
       </div>
     </div>

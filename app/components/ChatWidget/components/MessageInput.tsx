@@ -1,8 +1,9 @@
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, Square, ExternalLink } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
 import { DynamicIslandProvider, DynamicIsland, type DynamicIslandSize } from "~/components/ui/dynamic-island";
 import { useState, useRef, useEffect } from "react";
+import type { WidgetLink } from "../types";
 
 interface MessageInputProps {
   inputValue: string;
@@ -13,6 +14,7 @@ interface MessageInputProps {
   onSend: () => void;
   onCancel: () => void;
   useIsland?: boolean;
+  links?: WidgetLink[];
 }
 
 export function MessageInput({
@@ -24,7 +26,9 @@ export function MessageInput({
   onSend,
   onCancel,
   useIsland = true,
+  links = [],
 }: MessageInputProps) {
+  console.log('MessageInput received links:', links);
   const [islandSize, setIslandSize] = useState<DynamicIslandSize>("long");
   const [isFocused, setIsFocused] = useState(false);
   const [textareaHeight, setTextareaHeight] = useState<number>(80);
@@ -104,11 +108,21 @@ export function MessageInput({
       
       {/* Bottom row: Actions toolbar */}
       <div className="flex items-center justify-between px-3 py-2">
-        <div className="flex items-center gap-2">
-          {/* Placeholder for future toolbar actions */}
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {inputValue.length > 0 && `${inputValue.length} characters`}
-          </span>
+        <div className="flex items-center gap-2 flex-1 overflow-hidden">
+          {/* Show up to 4 links */}
+          {links.slice(0, 4).map((link, index) => (
+            <a
+              key={index}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors whitespace-nowrap dark:text-gray-400 dark:hover:text-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+              title={link.text}
+            >
+              {link.text}
+              <ExternalLink size={10} />
+            </a>
+          ))}
         </div>
         <Button
           onMouseDown={(e) => {

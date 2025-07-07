@@ -24,6 +24,7 @@ publicRoutes.get('/widget/:id', async (c) => {
       name: widget.name,
       description: widget.description,
       logoUrl: widget.logoUrl,
+      links: widget.links,
       recommendations: widget.recommendations,
       // Wrapped version for share page
       widget: {
@@ -35,6 +36,7 @@ publicRoutes.get('/widget/:id', async (c) => {
         createdAt: widget.createdAt,
         fileCount: widget.files?.length || 0,
         embeddingsCount: widget.embeddingsCount || 0,
+        links: widget.links,
         recommendations: widget.recommendations,
       }
     });

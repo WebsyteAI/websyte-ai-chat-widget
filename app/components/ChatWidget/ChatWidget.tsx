@@ -17,6 +17,7 @@ import {
 import type {
   ChatWidgetProps,
   Recommendation,
+  WidgetLink,
   Summaries,
   ContentMode,
   Message,
@@ -39,6 +40,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
   const [showSummaryDropdown, setShowSummaryDropdown] = useState(false);
   const [fetchedWidgetName, setFetchedWidgetName] = useState<string | null>(null);
   const [fetchedLogoUrl, setFetchedLogoUrl] = useState<string | null>(null);
+  const [widgetLinks, setWidgetLinks] = useState<WidgetLink[]>([]);
   
   // Extracted hooks for business logic
   const { messages, addMessage, clearMessages } = useChatMessages();
@@ -159,6 +161,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
     if (isFullScreen && widgetId && !widgetName) {
       const fetchWidgetInfo = async () => {
         try {
+          logger.info('Fetching widget info for widgetId:', widgetId);
           const response = await fetch(`${baseUrl}/api/public/widget/${widgetId}`);
           if (response.ok) {
             const data = await response.json() as { 
@@ -166,13 +169,23 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
               name: string; 
               description?: string;
               logoUrl?: string;
+              links?: WidgetLink[];
               recommendations?: Array<{ title: string; description: string }>;
             };
+            logger.info('Widget data received:', data);
             setFetchedWidgetName(data.name);
             
             // Set logo URL if available
             if (data.logoUrl) {
               setFetchedLogoUrl(data.logoUrl);
+            }
+            
+            // Set links if available
+            if (data.links && data.links.length > 0) {
+              logger.info('Setting widget links (fullscreen):', data.links);
+              setWidgetLinks(data.links);
+            } else {
+              logger.info('No links found in widget data');
             }
             
             // Set recommendations if available and not provided as prop
@@ -210,6 +223,31 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
       try {
         // Warm the cache first to ensure subsequent calls are fast
         await ContentExtractor.warmCache();
+        
+        // If widgetId is provided, fetch widget info first
+        if (widgetId && !isFullScreen) {
+          try {
+            const response = await fetch(`${baseUrl}/api/public/widget/${widgetId}`);
+            if (response.ok) {
+              const data = await response.json() as { 
+                id: string; 
+                name: string; 
+                description?: string;
+                logoUrl?: string;
+                links?: WidgetLink[];
+                recommendations?: Array<{ title: string; description: string }>;
+              };
+              
+              // Set links if available
+              if (data.links && data.links.length > 0) {
+                logger.info('Setting widget links:', data.links);
+                setWidgetLinks(data.links);
+              }
+            }
+          } catch (error) {
+            logger.error('Failed to fetch widget info:', error);
+          }
+        }
         
         // Initialize cache key for current URL if it doesn't exist
         const currentUrl = window.location.href;
@@ -605,6 +643,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
           onRecommendationClick={handleRecommendationClick}
           isFullScreen={true}
           isEmbed={isEmbed}
+          links={widgetLinks}
         />
       </div>
     );
@@ -740,6 +779,7 @@ export function ChatWidget({ baseUrl = "", advertiserName = "WebsyteAI", adverti
         onCancelMessage={cancelMessage}
         onRecommendationClick={handleRecommendationClick}
         isEmbed={isEmbed}
+        links={widgetLinks}
       />
     </div>
   );

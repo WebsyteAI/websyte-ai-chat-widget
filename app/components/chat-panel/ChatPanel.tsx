@@ -4,7 +4,7 @@ import { ChatMessage } from "../ChatWidget/components/ChatMessage";
 import { MessageInput } from "../ChatWidget/components/MessageInput";
 import { DynamicIslandHeader } from "./DynamicIslandHeader";
 import { Marquee } from "../ui/marquee";
-import type { Recommendation, Message } from "../ChatWidget/types";
+import type { Recommendation, Message, WidgetLink } from "../ChatWidget/types";
 
 interface ChatPanelProps {
   widgetId?: string;
@@ -44,6 +44,7 @@ export function ChatPanel({
   const [placeholder, setPlaceholder] = useState(
     propPlaceholder || "Ask me anything..."
   );
+  const [widgetLinks, setWidgetLinks] = useState<WidgetLink[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -69,9 +70,10 @@ export function ChatPanel({
     }
   }, [messages]);
 
-  // Load widget recommendations if not provided
+  // Load widget recommendations and links
   useEffect(() => {
-    if (widgetId && !propRecommendations) {
+    if (widgetId) {
+      console.log('[ChatPanel] Fetching widget data for:', widgetId);
       fetch(`${baseUrl}/api/public/widget/${widgetId}`)
         .then((res) => res.json())
         .then((data: any) => {
@@ -79,12 +81,19 @@ export function ChatPanel({
             setRecommendations(data.recommendations);
             setPlaceholder(`Ask me about ${widgetName}...`);
           }
+          // Load links as well
+          if (data.links && data.links.length > 0) {
+            console.log('[ChatPanel] Setting widget links:', data.links);
+            setWidgetLinks(data.links);
+          } else {
+            console.log('[ChatPanel] No links found in widget data');
+          }
         })
         .catch((err) =>
-          console.error("Failed to load widget recommendations:", err)
+          console.error("Failed to load widget data:", err)
         );
     }
-  }, [widgetId, widgetName, baseUrl, propRecommendations]);
+  }, [widgetId, widgetName, baseUrl]);
 
   // Focus input on mount
   useEffect(() => {
@@ -329,6 +338,7 @@ export function ChatPanel({
           onKeyDown={handleKeyDown}
           onSend={sendMessage}
           onCancel={cancelMessage}
+          links={widgetLinks}
         />
       </div>
     </div>
