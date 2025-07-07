@@ -53,6 +53,7 @@ export function ChatPanel({
 
   const focusInput = () => {
     if (!autoFocus) return;
+
     // Find the textarea in the MessageInput component and focus it
     setTimeout(() => {
       const textarea = containerRef.current?.querySelector("textarea");

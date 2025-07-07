@@ -50,19 +50,11 @@ export const meta: MetaFunction = ({ params, data, location }: any) => {
 
 export default function ShareWidget() {
   const { id } = useParams();
-  const [searchParams] = useSearchParams();
   const [state, setState] = useState<LoadingState>({ loading: true });
   
   // Detect embed mode from iframe context only
   const [isInIframe, setIsInIframe] = useState(false);
-  
-  // Handle autoScroll and noFocus parameters
-  const autoScrollParam = searchParams.get('autoScroll');
-  const autoScroll = autoScrollParam === null ? true : autoScrollParam === 'true';
-  
-  const noFocusParam = searchParams.get('noFocus');
-  const noFocus = noFocusParam === 'true';
-  
+
   useEffect(() => {
     // Check if we're running in an iframe
     try {
@@ -358,7 +350,7 @@ export default function ShareWidget() {
             saveChatMessages={true} // Save messages for public shared widgets
             hidePoweredBy={false} // Show "Powered by Websyte.ai" in chat header
             isEmbed={true} // Pass embed mode to ChatPanel
-            autoFocus={true} // Auto-focus the chat input
+            autoFocus={false} // Don't auto-focus when embedded
           />
         </div>
       );
@@ -373,7 +365,7 @@ export default function ShareWidget() {
         baseUrl=""
         saveChatMessages={true} // Save messages for public shared widgets
         hidePoweredBy={false} // Show "Powered by Websyte.ai" in chat header
-        autoFocus={true} // Auto-focus the chat input
+        autoFocus={!isEmbed} // Only auto-focus when not embedded
       />
     );
   }
