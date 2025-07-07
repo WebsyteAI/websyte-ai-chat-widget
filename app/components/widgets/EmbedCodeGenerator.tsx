@@ -14,7 +14,7 @@ interface EmbedCodeGeneratorProps {
 }
 
 export function EmbedCodeGenerator({ widgetId, isPublic, onTogglePublic }: EmbedCodeGeneratorProps) {
-  const [embedType, setEmbedType] = useState<'script' | 'iframe'>('script');
+  const [embedType, setEmbedType] = useState<'script' | 'iframe'>('iframe');
   const [shareUrlCopied, setShareUrlCopied] = useState(false);
 
   const baseUrl = window.location.origin;
@@ -62,7 +62,7 @@ export function EmbedCodeGenerator({ widgetId, isPublic, onTogglePublic }: Embed
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="px-0">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Embed Widget</CardTitle>
@@ -89,40 +89,50 @@ export function EmbedCodeGenerator({ widgetId, isPublic, onTogglePublic }: Embed
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="px-0">
         {isPublic ? (
           <div className="space-y-6">
-            <Tabs value={embedType} onValueChange={(v: string) => setEmbedType(v as 'script' | 'iframe')}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="script">Script Embed</TabsTrigger>
-                <TabsTrigger value="iframe">iFrame Embed</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="script" className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Embed Code</Label>
-                  <ScriptCopyBtn
-                    code={scriptEmbedCode}
-                    codeLanguage="html"
-                    className="mt-2"
-                  />
-                  <p className="text-xs text-gray-600">
-                    Paste this code into your website's HTML where you want the widget to appear.
-                  </p>
+            {/* Shareable URL */}
+            <div className="space-y-2">
+              <Label>Direct Share URL</Label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-mono text-gray-700">
+                  {shareableUrl}
                 </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={copyShareableUrl}
+                  className="flex items-center gap-2"
+                >
+                  {shareUrlCopied ? (
+                    <>
+                      <Check className="w-4 h-4 text-green-600" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      Copy
+                    </>
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => window.open(shareableUrl, '_blank')}
+                  className="flex items-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Open
+                </Button>
+              </div>
+              <p className="text-xs text-gray-600">
+                Share this URL directly for full-screen chat access without embedding.
+              </p>
+            </div>
 
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-2">Script Embed Benefits</h4>
-                  <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• Lightweight and fast loading</li>
-                    <li>• Automatically adapts to your site's style</li>
-                    <li>• No iframe restrictions or limitations</li>
-                    <li>• Best performance and user experience</li>
-                  </ul>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="iframe" className="space-y-4">
+            <div className="space-y-4 border-t pt-6">
                 {/* Generated Code */}
                 <div className="space-y-2">
                   <Label>Embed Code</Label>
@@ -151,58 +161,16 @@ export function EmbedCodeGenerator({ widgetId, isPublic, onTogglePublic }: Embed
                   </p>
                 </div>
 
-                <div className="bg-amber-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-amber-900 mb-2">iFrame Considerations</h4>
-                  <ul className="text-sm text-amber-800 space-y-1">
-                    <li>• Some features may be limited due to browser security</li>
-                    <li>• May not inherit your site's styles</li>
-                    <li>• Good for isolated widget instances</li>
-                    <li>• Useful when script embedding is not possible</li>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">iFrame Benefits</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• Complete isolation from your site's code</li>
+                    <li>• No conflicts with existing JavaScript</li>
+                    <li>• Secure cross-origin communication</li>
+                    <li>• Easy to implement and maintain</li>
+                    <li>• Supports PostMessage API for advanced features</li>
                   </ul>
                 </div>
-              </TabsContent>
-            </Tabs>
-
-            {/* Shareable URL */}
-            <div className="border-t pt-6">
-              <div className="space-y-2">
-                <Label>Direct Share URL</Label>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm font-mono text-gray-700">
-                    {shareableUrl}
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={copyShareableUrl}
-                    className="flex items-center gap-2"
-                  >
-                    {shareUrlCopied ? (
-                      <>
-                        <Check className="w-4 h-4 text-green-600" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4" />
-                        Copy
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => window.open(shareableUrl, '_blank')}
-                    className="flex items-center gap-2"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Open
-                  </Button>
-                </div>
-                <p className="text-xs text-gray-600">
-                  Share this URL directly for full-screen chat access without embedding.
-                </p>
-              </div>
             </div>
 
             {/* Usage Instructions */}
@@ -214,10 +182,7 @@ export function EmbedCodeGenerator({ widgetId, isPublic, onTogglePublic }: Embed
                     <h4 className="font-medium text-gray-900 mb-2">Best Practices</h4>
                     <ul className="text-sm text-gray-700 space-y-2">
                       <li>
-                        <strong>Script Embed:</strong> Recommended for most use cases. Provides the best performance and integration.
-                      </li>
-                      <li>
-                        <strong>iFrame Embed:</strong> Use when you need complete isolation or when script tags are not allowed.
+                        <strong>iFrame Embed:</strong> Currently the only supported embedding method. Provides complete isolation and security.
                       </li>
                       <li>
                         <strong>Responsive Design:</strong> The widget automatically adapts to different screen sizes.

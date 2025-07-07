@@ -637,53 +637,32 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
             <TabsContent value="basic" className="space-y-6 mt-6">
               {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Widget Name *</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => updateWidgetFormField('name', e.target.value)}
-                placeholder="My Custom Widget"
-                required
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Widget Name *</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => updateWidgetFormField('name', e.target.value)}
+                    placeholder="My Custom Widget"
+                    required
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="url">Website URL (optional)</Label>
-              <Input
-                id="url"
-                type="url"
-                value={url}
-                onChange={(e) => updateWidgetFormField('url', e.target.value)}
-                placeholder="https://example.com"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="logoUrl">Logo URL (optional)</Label>
-            <Input
-              id="logoUrl"
-              type="url"
-              value={logoUrl}
-              onChange={(e) => updateWidgetFormField('logoUrl', e.target.value)}
-              placeholder="https://example.com/logo.png"
-            />
-            <p className="text-sm text-gray-600">
-              Logo will be displayed in the widget header and as the AI avatar. Defaults to Websyte.ai logo if not provided.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => updateWidgetFormField('description', e.target.value)}
-              placeholder="Brief description of your widget's purpose..."
-              rows={3}
-            />
-          </div>
+                <div className="space-y-2">
+                  <Label htmlFor="logoUrl">Logo URL (optional)</Label>
+                  <Input
+                    id="logoUrl"
+                    type="url"
+                    value={logoUrl}
+                    onChange={(e) => updateWidgetFormField('logoUrl', e.target.value)}
+                    placeholder="https://example.com/logo.png"
+                  />
+                </div>
+              </div>
+              
+              <p className="text-sm text-gray-600 -mt-2">
+                Logo will be displayed in the widget header and as the AI avatar. Defaults to Websyte.ai logo if not provided.
+              </p>
 
           {/* Crawl URL in Basic Info for better flow */}
           <div className="space-y-2">
@@ -893,6 +872,39 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
               </>
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description (optional)</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => updateWidgetFormField('description', e.target.value)}
+              placeholder="Brief description of your widget's purpose..."
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="url">Website URL (optional)</Label>
+            <Input
+              id="url"
+              type="url"
+              value={url}
+              onChange={(e) => updateWidgetFormField('url', e.target.value)}
+              placeholder="https://example.com"
+            />
+          </div>
+
+          {/* Embed Code Section - Only show for existing widgets */}
+          {widget?.id && (
+            <div className="pt-6 border-t border-gray-200">
+              <EmbedCodeGenerator
+                widgetId={widget.id}
+                isPublic={isPublic}
+                onTogglePublic={toggleWidgetPublic}
+              />
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="content" className="space-y-6 mt-6">
@@ -1084,17 +1096,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
 
         {isEditing && (
           <TabsContent value="settings" className="space-y-6 mt-6">
-            {/* Embed Code Section - Only show for existing widgets */}
-            {widget?.id && (
-              <div>
-                <EmbedCodeGenerator
-                  widgetId={widget.id}
-                  isPublic={isPublic}
-                  onTogglePublic={toggleWidgetPublic}
-                />
-              </div>
-            )}
-
             {/* Recommendations Section - Only show for existing widgets with content */}
             {widget?.id && ((widget.embeddingsCount > 0) || ((widget.crawlPageCount ?? 0) > 0)) && (
               <div className="pt-6 border-t border-gray-200 space-y-4">

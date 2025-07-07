@@ -25,8 +25,8 @@ const features = [
   },
   {
     icon: Zap,
-    title: "One-Line Setup",
-    description: "Add AI chat to your site with just one script tag. Shadow DOM isolation ensures zero conflicts with your existing styles."
+    title: "Simple iframe Integration",
+    description: "Embed AI chat on your site with a simple iframe. Complete isolation ensures zero conflicts with your existing styles and scripts."
   },
   {
     icon: Brain,
@@ -130,8 +130,8 @@ export default function Features() {
                 <div>
                   <h3 className="text-xl font-semibold mb-2">Embed the Widget</h3>
                   <p className="text-muted-foreground">
-                    Add our script tag to your site. The widget loads in a Shadow DOM, ensuring 
-                    zero conflicts with your existing styles and JavaScript.
+                    Add our iframe to your site. The widget runs in complete isolation, ensuring 
+                    zero conflicts with your existing styles and JavaScript. Supports responsive sizing and PostMessage API.
                   </p>
                 </div>
               </div>
