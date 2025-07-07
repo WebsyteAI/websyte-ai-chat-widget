@@ -2,13 +2,13 @@ import type { Route } from "./+types/docs";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Book, Code, Rocket, Settings, Shield, Zap, FileText, MessageSquare, Database, Globe } from "lucide-react";
+import { Rocket, FileText, Database, Globe } from "lucide-react";
 
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Documentation - Websyte AI | Complete Developer Guide" },
-    { name: "description", content: "Comprehensive documentation for Websyte AI. Quick start guides, API reference, integration examples, and best practices." },
-    { name: "keywords", content: "Websyte AI docs, API documentation, integration guide, developer documentation" },
+    { name: "description", content: "Comprehensive documentation for Websyte AI. Quick start guides, integration examples, and best practices." },
+    { name: "keywords", content: "Websyte AI docs, integration guide, developer documentation" },
   ];
 }
 
@@ -22,17 +22,6 @@ const docSections = [
       { title: "Installation", href: "#installation" },
       { title: "Your First Widget", href: "#first-widget" },
       { title: "Basic Configuration", href: "#configuration" }
-    ]
-  },
-  {
-    icon: Code,
-    title: "API Reference",
-    description: "Complete API documentation with examples",
-    links: [
-      { title: "Authentication", href: "#auth" },
-      { title: "Widget Management", href: "#widget-api" },
-      { title: "Chat Endpoints", href: "#chat-api" },
-      { title: "Automation API", href: "#automation" }
     ]
   },
   {
@@ -56,28 +45,6 @@ const docSections = [
       { title: "Content Management", href: "#content" },
       { title: "Vector Search", href: "#search" }
     ]
-  },
-  {
-    icon: Settings,
-    title: "Customization",
-    description: "Make the widget match your brand",
-    links: [
-      { title: "Theming & Styling", href: "#theming" },
-      { title: "Custom Prompts", href: "#prompts" },
-      { title: "Widget Position", href: "#position" },
-      { title: "Advanced Options", href: "#advanced" }
-    ]
-  },
-  {
-    icon: Shield,
-    title: "Security & Privacy",
-    description: "Keep your data safe and compliant",
-    links: [
-      { title: "Authentication", href: "#security-auth" },
-      { title: "Data Privacy", href: "#privacy" },
-      { title: "GDPR Compliance", href: "#gdpr" },
-      { title: "Best Practices", href: "#best-practices" }
-    ]
   }
 ];
 
@@ -97,22 +64,6 @@ const responsiveCode = `<!-- Responsive container -->
     allow="clipboard-write">
   </iframe>
 </div>`;
-
-const apiExample = `// Create a new widget
-const response = await fetch('https://api.websyte-ai.com/api/automation/widgets', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_TOKEN',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    name: 'Support Bot',
-    greeting: 'How can I help you today?',
-    systemPrompt: 'You are a helpful support assistant.'
-  })
-});
-
-const widget = await response.json();`;
 
 const postMessageExample = `// Listen for messages from the widget
 window.addEventListener('message', (event) => {
@@ -143,7 +94,7 @@ export default function Docs() {
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
             Everything you need to integrate Websyte AI into your application. 
-            From quick start guides to advanced API documentation.
+            From quick start guides to advanced integration techniques.
           </p>
         </div>
 
@@ -203,16 +154,6 @@ export default function Docs() {
             </div>
           </section>
 
-          <section id="api-example">
-            <h2 className="text-3xl font-bold mb-6">API Example</h2>
-            <p className="text-lg text-muted-foreground mb-6">
-              Use our REST API to programmatically manage widgets and chat conversations:
-            </p>
-            <pre className="bg-muted/50 rounded-xl p-6 overflow-x-auto">
-              <code className="text-sm">{apiExample}</code>
-            </pre>
-          </section>
-
           <section id="iframe-features">
             <h2 className="text-3xl font-bold mb-6">iframe Features</h2>
             <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -262,23 +203,6 @@ export default function Docs() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5" />
-                    Customize Chat Behavior
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Configure custom prompts, personality, and response styles to match 
-                    your brand voice perfectly.
-                  </p>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="#prompts">Read Guide</Link>
-                  </Button>
-                </CardContent>
-              </Card>
 
               <Card>
                 <CardHeader>
@@ -298,23 +222,6 @@ export default function Docs() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="h-5 w-5" />
-                    Automation API
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Use bearer token authentication to automate widget creation, content 
-                    updates, and chat management.
-                  </p>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="#automation">Read Guide</Link>
-                  </Button>
-                </CardContent>
-              </Card>
             </div>
           </section>
         </div>
