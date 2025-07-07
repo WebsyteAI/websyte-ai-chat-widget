@@ -2,6 +2,7 @@ import type { Route } from "./+types/blog";
 import { Link } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Clock, ArrowRight } from "lucide-react";
+import { MarketingNav } from "@/components/layout/MarketingNav";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -81,6 +82,7 @@ function formatDate(dateStr: string) {
 export default function Blog() {
   return (
     <div className="min-h-screen">
+      <MarketingNav />
       <div className="container mx-auto px-4 py-24 md:py-32">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
