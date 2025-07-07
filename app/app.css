@@ -37,6 +37,9 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+  /* Selection colors */
+  --selection-bg: 59 130 246; /* blue-500 in RGB */
+  --selection-color: 255 255 255; /* white in RGB */
 }
 
 .dark {
@@ -72,6 +75,9 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.552 0.016 285.938);
+  /* Selection colors for dark mode */
+  --selection-bg: 96 165 250; /* blue-400 in RGB */
+  --selection-color: 0 0 0; /* black in RGB */
 }
 
 /* Prevent parent font-size overrides from affecting the widget */
@@ -732,70 +738,65 @@
 }
 
 /* Selection styles outside of @layer to ensure they have higher specificity */
-/* Global selection for all elements */
-*::selection {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
-}
-
-*::-moz-selection {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
-}
-
-/* Text selection styles */
+/* Using CSS variables for easy customization */
 ::selection {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
+  background-color: rgb(var(--selection-bg)) !important;
+  color: rgb(var(--selection-color)) !important;
 }
 
 ::-moz-selection {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
+  background-color: rgb(var(--selection-bg)) !important;
+  color: rgb(var(--selection-color)) !important;
 }
 
-/* Dark mode selection */
-.dark *::selection {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
+/* All elements */
+*::selection {
+  background-color: rgb(var(--selection-bg)) !important;
+  color: rgb(var(--selection-color)) !important;
 }
 
-.dark *::-moz-selection {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
+*::-moz-selection {
+  background-color: rgb(var(--selection-bg)) !important;
+  color: rgb(var(--selection-color)) !important;
 }
 
 /* For Shadow DOM elements */
+:host ::selection,
 :host *::selection {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
+  background-color: rgb(var(--selection-bg)) !important;
+  color: rgb(var(--selection-color)) !important;
 }
 
+:host ::-moz-selection,
 :host *::-moz-selection {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
+  background-color: rgb(var(--selection-bg)) !important;
+  color: rgb(var(--selection-color)) !important;
 }
 
-/* Prose content selection */
-.prose *::selection {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
+/* Specific overrides for input and textarea elements */
+input::selection,
+textarea::selection {
+  background-color: rgb(var(--selection-bg)) !important;
+  color: rgb(var(--selection-color)) !important;
 }
 
-.prose *::-moz-selection {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
+input::-moz-selection,
+textarea::-moz-selection {
+  background-color: rgb(var(--selection-bg)) !important;
+  color: rgb(var(--selection-color)) !important;
 }
 
-/* Dark mode prose selection */
-.dark .prose *::selection {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
+/* Additional specificity for problematic elements */
+body *::selection,
+html *::selection {
+  background-color: rgb(var(--selection-bg)) !important;
+  color: rgb(var(--selection-color)) !important;
 }
 
-.dark .prose *::-moz-selection {
-  background-color: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
+body *::-moz-selection,
+html *::-moz-selection {
+  background-color: rgb(var(--selection-bg)) !important;
+  color: rgb(var(--selection-color)) !important;
 }
 
 /* Custom scrollbar styles to prevent layout shift */
