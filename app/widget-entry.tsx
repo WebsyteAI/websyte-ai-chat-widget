@@ -111,7 +111,7 @@ declare global {
   
   let widgetRoot: ReactDOM.Root | null = null;
   let shadowRoot: ShadowRoot | null = null;
-  let isOpen = false;
+  const isOpen = false;
   
   // Create widget container with Shadow DOM
   function createWidgetContainer() {
