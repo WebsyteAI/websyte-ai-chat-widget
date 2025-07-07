@@ -9,8 +9,8 @@ This is a production-ready AI chat widget for article websites built with React/
 - **test/README.md**: Comprehensive test suite documentation with coverage details and testing patterns
 
 ## Current Project Status: ✅ PRODUCTION READY
-- **Live Deployment**: https://websyte-ai-chat-widget.clementineso.workers.dev
-- **Widget Bundle**: https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js
+- **Live Deployment**: https://websyte.ai
+- **Widget Bundle**: https://websyte.ai/dist/widget.js
 - **Total Tests**: 235 tests across 9 test files with 100% coverage
 - **Bundle Size**: ~200KB optimized for production
 
@@ -157,7 +157,7 @@ workers/
 ### Standard Widget (Page Content Chat)
 ```html
 <script 
-  src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js"
+  src="https://websyte.ai/dist/widget.js"
   data-content-target="main, .content, article"
   data-target-element="#my-container"
   data-advertiser-name="My Brand"
@@ -170,7 +170,7 @@ workers/
 ### Custom Widget (RAG-Powered with Knowledge Base & Message Persistence)
 ```html
 <script 
-  src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js"
+  src="https://websyte.ai/dist/widget.js"
   data-widget-id="your-widget-uuid-here"
   data-save-chat-messages="true"
   data-advertiser-name="My Company"

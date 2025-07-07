@@ -143,13 +143,13 @@ For the original page content chat functionality:
 
 ### Basic Embedding
 ```html
-<script src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" async></script>
+<script src="https://websyte.ai/dist/widget.js" async></script>
 ```
 
 ### Advanced Configuration
 ```html
 <script 
-  src="https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js" 
+  src="https://websyte.ai/dist/widget.js" 
   data-content-target="main, .content, article"
   data-api-endpoint="/api/chat"
   data-base-url="https://api.example.com"

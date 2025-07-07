@@ -150,3 +150,144 @@ curl -X POST https://your-domain.com/api/automation/widgets/{widgetId}/crawl \
 ```
 
 See [API Documentation](./API/README.md) for more examples.
+
+## 🎯 Common Use Cases
+
+### Customer Support Bot
+```javascript
+<script 
+  src="https://your-domain.com/dist/widget.js"
+  data-widget-id="YOUR_WIDGET_ID"
+  data-position="bottom-right"
+  data-primary-color="#0066cc"
+  data-welcome-message="Hi! How can I help you today?"
+  async>
+</script>
+```
+
+### Documentation Assistant
+```javascript
+<script 
+  src="https://your-domain.com/dist/widget.js"
+  data-widget-id="YOUR_WIDGET_ID"
+  data-placeholder="Search our docs..."
+  data-auto-open="false"
+  data-enable-citations="true"
+  async>
+</script>
+```
+
+### Product Guide
+```javascript
+<script 
+  src="https://your-domain.com/dist/widget.js"
+  data-widget-id="YOUR_WIDGET_ID"
+  data-recommendations='["How to get started?", "What are the features?", "Pricing plans"]'
+  async>
+</script>
+```
+
+## 🎨 Widget Customization
+
+### Visual Customization
+```html
+<script 
+  src="https://your-domain.com/dist/widget.js"
+  data-widget-id="YOUR_WIDGET_ID"
+  data-position="bottom-left"
+  data-primary-color="oklch(0.52 0.176 142.495)"
+  data-logo-url="https://your-site.com/logo.png"
+  data-hide-powered-by="true"
+  async>
+</script>
+```
+
+### Behavioral Customization
+```html
+<script 
+  src="https://your-domain.com/dist/widget.js"
+  data-widget-id="YOUR_WIDGET_ID"
+  data-auto-open="true"
+  data-save-messages="true"
+  data-enable-audio="true"
+  data-enable-citations="true"
+  data-recommendations='["How do I get started?", "What features are available?", "Show me pricing"]'
+  async>
+</script>
+```
+
+### All Available Attributes
+```javascript
+data-widget-id="required"           // Your widget ID
+data-position="bottom-right"        // Widget position
+data-primary-color="#0066cc"        // Brand color (OKLCH format)
+data-save-messages="true"           // Persist chat history
+data-auto-open="false"              // Open on page load
+data-hide-powered-by="false"        // Remove branding
+data-placeholder="Ask me anything..." // Input placeholder
+data-welcome-message="Welcome!"     // Initial greeting
+data-enable-audio="true"            // Text-to-speech
+data-enable-citations="true"        // Show sources
+data-logo-url="https://..."         // Your logo
+data-logo-alt="Company Name"        // Logo alt text
+```
+
+## 📊 Analytics Integration
+
+Track widget usage with JavaScript events:
+
+```javascript
+// Listen for widget events
+window.addEventListener('message', (event) => {
+  if (event.data.type === 'websyte-ai-chat-widget') {
+    switch (event.data.action) {
+      case 'chat-opened':
+        analytics.track('Chat Opened');
+        break;
+      case 'message-sent':
+        analytics.track('Message Sent', {
+          message: event.data.data.message
+        });
+        break;
+    }
+  }
+});
+```
+
+## 🚨 Troubleshooting
+
+### Widget Not Appearing?
+1. Check console for errors
+2. Verify widget ID is correct
+3. Ensure script is loaded before `</body>`
+4. Check if widget is set to public
+
+### Slow Responses?
+1. Check your OpenAI API key status
+2. Verify content is properly indexed
+3. Enable caching in widget settings
+
+### Styling Issues?
+1. Widget uses Shadow DOM for isolation
+2. Use data attributes for customization
+3. Check for CSS conflicts
+
+## 🎯 Best Practices
+
+### Content Preparation
+- Keep documents focused and well-structured
+- Use clear headings and sections
+- Include examples and FAQs
+- Update content regularly
+
+### AI Instructions
+- Be specific about tone and style
+- Include company/product context
+- Set clear boundaries
+- Test with various questions
+
+### Performance
+- Enable caching for faster responses
+- Limit document size to < 10MB
+- Use website crawling for large sites
+- Monitor token usage

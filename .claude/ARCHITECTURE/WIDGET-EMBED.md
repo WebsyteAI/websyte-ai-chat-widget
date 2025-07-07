@@ -562,6 +562,90 @@ window.addEventListener('error', (event) => {
 });
 ```
 
+## 🎯 Additional Widget Features
+
+### Zero-Configuration Content Extraction
+The widget automatically processes entire HTML pages without requiring content selectors:
+
+- **Smart Content Filtering**: Removes scripts, styles, navigation, ads, and other noise elements
+- **HTML-to-Markdown Conversion**: Integrated structured markdown conversion for cleaner AI processing
+- **Complete Coverage**: Captures all page content automatically without missing important sections
+- **Enhanced Performance**: Smart caching reduces redundant content processing
+
+### Audio Player Implementation
+The widget includes an advanced audio player that transforms from the action bar:
+
+- **Action bar transformation**: "Listen to me" button transforms the entire action bar into an audio player
+- **Smooth animations**: Container smoothly expands/contracts with fade transitions between modes
+- **Full audio controls**: Play/pause, progress seeking, speed control (0.5x to 2x), and exit functionality
+- **Visual feedback**: Animated border effects during playback with color transitions
+- **Progress tracking**: Real-time elapsed/total time display (MM:SS format)
+- **Centered layout**: Properly centered controls with consistent height between modes
+
+### Smart Recommendations Feature
+The widget generates intelligent question recommendations:
+
+- **AI-powered questions**: OpenAI analyzes article content to generate specific, relevant questions
+- **Article-specific**: Questions like "What causes this problem?" or "How does this work?" based on actual content
+- **Interactive carousel**: Scrollable recommendations that users can click to start conversations
+- **Fallback questions**: Graceful defaults if content analysis fails
+- **Context-aware**: Questions adapt to the type and topic of the article
+
+### Targeted Injection Mode
+Inject the widget into a specific DOM element:
+
+```html
+<div id="widget-container"></div>
+<script 
+  src="https://websyte.ai/dist/widget.js" 
+  data-target-element="#widget-container"
+  async>
+</script>
+```
+
+**Injection Behavior Comparison**:
+
+| Feature | Fixed Overlay | Targeted Injection |
+|---------|---------------|-------------------|
+| **Positioning** | Fixed overlay | Inline within container |
+| **Action bar** | Top center of viewport | Top center of container |
+| **Chat panel** | Slide from right side | Slide from right side |
+| **Z-index** | 9999 | 999 |
+| **Animation** | Slide-in from top | Simple opacity fade |
+| **Use case** | Blog overlays | Content integration |
+
+### Modular Hooks Architecture
+The ChatWidget has been refactored into a modular architecture:
+
+**Custom Hooks (Business Logic)**:
+- `useChatMessages` - Message state management with add/clear operations
+- `useAudioPlayer` - Audio playback simulation with controls and timing
+- `useContentSummarization` - Content mode switching and DOM manipulation
+
+**Benefits**:
+- **Enhanced Testability**: Each hook can be unit tested independently
+- **Separation of Concerns**: Business logic separated from UI rendering
+- **Reusability**: Hooks can be reused across different components
+- **Maintainability**: Cleaner component structure with focused responsibilities
+
+### Build System
+The widget uses an optimized build process:
+
+- Built with Vite into a self-contained IIFE bundle with TypeScript path resolution
+- Tailwind CSS v4 compiled and inlined for Shadow DOM compatibility
+- Optimized build process outputs to `public/dist/` directory
+- Single command development workflow with `pnpm run dev:widget`
+- Bundle size: ~200KB optimized for production
+
+### Testing Coverage
+Comprehensive test suite with 100% coverage:
+
+- **235+ tests** across all service files
+- **100% statement, function, and line coverage** for all service files
+- **99.6% overall statement coverage** across the entire project
+- **Comprehensive common utilities testing** with 45 dedicated tests
+- All error scenarios and edge cases covered
+
 ---
 
 For related documentation:

@@ -37,8 +37,8 @@ Documentation is now organized into subdirectories for better maintainability:
 ```
 .claude/
 ├── Core Documentation
-│   ├── ARCHITECTURE.md - System architecture with route modularization
-│   ├── API-REFERENCE.md - Complete API docs with automation endpoints
+│   ├── README.md - Documentation index and structure
+│   ├── GETTING-STARTED.md - Complete setup and configuration guide
 │   ├── CONTEXT.md - Project overview and goals
 │   └── PLANNING.md - Future enhancements and development workflow
 ├── FEATURES/ - Feature-specific documentation
@@ -68,7 +68,7 @@ Documentation is now organized into subdirectories for better maintainability:
    - Quick Start commands (for new scripts)
    - API Automation section (for new automation endpoints)
 
-2. **API-REFERENCE.md** - Update when adding:
+2. **API Documentation** - Update modular docs in `.claude/API/` when adding:
    - New API endpoints (public, authenticated, automation, or admin)
    - Changes to authentication methods
    - Rate limiting changes
@@ -130,8 +130,8 @@ Documentation is now organized into subdirectories for better maintainability:
 ## Current Project Status
 
 ### Production Deployment ✅
-- **Live URL**: https://websyte-ai-chat-widget.clementineso.workers.dev
-- **Widget Bundle**: https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js
+- **Live URL**: https://websyte.ai
+- **Widget Bundle**: https://websyte.ai/dist/widget.js
 - **Bundle Size**: ~200KB optimized for production
 - **Test Coverage**: 235 tests with 100% coverage
 

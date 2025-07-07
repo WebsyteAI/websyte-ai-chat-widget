@@ -3,7 +3,7 @@
 ## Project Overview
 An embeddable AI chat widget for article websites that can ingest page content and provide features like summarization and audio conversion via OpenAI integration.
 
-**🚀 DEPLOYED**: [https://websyte-ai-chat-widget.clementineso.workers.dev](https://websyte-ai-chat-widget.clementineso.workers.dev)
+**🚀 DEPLOYED**: [https://websyte.ai](https://websyte.ai)
 
 ## Core Requirements
 
@@ -100,7 +100,7 @@ The widget is fully functional and deployed to production with all core features
 - **Easy Deployment**: `pnpm run deploy` for full production deployment
 
 ## Production URLs
-- **Live URL**: https://websyte-ai-chat-widget.clementineso.workers.dev
-- **Widget URL**: https://websyte-ai-chat-widget.clementineso.workers.dev/dist/widget.js
+- **Live URL**: https://websyte.ai
+- **Widget URL**: https://websyte.ai/dist/widget.js
 - **Test Pages**: `/test` and `/script-test` routes available
 - **Performance**: ~200KB widget bundle, optimized for production

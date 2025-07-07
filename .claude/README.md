@@ -5,17 +5,17 @@ Welcome to the comprehensive documentation for Websyte AI Chat Widget - an embed
 ## 📚 Documentation Structure
 
 ### 🚀 Getting Started
-- **[GETTING-STARTED.md](./GETTING-STARTED.md)** - Quick start guide, installation, and setup
-- **[../CLAUDE.md](../CLAUDE.md)** - Development workflow and commands reference
+- **[GETTING-STARTED.md](./GETTING-STARTED.md)** - Complete getting started guide with examples
+- **[../CLAUDE.md](../CLAUDE.md)** - Main documentation hub and AI assistant notes
 
 ### 🏗️ Architecture
 - **[ARCHITECTURE/](./ARCHITECTURE/)** - Complete system architecture documentation
   - Overview, Frontend, Backend, Database, Deployment
-  - Widget embedding, RAG pipeline, Authentication
+  - Widget embedding with technical details, RAG pipeline, Authentication
   - Performance optimization and scaling
 
 ### 🔌 API Reference
-- **[API/](./API/)** - Complete API documentation with examples
+- **[API/](./API/)** - Modular API documentation with examples
   - Widget management, Chat endpoints, File operations
   - Public access, Automation API, Admin endpoints
   - Authentication methods and rate limiting
@@ -95,6 +95,21 @@ Welcome to the comprehensive documentation for Websyte AI Chat Widget - an embed
 2. **Configure**: [Environment Setup](./DEPLOYMENT/ENVIRONMENT.md)
 3. **Secure**: [Security Guide](./DEPLOYMENT/SECURITY.md)
 4. **Monitor**: [Monitoring Setup](./DEPLOYMENT/MONITORING.md)
+
+## 📋 Documentation Updates
+
+### Recent Consolidation (2025-01-07)
+- Merged root README.md and CLAUDE.md → CLAUDE.md is now the main documentation entry point
+- Removed .claude/API-REFERENCE.md → Use modular API docs in .claude/API/
+- Consolidated .claude/QUICK-START/ → Content merged into GETTING-STARTED.md
+- Moved ARCHITECTURE_VALIDATION_REPORT.md → .claude/ARCHIVE/
+- Updated widget-specific technical details → .claude/ARCHITECTURE/WIDGET-EMBED.md
+
+### Documentation Maintenance
+- Total markdown files: ~58 (reduced from 65)
+- Eliminated ~1,000+ lines of duplicate content
+- Clearer hierarchy: README.md → CLAUDE.md → .claude/ docs
+- All documentation centralized in .claude/ directory
 
 ## 📋 Key Documentation
 
