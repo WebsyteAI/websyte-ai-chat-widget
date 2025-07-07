@@ -260,8 +260,8 @@ export function ChatPanel({
       <div className="flex-1 flex flex-col relative overflow-hidden">
         {/* Messages area - scrollable with padding for floating header and input */}
         <div className="flex-1 overflow-y-auto min-h-0 pt-24 pb-28 scrollbar-stable z-0">
-          <div className="p-4 sm:p-5 md:p-6 flex flex-col gap-3 sm:gap-4 max-w-4xl mx-auto w-full">
-            {messages.length === 0 && recommendations.length > 0 && (
+          {messages.length === 0 && recommendations.length > 0 ? (
+            <div className="h-full flex items-center justify-center">
               <div className="flex flex-col items-center justify-center py-8">
                 <div className="w-full max-w-3xl">
                   <p className="text-sm text-gray-500 text-center mb-4">
@@ -290,43 +290,45 @@ export function ChatPanel({
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          ) : (
+            <div className="p-4 sm:p-5 md:p-6 flex flex-col gap-3 sm:gap-4 max-w-4xl mx-auto w-full">
+              {messages.map((message) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  avatarUrl={widgetLogo}
+                />
+              ))}
 
-            {messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                avatarUrl={widgetLogo}
-              />
-            ))}
-
-            {isLoading && (
-              <div className="flex flex-col items-start max-w-[80%]">
-                <div className="mb-2 px-3">
-                  <img
-                    src={widgetLogo || "https://websyte.ai/websyte-ai-logo.svg"}
-                    alt="AI Assistant"
-                    className="w-6 h-6 rounded-full"
-                  />
-                </div>
-                <div className="text-gray-800 p-3 rounded-lg">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.1s" }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.2s" }}
-                    ></div>
+              {isLoading && (
+                <div className="flex flex-col items-start max-w-[80%]">
+                  <div className="mb-2 px-3">
+                    <img
+                      src={widgetLogo || "https://websyte.ai/websyte-ai-logo.svg"}
+                      alt="AI Assistant"
+                      className="w-6 h-6 rounded-full"
+                    />
+                  </div>
+                  <div className="text-gray-800 p-3 rounded-lg">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.1s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div ref={messagesEndRef} />
-          </div>
+              <div ref={messagesEndRef} />
+            </div>
+          )}
         </div>
 
         {/* Dynamic Island input now floats independently */}
