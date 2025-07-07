@@ -6,6 +6,7 @@ export default [
   route("/pricing", "routes/pricing.tsx"),
   route("/docs", "routes/docs.tsx"),
   route("/blog", "routes/blog.tsx"),
+  route("/contact", "routes/contact.tsx"),
   route("/login", "routes/login.tsx"),
   route("/dashboard", "routes/dashboard.tsx", [
     index("routes/dashboard._index.tsx"),
@@ -21,5 +22,4 @@ export default [
   route("/target-test", "routes/target-test.tsx"),
   route("/summary-test", "routes/summary-test.tsx"),
   route("/share/w/:id", "routes/share.w.$id.tsx"),
-  route("/contact", "routes/contact.tsx"),
 ] satisfies RouteConfig;
