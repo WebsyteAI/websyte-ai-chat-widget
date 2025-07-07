@@ -21,4 +21,5 @@ export default [
   route("/target-test", "routes/target-test.tsx"),
   route("/summary-test", "routes/summary-test.tsx"),
   route("/share/w/:id", "routes/share.w.$id.tsx"),
+  route("/contact", "routes/contact.tsx"),
 ] satisfies RouteConfig;

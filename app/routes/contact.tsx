@@ -1,7 +1,7 @@
-import { type Route } from "./+types/contact";
+import type { Route } from ".react-router/types/app/routes/+types.contact";
 import { Link } from "react-router";
 import { Mail, Twitter } from "lucide-react";
-import Layout from "../components/layout";
+import { MarketingNav } from "@/components/layout/MarketingNav";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -12,8 +12,9 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Contact() {
   return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-20">
+    <>
+      <MarketingNav />
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-32 pb-20">
         <div className="container mx-auto px-4 max-w-2xl">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Get in Touch</h1>
@@ -82,6 +83,6 @@ export default function Contact() {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 }
