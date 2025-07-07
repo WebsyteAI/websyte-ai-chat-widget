@@ -81,8 +81,8 @@ export function HowItWorksSection() {
 
         <div className="mt-12 text-center">
           <Button asChild size="lg" className="rounded-xl px-8">
-            <Link to="/register">
-              Start Free Trial
+            <Link to="/login">
+              Create Your Knowledge Base
             </Link>
           </Button>
         </div>

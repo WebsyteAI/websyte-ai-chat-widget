@@ -428,8 +428,8 @@ export default function BlogPost({ loaderData }: Route.ComponentProps) {
             
             <div className="flex gap-4">
               <Button asChild>
-                <Link to="/register">
-                  Start Free Trial
+                <Link to="/login">
+                  Create Your Knowledge Base
                 </Link>
               </Button>
             </div>

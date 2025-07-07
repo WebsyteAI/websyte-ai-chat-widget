@@ -57,8 +57,8 @@ const plans = [
       "White-label option",
       "Dedicated support"
     ],
-    cta: "Start Free Trial",
-    ctaLink: "/register",
+    cta: "Create Your Knowledge Base",
+    ctaLink: "/login",
     popular: false
   },
   {
@@ -81,8 +81,8 @@ const plans = [
       "White-label option",
       "Dedicated support"
     ],
-    cta: "Start Free Trial",
-    ctaLink: "/register",
+    cta: "Create Your Knowledge Base",
+    ctaLink: "/login",
     popular: true
   },
   {
@@ -253,8 +253,8 @@ export default function Pricing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg">
-              <Link to="/register">
-                Start Free Trial
+              <Link to="/login">
+                Create Your Knowledge Base
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg">
