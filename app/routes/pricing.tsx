@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MarketingNav } from "@/components/layout/MarketingNav";
+import { UmamiTracking } from "@/lib/umami-tracker";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -34,7 +35,7 @@ const plans = [
       "Advanced analytics"
     ],
     cta: "Start Free",
-    ctaLink: "/register",
+    ctaLink: "/login",
     popular: false
   },
   {
@@ -168,7 +169,17 @@ export default function Pricing() {
                   className="w-full" 
                   variant={plan.popular ? "default" : "outline"}
                 >
-                  <Link to={plan.ctaLink}>
+                  <Link 
+                    to={plan.ctaLink}
+                    onClick={() => {
+                      UmamiTracking.trackButtonClick(`pricing-${plan.name.toLowerCase().replace(/\s+/g, '-')}`, {
+                        plan: plan.name,
+                        price: plan.price,
+                        cta: plan.cta,
+                        destination: plan.ctaLink
+                      });
+                    }}
+                  >
                     {plan.cta}
                   </Link>
                 </Button>

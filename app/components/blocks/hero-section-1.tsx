@@ -140,7 +140,7 @@ export function HeroSection1({ showDemoFade = false }: HeroSection1Props) {
                       size="lg"
                       className="rounded-xl px-5 text-base"
                     >
-                      <Link to="/register">
+                      <Link to="/login">
                         <span className="text-nowrap">Get Started Free</span>
                       </Link>
                     </Button>
@@ -152,9 +152,12 @@ export function HeroSection1({ showDemoFade = false }: HeroSection1Props) {
                     variant="ghost"
                     className="h-10.5 rounded-xl px-5"
                   >
-                    <Link to="/demo">
+                    <a href="#demo-iframe" onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById('demo-iframe')?.scrollIntoView({ behavior: 'smooth' });
+                    }}>
                       <span className="text-nowrap">See Live Demo</span>
-                    </Link>
+                    </a>
                   </Button>
                 </AnimatedGroup>
               </div>
@@ -180,7 +183,7 @@ export function HeroSection1({ showDemoFade = false }: HeroSection1Props) {
                     className="bg-gradient-to-b to-background absolute inset-0 z-10 from-transparent from-35%"
                   />
                 )}
-                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-2 shadow-lg shadow-zinc-950/15 ring-1">
+                <div id="demo-iframe" className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-2 shadow-lg shadow-zinc-950/15 ring-1">
                   <iframe
                     src="/share/w/386afbd3-805e-45c5-985c-9ba7ee991403"
                     className="w-full h-[600px] md:h-[700px] lg:h-[800px] rounded-xl border-0"

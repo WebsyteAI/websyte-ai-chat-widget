@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Bot, Zap, Globe, Shield, BarChart, Code, FileText, Brain, Search, Sparkles, Share2 } from "lucide-react";
 import { MarketingNav } from "@/components/layout/MarketingNav";
+import { UmamiTracking } from "@/lib/umami-tracker";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -188,13 +189,38 @@ export default function Features() {
             accurate customer support 24/7.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg">
-              <Link to="/login">
+            <Button 
+              asChild 
+              size="lg"
+            >
+              <Link 
+                to="/login"
+                onClick={() => {
+                  UmamiTracking.trackButtonClick('features-bottom-cta-create', {
+                    location: 'bottom-cta',
+                    action: 'create-knowledge-base',
+                    destination: '/login'
+                  });
+                }}
+              >
                 Create Your Knowledge Base
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link to="/docs">
+            <Button 
+              asChild 
+              variant="outline" 
+              size="lg"
+            >
+              <Link 
+                to="/docs"
+                onClick={() => {
+                  UmamiTracking.trackButtonClick('features-bottom-cta-docs', {
+                    location: 'bottom-cta',
+                    action: 'view-documentation',
+                    destination: '/docs'
+                  });
+                }}
+              >
                 View Documentation
               </Link>
             </Button>
