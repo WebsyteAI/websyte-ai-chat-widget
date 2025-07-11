@@ -31,7 +31,7 @@ export function MessageInput({
   console.log('MessageInput received links:', links);
   const [islandSize, setIslandSize] = useState<DynamicIslandSize>("long");
   const [isFocused, setIsFocused] = useState(false);
-  const [textareaHeight, setTextareaHeight] = useState<number>(80);
+  const [textareaHeight, setTextareaHeight] = useState<number>(96); // Initial height to match empty textarea + toolbar
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const blurTimeoutRef = useRef<NodeJS.Timeout>();
 
@@ -51,20 +51,32 @@ export function MessageInput({
     };
   }, []);
 
-  // Calculate textarea height based on content
-  useEffect(() => {
+  // Function to calculate and update heights
+  const updateHeights = () => {
     if (inputRef.current) {
       // Reset height to recalculate
       inputRef.current.style.height = 'auto';
       const scrollHeight = inputRef.current.scrollHeight;
-      const newHeight = Math.min(scrollHeight, 200); // Max height of 200px
+      const newHeight = Math.min(Math.max(scrollHeight, 40), 200); // Min 40px, Max 200px
       inputRef.current.style.height = `${newHeight}px`;
       
       // Calculate dynamic island height (textarea height + toolbar height + padding)
       const toolbarHeight = 40; // Height of the actions toolbar
-      const islandHeight = Math.max(80, newHeight + toolbarHeight + 16); // 16px for top and bottom padding (py-2 = 8px * 2)
+      const paddingHeight = 16; // Total vertical padding (py-2 = 8px * 2)
+      const islandHeight = newHeight + toolbarHeight + paddingHeight;
       setTextareaHeight(islandHeight);
     }
+  };
+
+  // Calculate initial height on mount
+  useEffect(() => {
+    // Small delay to ensure DOM is ready
+    setTimeout(updateHeights, 0);
+  }, []);
+
+  // Update height when content changes
+  useEffect(() => {
+    updateHeights();
   }, [inputValue]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -192,7 +204,7 @@ export function MessageInput({
       className="!w-[calc(100%-2rem)] !max-w-[600px] !z-50"
       dynamicHeight={textareaHeight}
     >
-      <DynamicIsland className="w-full py-2" style={{ height: `${textareaHeight}px` }}>
+      <DynamicIsland className="w-full py-2">
         {inputContent}
       </DynamicIsland>
     </DynamicIslandProvider>
