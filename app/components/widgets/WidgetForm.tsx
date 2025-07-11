@@ -618,17 +618,18 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
         >
           <Tabs defaultValue="basic" className="w-full">
             <TabsList className={`grid w-full ${isEditing ? 'grid-cols-3' : 'grid-cols-2'}`}>
-              <TabsTrigger value="basic" className="flex items-center gap-2">
-                <Info className="w-4 h-4" />
-                Basic Info
+              <TabsTrigger value="basic" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Info className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Basic Info</span>
+                <span className="sm:hidden">Basic</span>
               </TabsTrigger>
-              <TabsTrigger value="content" className="flex items-center gap-2">
-                <FileEdit className="w-4 h-4" />
+              <TabsTrigger value="content" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                <FileEdit className="w-3 h-3 sm:w-4 sm:h-4" />
                 Content
               </TabsTrigger>
               {isEditing && (
-                <TabsTrigger value="settings" className="flex items-center gap-2">
-                  <Settings className="w-4 h-4" />
+                <TabsTrigger value="settings" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
                   Settings
                 </TabsTrigger>
               )}
@@ -1238,8 +1239,20 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
       </Tabs>
 
       {/* Form Actions */}
-      <div className="flex items-center gap-3 pt-6">
-            <Button type="submit" disabled={loading || !name.trim() || uploadingFiles.size > 0}>
+      <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 pt-6">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={loading || !name.trim() || uploadingFiles.size > 0}
+              className="w-full sm:w-auto"
+            >
               {loading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -1253,9 +1266,6 @@ export function WidgetForm({ widget, onSubmit, onCancel, onDelete, onWidgetUpdat
               ) : (
                 isEditing ? 'Update Widget' : 'Create Widget'
               )}
-            </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
             </Button>
           </div>
         </form>

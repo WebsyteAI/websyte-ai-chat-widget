@@ -1,14 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router';
 import { useAuth } from '../lib/auth/auth-context';
 import { UserProfile } from '../components/auth/UserProfile';
 import { cn } from '../lib/utils';
+import { Menu, X } from 'lucide-react';
 
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Redirect unauthenticated users to login
   useEffect(() => {
@@ -21,6 +23,11 @@ export default function DashboardPage() {
     if (path === '/dashboard' && location.pathname === '/dashboard') return true;
     return location.pathname === path;
   };
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   if (isLoading) {
     return (
@@ -56,8 +63,8 @@ export default function DashboardPage() {
               </Link>
             </div>
             
-            {/* Navigation */}
-            <nav className="flex items-center">
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-8">
               <div className="flex space-x-8">
                 <Link
                   to="/dashboard/widgets"
@@ -93,10 +100,65 @@ export default function DashboardPage() {
                   Settings
                 </Link>
               </div>
+              <UserProfile />
             </nav>
             
-            <UserProfile />
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
           </div>
+          
+          {/* Mobile Navigation */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden mt-4 pb-3 border-t pt-4">
+              <nav className="flex flex-col space-y-3">
+                <Link
+                  to="/dashboard/widgets"
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium transition-colors rounded-md",
+                    location.pathname.startsWith('/dashboard/widgets')
+                      ? "bg-gray-100 text-gray-900"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  )}
+                >
+                  My Widgets
+                </Link>
+                <Link
+                  to="/dashboard/analytics"
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium transition-colors rounded-md",
+                    isActiveRoute('/dashboard/analytics')
+                      ? "bg-gray-100 text-gray-900"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  )}
+                >
+                  Analytics
+                </Link>
+                <Link
+                  to="/dashboard/settings"
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium transition-colors rounded-md",
+                    isActiveRoute('/dashboard/settings')
+                      ? "bg-gray-100 text-gray-900"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  )}
+                >
+                  Settings
+                </Link>
+                <div className="pt-3 border-t">
+                  <UserProfile />
+                </div>
+              </nav>
+            </div>
+          )}
         </div>
       </header>
 
@@ -108,7 +170,7 @@ export default function DashboardPage() {
             <Outlet />
           </div>
         ) : (
-          <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
             <Outlet />
           </div>
         )}

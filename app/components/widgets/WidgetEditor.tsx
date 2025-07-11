@@ -3,6 +3,8 @@ import { ChatPanel } from '../chat-panel';
 import { WidgetForm } from './WidgetForm';
 import { toast } from '../../lib/use-toast';
 import type { Widget } from '../../stores/types';
+import { cn } from '../../lib/utils';
+import { MessageSquare, Settings } from 'lucide-react';
 
 interface WidgetEditorProps {
   widget?: Widget;
@@ -21,6 +23,7 @@ export function WidgetEditor({
 }: WidgetEditorProps) {
   const [createdWidget, setCreatedWidget] = useState<Widget | null>(widget || null);
   const [formLoading, setFormLoading] = useState(false);
+  const [activeView, setActiveView] = useState<'form' | 'preview'>('form');
 
   const isEditing = !!(widget || createdWidget);
   const hasWidget = !!createdWidget;
@@ -125,10 +128,41 @@ export function WidgetEditor({
   };
 
   return (
-    <div className="h-full flex">
+    <div className="h-full flex flex-col lg:flex-row">
+      {/* Mobile/Tablet View Toggle */}
+      <div className="lg:hidden flex border-b bg-white">
+        <button
+          onClick={() => setActiveView('form')}
+          className={cn(
+            "flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors",
+            activeView === 'form'
+              ? "border-blue-600 text-blue-600"
+              : "border-transparent text-gray-600 hover:text-gray-900"
+          )}
+        >
+          <Settings className="w-4 h-4" />
+          Settings
+        </button>
+        <button
+          onClick={() => setActiveView('preview')}
+          className={cn(
+            "flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors",
+            activeView === 'preview'
+              ? "border-blue-600 text-blue-600"
+              : "border-transparent text-gray-600 hover:text-gray-900"
+          )}
+        >
+          <MessageSquare className="w-4 h-4" />
+          Preview
+        </button>
+      </div>
+
       {/* Left Panel - Widget Form */}
-      <div className="w-1/2 overflow-y-auto bg-white">
-        <div className="p-6 [&_[data-slot='card']]:border-0 [&_[data-slot='card']]:shadow-none [&_.max-w-4xl]:max-w-none [&_.mx-auto]:mx-0">
+      <div className={cn(
+        "flex-1 lg:w-1/2 overflow-y-auto bg-white",
+        activeView === 'form' ? 'block' : 'hidden lg:block'
+      )}>
+        <div className="p-4 sm:p-6 [&_[data-slot='card']]:border-0 [&_[data-slot='card']]:shadow-none [&_.max-w-4xl]:max-w-none [&_.mx-auto]:mx-0">
           <WidgetForm
             widget={createdWidget || undefined}
             onSubmit={handleWidgetSubmit}
@@ -144,7 +178,10 @@ export function WidgetEditor({
       </div>
 
       {/* Right Panel - Chat Testing */}
-      <div className="w-1/2 bg-gray-50 flex flex-col overflow-hidden relative">
+      <div className={cn(
+        "flex-1 lg:w-1/2 bg-gray-50 flex flex-col overflow-hidden relative",
+        activeView === 'preview' ? 'block' : 'hidden lg:block'
+      )}>
         <div className="absolute inset-0 flex flex-col">
           {hasWidget ? (
             <div className="h-full overflow-hidden">
