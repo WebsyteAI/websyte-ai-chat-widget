@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ChatStorageManager } from './storage';
+import { ChatStorageManager } from '../../../../app/lib/storage';
 
 // Mock localStorage
 const createMockStorage = () => {

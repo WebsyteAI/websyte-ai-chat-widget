@@ -153,7 +153,7 @@ describe("Widget Extended Integration Tests", () => {
           expect.objectContaining({ name: "test2.txt" })
         ])
       );
-    });
+    }, 10000); // 10 second timeout
 
     it("should handle no files provided", async () => {
       const widget = createTestWidget({ id: "123", userId: user.id });

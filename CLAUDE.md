@@ -123,3 +123,7 @@ wrangler tail  # Live logs
 ---
 
 For detailed documentation, see [.claude/README.md](.claude/README.md)
+
+## 🧠 Deployment Memory
+
+- Will track the 5 most recent changes/deployments to the project

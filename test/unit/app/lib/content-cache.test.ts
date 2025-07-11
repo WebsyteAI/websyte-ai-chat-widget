@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ContentCache } from './content-cache';
+import { ContentCache } from '../../../../app/lib/content-cache';
 
 // Mock console
 const mockConsole = {

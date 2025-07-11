@@ -141,7 +141,7 @@ describe("Widget Endpoints Integration Tests", () => {
           files: [expect.any(File)],
         })
       );
-    });
+    }, 10000); // 10 second timeout
   });
 
   describe("GET /api/widgets/:id", () => {

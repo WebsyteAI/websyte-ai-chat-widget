@@ -3,12 +3,16 @@ import { WidgetService, type CreateWidgetRequest, type UpdateWidgetRequest } fro
 import { DatabaseService } from './database';
 import { VectorSearchService } from './vector-search';
 import { FileStorageService } from './file-storage';
+import { ApifyCrawlerService } from './apify-crawler';
+import { OpenAIService } from './openai';
 import type { Widget, NewWidget } from '../db/schema';
 
 // Mock dependencies
 vi.mock('./database');
 vi.mock('./vector-search');
 vi.mock('./file-storage');
+vi.mock('./apify-crawler');
+vi.mock('./openai');
 vi.mock('drizzle-orm', () => ({
   eq: vi.fn((field, value) => ({ field, value })),
   and: vi.fn((...conditions) => ({ conditions })),
@@ -17,7 +21,8 @@ vi.mock('drizzle-orm', () => ({
     strings,
     values,
     as: vi.fn(() => ({ strings, values }))
-  }))
+  })),
+  like: vi.fn((field, value) => ({ field, value, like: true }))
 }));
 
 describe('WidgetService', () => {
@@ -25,6 +30,7 @@ describe('WidgetService', () => {
   let mockDatabase: DatabaseService;
   let mockVectorSearch: VectorSearchService;
   let mockFileStorage: FileStorageService;
+  let mockApifyCrawler: ApifyCrawlerService;
   let mockDb: any;
 
   const mockWidget: Widget = {
@@ -88,8 +94,18 @@ describe('WidgetService', () => {
       deleteFile: vi.fn().mockResolvedValue(true)
     } as any;
 
+    // Mock Apify crawler service
+    mockApifyCrawler = {
+      startCrawl: vi.fn().mockResolvedValue({ runId: 'run-123' }),
+      getCrawlStatus: vi.fn().mockResolvedValue({ status: 'SUCCEEDED', itemCount: 10 }),
+      getCrawlResults: vi.fn().mockResolvedValue([
+        { url: 'https://example.com/page1', text: 'Page 1 content', metadata: {} },
+        { url: 'https://example.com/page2', text: 'Page 2 content', metadata: {} }
+      ])
+    } as any;
+
     // Create widget service instance
-    widgetService = new WidgetService(mockDatabase, mockVectorSearch, mockFileStorage);
+    widgetService = new WidgetService(mockDatabase, mockVectorSearch, mockFileStorage, mockApifyCrawler, 'test-openai-key');
   });
 
   describe('createWidget', () => {
@@ -648,6 +664,485 @@ describe('WidgetService', () => {
 
       expect(mockDb.update).not.toHaveBeenCalled();
       expect(result).toBe(false);
+    });
+  });
+
+  describe('getUserWidgetsCount', () => {
+    it('should return count of user widgets', async () => {
+      mockDb.where.mockReturnThis();
+      mockDb.execute.mockResolvedValue({ rows: [{ count: 5 }] });
+
+      const count = await widgetService.getUserWidgetsCount('user-123');
+
+      expect(count).toBe(5);
+      expect(mockDb.select).toHaveBeenCalled();
+      expect(mockDb.where).toHaveBeenCalled();
+    });
+
+    it('should return 0 if user has no widgets', async () => {
+      mockDb.where.mockReturnThis();
+      mockDb.execute.mockResolvedValue({ rows: [{ count: 0 }] });
+
+      const count = await widgetService.getUserWidgetsCount('user-123');
+
+      expect(count).toBe(0);
+    });
+  });
+
+  describe('getAllWidgets', () => {
+    it('should retrieve all widgets with pagination', async () => {
+      const mockWidgets = [mockWidget, { ...mockWidget, id: 'widget-456' }];
+      mockDb.orderBy.mockReturnThis();
+      mockDb.limit.mockReturnThis();
+      mockDb.offset.mockResolvedValue(mockWidgets);
+
+      vi.spyOn(widgetService, 'getWidget').mockImplementation(async (id) => ({
+        ...mockWidgets.find(w => w.id === id)!,
+        files: [],
+        embeddingsCount: 3
+      }));
+
+      const result = await widgetService.getAllWidgets(10, 0);
+
+      expect(mockDb.orderBy).toHaveBeenCalled();
+      expect(mockDb.limit).toHaveBeenCalledWith(10);
+      expect(mockDb.offset).toHaveBeenCalledWith(0);
+      expect(result).toHaveLength(2);
+      expect(result[0]).toHaveProperty('embeddingsCount');
+    });
+  });
+
+  describe('getAllWidgetsCount', () => {
+    it('should return total count of all widgets', async () => {
+      mockDb.execute.mockResolvedValue({ rows: [{ count: 42 }] });
+
+      const count = await widgetService.getAllWidgetsCount();
+
+      expect(count).toBe(42);
+      expect(mockDb.select).toHaveBeenCalled();
+    });
+
+    it('should return 0 if no widgets exist', async () => {
+      mockDb.execute.mockResolvedValue({ rows: [{ count: 0 }] });
+
+      const count = await widgetService.getAllWidgetsCount();
+
+      expect(count).toBe(0);
+    });
+  });
+
+  describe('getCrawlStatus', () => {
+    it('should return widget with crawl status', async () => {
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        crawlStatus: 'completed',
+        crawlPageCount: 10,
+        files: [],
+        embeddingsCount: 5
+      });
+
+      const result = await widgetService.getCrawlStatus('widget-123', 'user-123');
+
+      expect(result).toMatchObject({
+        crawlStatus: 'completed',
+        crawlPageCount: 10
+      });
+    });
+
+    it('should return null if widget not found', async () => {
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue(null);
+
+      const result = await widgetService.getCrawlStatus('widget-123', 'user-123');
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('checkCrawlStatus', () => {
+    it('should update status to completed when crawl succeeds', async () => {
+      mockApifyCrawler.getCrawlStatus.mockResolvedValue({ 
+        status: 'SUCCEEDED', 
+        itemCount: 5 
+      });
+      
+      vi.spyOn(widgetService, 'processCrawlResults').mockResolvedValue(undefined);
+
+      await widgetService.checkCrawlStatus('widget-123', 'run-123', 'user-123');
+
+      expect(mockApifyCrawler.getCrawlStatus).toHaveBeenCalledWith('run-123');
+      expect(widgetService.processCrawlResults).toHaveBeenCalledWith('widget-123', 'run-123', 'user-123');
+    });
+
+    it('should update status to failed when crawl fails', async () => {
+      mockApifyCrawler.getCrawlStatus.mockResolvedValue({ status: 'FAILED' });
+
+      await widgetService.checkCrawlStatus('widget-123', 'run-123', 'user-123');
+
+      expect(mockDb.update).toHaveBeenCalled();
+      expect(mockDb.set).toHaveBeenCalledWith({
+        crawlStatus: 'failed',
+        crawlRunId: null
+      });
+    });
+
+    it('should update page count for running crawls', async () => {
+      mockApifyCrawler.getCrawlStatus.mockResolvedValue({ 
+        status: 'RUNNING', 
+        itemCount: 3 
+      });
+
+      await widgetService.checkCrawlStatus('widget-123', 'run-123', 'user-123');
+
+      expect(mockDb.update).toHaveBeenCalled();
+      expect(mockDb.set).toHaveBeenCalledWith({
+        crawlPageCount: 3
+      });
+    });
+
+    it('should handle API errors', async () => {
+      mockApifyCrawler.getCrawlStatus.mockRejectedValue(new Error('API Error'));
+
+      await widgetService.checkCrawlStatus('widget-123', 'run-123', 'user-123');
+
+      expect(mockDb.update).toHaveBeenCalled();
+      expect(mockDb.set).toHaveBeenCalledWith({
+        crawlStatus: 'failed',
+        crawlRunId: null
+      });
+    });
+  });
+
+  describe('processCrawlResults', () => {
+    beforeEach(() => {
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        crawlUrl: 'https://example.com',
+        crawlStatus: 'crawling',
+        files: [],
+        embeddingsCount: 0
+      });
+    });
+
+    it('should process crawl results and create embeddings', async () => {
+      const crawlResults = [
+        { url: 'https://example.com/page1', text: 'Page 1 content', metadata: {} },
+        { url: 'https://example.com/page2', text: 'Page 2 content', metadata: {} }
+      ];
+      mockApifyCrawler.getCrawlResults.mockResolvedValue(crawlResults);
+      
+      // Mock file upload for each crawl result
+      mockFileStorage.uploadFile.mockResolvedValueOnce({
+        id: 'crawl-file-1',
+        filename: 'crawl_page1.txt',
+        fileType: 'text/plain',
+        fileSize: 100,
+        createdAt: new Date()
+      }).mockResolvedValueOnce({
+        id: 'crawl-file-2',
+        filename: 'crawl_page2.txt',
+        fileType: 'text/plain',
+        fileSize: 100,
+        createdAt: new Date()
+      });
+
+      await widgetService.processCrawlResults('widget-123', 'run-123', 'user-123');
+
+      expect(mockApifyCrawler.getCrawlResults).toHaveBeenCalledWith('run-123');
+      expect(mockFileStorage.uploadFile).toHaveBeenCalledTimes(2);
+      expect(mockDb.update).toHaveBeenCalled();
+      expect(mockDb.set).toHaveBeenCalledWith(expect.objectContaining({
+        crawlStatus: 'completed',
+        crawlPageCount: 2
+      }));
+    });
+
+    it('should handle empty results', async () => {
+      mockApifyCrawler.getCrawlResults.mockResolvedValue([]);
+
+      await widgetService.processCrawlResults('widget-123', 'run-123', 'user-123');
+
+      expect(mockDb.set).toHaveBeenCalledWith(expect.objectContaining({
+        crawlStatus: 'completed',
+        crawlPageCount: 0
+      }));
+    });
+
+    it('should skip if already processing', async () => {
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        crawlStatus: 'processing',
+        files: [],
+        embeddingsCount: 0
+      });
+
+      await widgetService.processCrawlResults('widget-123', 'run-123', 'user-123');
+
+      expect(mockApifyCrawler.getCrawlResults).not.toHaveBeenCalled();
+    });
+
+    it('should handle errors and update status to failed', async () => {
+      mockApifyCrawler.getCrawlResults.mockRejectedValue(new Error('Processing error'));
+
+      await widgetService.processCrawlResults('widget-123', 'run-123', 'user-123');
+
+      expect(mockDb.set).toHaveBeenCalledWith(expect.objectContaining({
+        crawlStatus: 'failed'
+      }));
+    });
+  });
+
+  describe('getWidgetSampleContent', () => {
+    it('should return sample content from embeddings', async () => {
+      const mockSampleContent = [
+        { text: 'Sample 1', source: 'file1.pdf' },
+        { text: 'Sample 2', source: 'file2.pdf' }
+      ];
+      mockDb.limit.mockResolvedValue(mockSampleContent);
+
+      const result = await widgetService.getWidgetSampleContent('widget-123', 5);
+
+      expect(mockDb.select).toHaveBeenCalled();
+      expect(mockDb.limit).toHaveBeenCalledWith(5);
+      expect(result).toEqual(mockSampleContent);
+    });
+
+    it('should use default limit if not provided', async () => {
+      mockDb.limit.mockResolvedValue([]);
+
+      await widgetService.getWidgetSampleContent('widget-123');
+
+      expect(mockDb.limit).toHaveBeenCalledWith(10);
+    });
+  });
+
+  describe('generateWidgetRecommendations', () => {
+    beforeEach(() => {
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        files: [],
+        embeddingsCount: 5
+      });
+      vi.spyOn(widgetService, 'getWidgetSampleContent').mockResolvedValue([
+        { text: 'Content 1' },
+        { text: 'Content 2' }
+      ]);
+    });
+
+    it('should generate recommendations from widget content', async () => {
+      const mockRecommendations = [
+        { text: 'How to get started?', response: 'Follow these steps...' },
+        { text: 'What are the features?', response: 'Features include...' }
+      ];
+      
+      // Mock OpenAI service
+      const mockOpenAI = {
+        generateRecommendations: vi.fn().mockResolvedValue(mockRecommendations)
+      };
+      vi.mocked(OpenAIService).mockReturnValue(mockOpenAI as any);
+
+      const result = await widgetService.generateWidgetRecommendations('widget-123');
+
+      expect(mockOpenAI.generateRecommendations).toHaveBeenCalledWith('Content 1\nContent 2');
+      expect(mockDb.update).toHaveBeenCalled();
+      expect(result).toEqual({ recommendations: mockRecommendations });
+    });
+
+    it('should handle missing content', async () => {
+      vi.spyOn(widgetService, 'getWidgetSampleContent').mockResolvedValue([]);
+
+      const result = await widgetService.generateWidgetRecommendations('widget-123');
+
+      expect(result).toEqual({ recommendations: [] });
+    });
+
+    it('should handle OpenAI API errors', async () => {
+      const mockOpenAI = {
+        generateRecommendations: vi.fn().mockRejectedValue(new Error('API Error'))
+      };
+      vi.mocked(OpenAIService).mockReturnValue(mockOpenAI as any);
+
+      const result = await widgetService.generateWidgetRecommendations('widget-123');
+
+      expect(mockDb.update).toHaveBeenCalled();
+      expect(mockDb.set).toHaveBeenCalledWith({ recommendations: [] });
+      expect(result).toEqual({ recommendations: [] });
+    });
+  });
+
+  describe('extractImportantLinks', () => {
+    beforeEach(() => {
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        crawlUrl: 'https://example.com',
+        files: [],
+        embeddingsCount: 5
+      });
+    });
+
+    it('should extract and rank important links', async () => {
+      // Mock database query for links
+      const mockLinks = [
+        { url: 'https://example.com/docs', sourceUrl: 'https://example.com' },
+        { url: 'https://example.com/api', sourceUrl: 'https://example.com' }
+      ];
+      mockDb.execute.mockResolvedValueOnce({ rows: mockLinks });
+
+      const result = await widgetService.extractImportantLinks('widget-123');
+
+      expect(result).toHaveProperty('links');
+      expect(result.links).toBeInstanceOf(Array);
+    });
+
+    it('should handle widgets without crawl URL', async () => {
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        crawlUrl: null,
+        files: [],
+        embeddingsCount: 5
+      });
+
+      const result = await widgetService.extractImportantLinks('widget-123');
+
+      expect(result).toEqual({ links: [] });
+    });
+  });
+
+  describe('resetStuckCrawl', () => {
+    it('should reset stuck crawl status', async () => {
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        crawlStatus: 'crawling',
+        files: [],
+        embeddingsCount: 5
+      });
+
+      const result = await widgetService.resetStuckCrawl('widget-123', 'user-123');
+
+      expect(mockDb.update).toHaveBeenCalled();
+      expect(mockDb.set).toHaveBeenCalledWith({
+        crawlStatus: null,
+        crawlRunId: null
+      });
+      expect(result).toBe(true);
+    });
+
+    it('should return false if widget not found', async () => {
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue(null);
+
+      const result = await widgetService.resetStuckCrawl('widget-123', 'user-123');
+
+      expect(result).toBe(false);
+      expect(mockDb.update).not.toHaveBeenCalled();
+    });
+
+    it('should only reset if status is crawling or processing', async () => {
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        crawlStatus: 'completed',
+        files: [],
+        embeddingsCount: 5
+      });
+
+      const result = await widgetService.resetStuckCrawl('widget-123', 'user-123');
+
+      expect(mockDb.update).not.toHaveBeenCalled();
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('refreshEmbeddings', () => {
+    beforeEach(() => {
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        files: [
+          { id: 'file-1', filename: 'doc1.pdf', fileType: 'application/pdf', fileSize: 1000, createdAt: new Date() },
+          { id: 'file-2', filename: 'crawl_page1.txt', fileType: 'text/plain', fileSize: 500, createdAt: new Date() }
+        ],
+        embeddingsCount: 10
+      });
+      
+      mockFileStorage.getFileContent = vi.fn().mockResolvedValue('File content');
+    });
+
+    it('should delete and recreate all embeddings', async () => {
+      const result = await widgetService.refreshEmbeddings('widget-123', 'user-123');
+
+      expect(mockVectorSearch.deleteEmbeddingsForWidget).toHaveBeenCalledWith('widget-123');
+      expect(mockFileStorage.getFileContent).toHaveBeenCalledTimes(2);
+      expect(mockVectorSearch.createEmbeddingsForWidget).toHaveBeenCalledTimes(2);
+      expect(result).toEqual({ embeddingsCreated: expect.any(Number) });
+    });
+
+    it('should handle errors gracefully', async () => {
+      mockVectorSearch.deleteEmbeddingsForWidget.mockRejectedValue(new Error('Delete failed'));
+
+      await expect(widgetService.refreshEmbeddings('widget-123', 'user-123')).rejects.toThrow();
+    });
+
+    it('should return 0 if widget not found', async () => {
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue(null);
+
+      const result = await widgetService.refreshEmbeddings('widget-123', 'user-123');
+
+      expect(result).toEqual({ embeddingsCreated: 0 });
+    });
+  });
+
+  describe('updateWidget with crawlUrl', () => {
+    it('should handle crawlUrl updates correctly', async () => {
+      const request: UpdateWidgetRequest = {
+        crawlUrl: 'https://newsite.com'
+      };
+
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        crawlUrl: 'https://oldsite.com',
+        files: [],
+        embeddingsCount: 5
+      });
+
+      vi.spyOn(widgetService, 'deleteExistingCrawlFiles').mockResolvedValue(undefined);
+      mockDb.returning.mockResolvedValue([{ ...mockWidget, crawlUrl: 'https://newsite.com' }]);
+      mockDb.limit.mockResolvedValue([{ ...mockWidget, crawlUrl: 'https://newsite.com' }]);
+
+      const result = await widgetService.updateWidget('widget-123', 'user-123', request);
+
+      expect(widgetService.deleteExistingCrawlFiles).toHaveBeenCalledWith('widget-123');
+      expect(mockDb.set).toHaveBeenCalledWith(expect.objectContaining({
+        crawlUrl: 'https://newsite.com',
+        crawlStatus: null,
+        crawlRunId: null,
+        workflowId: null,
+        crawlPageCount: 0
+      }));
+    });
+
+    it('should clear crawl data when crawlUrl is set to empty', async () => {
+      const request: UpdateWidgetRequest = {
+        crawlUrl: ''
+      };
+
+      vi.spyOn(widgetService, 'getWidget').mockResolvedValue({
+        ...mockWidget,
+        crawlUrl: 'https://example.com',
+        files: [],
+        embeddingsCount: 5
+      });
+
+      vi.spyOn(widgetService, 'deleteExistingCrawlFiles').mockResolvedValue(undefined);
+      mockDb.returning.mockResolvedValue([{ ...mockWidget, crawlUrl: null }]);
+      mockDb.limit.mockResolvedValue([{ ...mockWidget, crawlUrl: null }]);
+
+      await widgetService.updateWidget('widget-123', 'user-123', request);
+
+      expect(widgetService.deleteExistingCrawlFiles).toHaveBeenCalledWith('widget-123');
+      expect(mockDb.set).toHaveBeenCalledWith(expect.objectContaining({
+        crawlUrl: null,
+        crawlStatus: null,
+        crawlRunId: null,
+        workflowId: null,
+        crawlPageCount: 0
+      }));
     });
   });
 });
