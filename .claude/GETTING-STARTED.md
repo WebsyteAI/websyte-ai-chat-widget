@@ -1,293 +1,227 @@
-# Getting Started with Websyte AI Chat Widget
+# Getting Started with Websyte AI
 
-## Prerequisites
+This guide will help you get Websyte AI up and running on your website in just a few minutes.
 
+## 🚀 Quick Start (For Website Owners)
+
+### Step 1: Create Your Account
+1. Visit [websyte.ai](https://websyte.ai)
+2. Click "Create Your Knowledge Base"
+3. Sign in with Google or GitHub
+
+### Step 2: Create Your First Widget
+1. Click "Create New Widget" in your dashboard
+2. Give your widget a name (e.g., "Customer Support Bot")
+3. Customize the greeting message
+4. Choose your brand colors and upload a logo (optional)
+
+### Step 3: Add Your Content
+You have three options to build your knowledge base:
+
+#### Option A: Crawl Your Website
+1. Go to the "Content" tab
+2. Enter your website URL
+3. Click "Start Crawling"
+4. The system will automatically index your site (usually takes 5-10 minutes)
+
+#### Option B: Upload Documents
+1. Go to the "Content" tab
+2. Click "Upload Documents"
+3. Select files (supports PDF, Word, TXT, MD, JSON)
+4. Files with images will be processed with OCR automatically
+
+#### Option C: Manual Entry
+1. Use the content editor to write custom responses
+2. Perfect for FAQs or specific information
+
+### Step 4: Embed the Widget
+1. Go to the "Embed" tab
+2. Copy the iframe code:
+```html
+<iframe 
+  src="https://websyte.ai/embed/YOUR_WIDGET_ID" 
+  width="400" 
+  height="600"
+  style="border: none; position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+</iframe>
+```
+3. Paste it into your website's HTML before the closing `</body>` tag
+
+That's it! Your AI assistant is now live on your website.
+
+## 💻 For Developers
+
+### Prerequisites
 - Node.js 18+ and pnpm
+- PostgreSQL database (we recommend [Neon](https://neon.tech))
 - Cloudflare account
-- Neon PostgreSQL database
 - OpenAI API key
 - Mistral AI API key (for OCR)
-- Apify API key (for web crawling)
 
-## Quick Start
+### Local Development Setup
 
-### 1. Clone and Install
-
+1. **Clone the repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/websyte/websyte-ai-chat-widget.git
 cd websyte-ai-chat-widget
+```
+
+2. **Install dependencies**
+```bash
 pnpm install
 ```
 
-### 2. Environment Setup
-
-Create `.env` file with required variables:
-
+3. **Set up environment variables**
 ```bash
-# Database
-DATABASE_URL="postgresql://..."
-
-# AI Services
-OPENAI_API_KEY="sk-..."
-MISTRAL_API_KEY="..."
-
-# External Services
-APIFY_API_KEY="..."
-RESEND_API_KEY="..."
-
-# Authentication
-BETTER_AUTH_SECRET="..."
-BETTER_AUTH_URL="http://localhost:5173"
-
-# Storage
-CLOUDFLARE_ACCOUNT_ID="..."
-
-# API Security
-API_BEARER_TOKEN="..." # Generate with: openssl rand -hex 32
+cp .env.example .env
 ```
 
-See [DEPLOYMENT/ENVIRONMENT.md](./DEPLOYMENT/ENVIRONMENT.md) for complete variable reference.
+Edit `.env` with your credentials:
+```env
+# Database
+DATABASE_URL=postgresql://...
 
-### 3. Database Setup
+# OpenAI
+OPENAI_API_KEY=sk-...
 
+# Mistral AI (for OCR)
+MISTRAL_API_KEY=...
+
+# Cloudflare
+CLOUDFLARE_ACCOUNT_ID=...
+CLOUDFLARE_API_TOKEN=...
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+
+# OAuth (Better Auth)
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
+
+# App
+BETTER_AUTH_SECRET=... # Generate with: openssl rand -base64 32
+APP_URL=http://localhost:5173
+```
+
+4. **Set up the database**
 ```bash
 # Generate database schema
 pnpm db:generate
 
-# Push schema to database
+# Apply migrations
 pnpm db:push
 
 # (Optional) Open database studio
 pnpm db:studio
 ```
 
-### 4. Development
-
+5. **Start development servers**
 ```bash
-# Start development server
+# Start the main app (http://localhost:5173)
 pnpm dev
 
-# In another terminal, watch widget builds
+# In another terminal, start the widget dev server
 pnpm dev:widget
 ```
 
-- Main app: http://localhost:5173
-- Widget test: http://localhost:5173/test
-
-### 5. Testing
-
+6. **Run tests**
 ```bash
-# Run unit tests
+# Unit tests
 pnpm test
 
-# Run integration tests
+# Integration tests
 pnpm test:integration
 
-# Run all tests
+# All tests with coverage
 pnpm test:all
 ```
 
-## Key Concepts
+### Testing the Widget
 
-### Widgets
-Embeddable AI chat assistants with custom knowledge bases. Each widget can:
-- Store documents and web content
-- Answer questions using RAG (Retrieval Augmented Generation)
-- Be embedded on any website
-- Track conversations and analytics
+1. Create a widget in your local dashboard
+2. Visit `http://localhost:5173/test` to see the widget in action
+3. Use the test pages:
+   - `/test` - Basic widget test
+   - `/test/iframe` - iframe embedding test
+   - `/summary-test` - Test summary generation
 
-### Knowledge Base
-Content sources for widgets:
-- **Documents**: Upload PDFs, images, text files (with OCR support)
-- **Web Pages**: Add individual URLs
-- **Website Crawling**: Automatically crawl entire websites
-- **Manual Content**: Add text directly
-
-### Embedding
-Generate embed code for any widget:
-1. Create widget in dashboard
-2. Add content to knowledge base
-3. Copy embed code from widget settings
-4. Add to any website's HTML
-
-Example:
-```html
-<script src="https://your-domain.com/widget.js?id=widget-id"></script>
-```
-
-## Next Steps
-
-- [Architecture Overview](./ARCHITECTURE/README.md) - Understand the system design
-- [API Documentation](./API/README.md) - Integrate programmatically
-- [Feature Guides](./FEATURES/README.md) - Deep dive into capabilities
-- [Deployment Guide](./DEPLOYMENT/README.md) - Deploy to production
-
-## Common Tasks
-
-### Create a Widget Programmatically
+### Building for Production
 
 ```bash
-curl -X POST https://your-domain.com/api/automation/widgets \
-  -H "Authorization: Bearer $API_BEARER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Support Bot",
-    "greeting": "How can I help you?",
-    "systemPrompt": "You are a helpful support assistant."
-  }'
+# Build all assets
+pnpm build
+
+# Deploy to Cloudflare
+pnpm deploy
 ```
-
-### Crawl a Website
-
-```bash
-curl -X POST https://your-domain.com/api/automation/widgets/{widgetId}/crawl \
-  -H "Authorization: Bearer $API_BEARER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "urls": ["https://example.com"],
-    "maxPages": 50
-  }'
-```
-
-See [API Documentation](./API/README.md) for more examples.
 
 ## 🎯 Common Use Cases
 
 ### Customer Support Bot
 ```javascript
-<script 
-  src="https://your-domain.com/dist/widget.js"
-  data-widget-id="YOUR_WIDGET_ID"
-  data-position="bottom-right"
-  data-primary-color="#0066cc"
-  data-welcome-message="Hi! How can I help you today?"
-  async>
-</script>
+// Widget configuration
+{
+  name: "Support Assistant",
+  greeting: "Hi! How can I help you today?",
+  systemPrompt: "You are a helpful customer support agent...",
+  primaryColor: "#0066cc"
+}
 ```
 
-### Documentation Assistant
+### Documentation Helper
 ```javascript
-<script 
-  src="https://your-domain.com/dist/widget.js"
-  data-widget-id="YOUR_WIDGET_ID"
-  data-placeholder="Search our docs..."
-  data-auto-open="false"
-  data-enable-citations="true"
-  async>
-</script>
+// Perfect for technical docs
+{
+  name: "Docs Assistant",
+  greeting: "Ask me anything about our documentation!",
+  systemPrompt: "Help users find information in our docs...",
+  showSources: true
+}
 ```
 
-### Product Guide
+### Sales Assistant
 ```javascript
-<script 
-  src="https://your-domain.com/dist/widget.js"
-  data-widget-id="YOUR_WIDGET_ID"
-  data-recommendations='["How to get started?", "What are the features?", "Pricing plans"]'
-  async>
-</script>
+// For e-commerce sites
+{
+  name: "Shopping Assistant",
+  greeting: "Looking for something specific?",
+  systemPrompt: "Help customers find products and make purchasing decisions...",
+  suggestedQuestions: [
+    "What's on sale?",
+    "Help me find a gift",
+    "Compare products"
+  ]
+}
 ```
 
-## 🎨 Widget Customization
+## 🔧 Configuration Options
 
-### Visual Customization
-```html
-<script 
-  src="https://your-domain.com/dist/widget.js"
-  data-widget-id="YOUR_WIDGET_ID"
-  data-position="bottom-left"
-  data-primary-color="oklch(0.52 0.176 142.495)"
-  data-logo-url="https://your-site.com/logo.png"
-  data-hide-powered-by="true"
-  async>
-</script>
-```
+### Widget Customization
+- **Appearance**: Colors, logo, position, size
+- **Behavior**: Greeting, prompts, suggested questions
+- **Features**: Source citations, chat history, file uploads
 
-### Behavioral Customization
-```html
-<script 
-  src="https://your-domain.com/dist/widget.js"
-  data-widget-id="YOUR_WIDGET_ID"
-  data-auto-open="true"
-  data-save-messages="true"
-  data-enable-audio="true"
-  data-enable-citations="true"
-  data-recommendations='["How do I get started?", "What features are available?", "Show me pricing"]'
-  async>
-</script>
-```
+### API Integration
+- Use bearer tokens for programmatic access
+- Automate content updates
+- Export chat logs and analytics
+- See [API Documentation](./API/README.md)
 
-### All Available Attributes
-```javascript
-data-widget-id="required"           // Your widget ID
-data-position="bottom-right"        // Widget position
-data-primary-color="#0066cc"        // Brand color (OKLCH format)
-data-save-messages="true"           // Persist chat history
-data-auto-open="false"              // Open on page load
-data-hide-powered-by="false"        // Remove branding
-data-placeholder="Ask me anything..." // Input placeholder
-data-welcome-message="Welcome!"     // Initial greeting
-data-enable-audio="true"            // Text-to-speech
-data-enable-citations="true"        // Show sources
-data-logo-url="https://..."         // Your logo
-data-logo-alt="Company Name"        // Logo alt text
-```
+## 📚 Next Steps
 
-## 📊 Analytics Integration
+- [Explore the API](./API/README.md) for advanced integration
+- [Learn about the architecture](./ARCHITECTURE/README.md)
+- [Customize the widget](./FEATURES/CHAT-WIDGET.md)
+- [Set up analytics](./FEATURES/ANALYTICS.md)
 
-Track widget usage with JavaScript events:
+## 🆘 Getting Help
 
-```javascript
-// Listen for widget events
-window.addEventListener('message', (event) => {
-  if (event.data.type === 'websyte-ai-chat-widget') {
-    switch (event.data.action) {
-      case 'chat-opened':
-        analytics.track('Chat Opened');
-        break;
-      case 'message-sent':
-        analytics.track('Message Sent', {
-          message: event.data.data.message
-        });
-        break;
-    }
-  }
-});
-```
+- **Documentation**: You're here!
+- **Email**: support@websyte.ai
+- **Twitter**: [@websyte_ai](https://twitter.com/websyte_ai)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/websyte/websyte-ai-chat-widget/issues)
 
-## 🚨 Troubleshooting
+---
 
-### Widget Not Appearing?
-1. Check console for errors
-2. Verify widget ID is correct
-3. Ensure script is loaded before `</body>`
-4. Check if widget is set to public
-
-### Slow Responses?
-1. Check your OpenAI API key status
-2. Verify content is properly indexed
-3. Enable caching in widget settings
-
-### Styling Issues?
-1. Widget uses Shadow DOM for isolation
-2. Use data attributes for customization
-3. Check for CSS conflicts
-
-## 🎯 Best Practices
-
-### Content Preparation
-- Keep documents focused and well-structured
-- Use clear headings and sections
-- Include examples and FAQs
-- Update content regularly
-
-### AI Instructions
-- Be specific about tone and style
-- Include company/product context
-- Set clear boundaries
-- Test with various questions
-
-### Performance
-- Enable caching for faster responses
-- Limit document size to < 10MB
-- Use website crawling for large sites
-- Monitor token usage
+Ready to transform your customer support? [Create your first widget →](https://websyte.ai)

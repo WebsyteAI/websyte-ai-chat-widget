@@ -34,7 +34,12 @@
 Add AI chat to your website in 30 seconds:
 
 ```html
-<script src="https://websyte.ai/dist/widget.js" async></script>
+<iframe 
+  src="https://websyte.ai/embed/YOUR_WIDGET_ID" 
+  width="400" 
+  height="600"
+  style="border: none; position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+</iframe>
 ```
 
 That's it! Your visitors can now chat with an AI assistant that understands your content.
@@ -55,14 +60,16 @@ That's it! Your visitors can now chat with an AI assistant that understands your
 
 ### 🎨 **Beautiful, Customizable UI**
 - Modern glass-morphism design
-- Shadow DOM isolation (zero conflicts)
+- iframe isolation (zero conflicts)
 - Fully responsive on all devices
 - Custom branding and theming
+- Mobile-optimized widget editor
 
 ### 🔧 **Developer Friendly**
 - **RESTful API** - Full programmatic control
 - **TypeScript** - 100% type-safe
-- **Well tested** - 235+ tests with full coverage
+- **Well tested** - 235+ tests with 100% coverage
+- **Code quality** - ESLint + Prettier configured
 - **Open source** - MIT licensed
 
 ### 🔒 **Enterprise Ready**
@@ -147,13 +154,22 @@ await fetch(`https://your-domain.com/api/automation/widgets/${widgetId}/crawl`, 
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    urls: ['https://docs.example.com'],
+    url: 'https://docs.example.com',
     maxPages: 100
   })
 });
 ```
 
 [View full API documentation →](./.claude/API/README.md)
+
+## 📰 Recent Updates
+
+- **Marketing Pages**: New blog with 6 articles, features showcase, pricing plans
+- **Component Refactoring**: Modularized ChatWidget (12 components) and WidgetForm
+- **Code Quality**: Added ESLint and Prettier for consistent code style
+- **iframe Embedding**: Switched from script tag to iframe for better isolation
+- **Analytics**: Integrated Umami for usage tracking
+- **Mobile UX**: Enhanced mobile responsiveness in widget editor
 
 ## 🎯 Use Cases
 

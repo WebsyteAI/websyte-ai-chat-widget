@@ -1,189 +1,68 @@
 # Websyte AI Chat Widget Documentation
 
-Welcome to the comprehensive documentation for Websyte AI Chat Widget - an embeddable AI assistant platform with RAG capabilities.
+Welcome to the comprehensive documentation for Websyte AI Chat Widget. This documentation is organized to help you quickly find the information you need.
 
 ## 📚 Documentation Structure
 
-### 🚀 Getting Started
-- **[GETTING-STARTED.md](./GETTING-STARTED.md)** - Complete getting started guide with examples
-- **[../CLAUDE.md](../CLAUDE.md)** - Main documentation hub and AI assistant notes
+### [Getting Started](./GETTING-STARTED.md)
+Quick start guide to get you up and running with Websyte AI in minutes.
 
-### 🏗️ Architecture
-- **[ARCHITECTURE/](./ARCHITECTURE/)** - Complete system architecture documentation
-  - Overview, Frontend, Backend, Database, Deployment
-  - Widget embedding with technical details, RAG pipeline, Authentication
-  - Performance optimization and scaling
+### [API Reference](./API/README.md)
+Complete API documentation for developers:
+- [Authentication](./API/AUTHENTICATION.md) - OAuth, API tokens, and security
+- [Widgets API](./API/WIDGETS.md) - Create and manage widgets
+- [Automation API](./API/AUTOMATION.md) - Programmatic widget control
+- [Chat API](./API/CHAT.md) - Chat endpoints and streaming
+- [Services API](./API/SERVICES.md) - Advanced AI services
 
-### 🔌 API Reference
-- **[API/](./API/)** - Modular API documentation with examples
-  - Widget management, Chat endpoints, File operations
-  - Public access, Automation API, Admin endpoints
-  - Authentication methods and rate limiting
+### [Architecture](./ARCHITECTURE/README.md)
+Technical architecture and design decisions:
+- [Frontend Architecture](./ARCHITECTURE/FRONTEND.md) - React Router 7, components, and state
+- [Backend Architecture](./ARCHITECTURE/BACKEND.md) - Cloudflare Workers and services
+- [Database Design](./ARCHITECTURE/DATABASE.md) - PostgreSQL, pgvector, and schema
 
-### ✨ Features
-- **[FEATURES/](./FEATURES/)** - Detailed feature documentation
-  - Message persistence, Website crawler, Widget sharing
-  - Workflow visualization and automation
+### [Features](./FEATURES/README.md)
+Detailed feature documentation:
+- [Chat Widget](./FEATURES/CHAT-WIDGET.md) - Widget capabilities and customization
+- [Content Management](./FEATURES/CONTENT-MANAGEMENT.md) - Documents, crawling, and storage
+- [Vector Search](./FEATURES/VECTOR-SEARCH.md) - RAG implementation and search
+- [Analytics](./FEATURES/ANALYTICS.md) - Usage tracking and insights
 
-### 🎨 UI Components
-- **[UI/](./UI/)** - Component library and design system
-  - shadcn/ui setup and configuration
-  - Complete component catalog with examples
-  - Theming system and customization
-  - UI patterns and best practices
+### [Deployment](./DEPLOYMENT/README.md)
+Production deployment guides:
+- [Cloudflare Deployment](./DEPLOYMENT/CLOUDFLARE.md) - Workers and R2 setup
+- [Environment Configuration](./DEPLOYMENT/ENVIRONMENT.md) - Secrets and variables
 
-### 🧪 Testing
-- **[TESTING/](./TESTING/)** - Comprehensive testing documentation
-  - Unit tests, Integration tests, E2E tests
-  - Testing strategies and best practices
-  - Mock patterns and utilities
+### [UI Components](./UI/README.md)
+Frontend component documentation:
+- [Widget Embedding](./UI/EMBEDDING.md) - iframe integration guide
 
-### 🚢 Deployment
-- **[DEPLOYMENT/](./DEPLOYMENT/)** - Production deployment guides
-  - Environment configuration
-  - Security best practices
-  - Database migrations
-  - Monitoring and observability
+## 🚀 Quick Links
 
-### 💻 Development
-- **[DEVELOPMENT/](./DEVELOPMENT/)** - Developer guides and workflows
-  - Component development patterns
-  - Custom hooks documentation
-  - Code conventions and standards
+- **Live Demo**: [websyte.ai](https://websyte.ai)
+- **GitHub**: [websyte/websyte-ai-chat-widget](https://github.com/websyte/websyte-ai-chat-widget)
+- **Support**: support@websyte.ai
+- **Twitter**: [@websyte_ai](https://twitter.com/websyte_ai)
 
-### 🔄 Workflows
-- **[WORKFLOWS/](./WORKFLOWS/)** - Business logic and automation
-  - Cloudflare Workflows documentation
-  - Content processing pipelines
-  - RAG implementation details
+## 📖 How to Use This Documentation
 
-### 🎯 Widget Embedding
-- **[EMBEDDING/](./EMBEDDING/)** - Integration documentation
-  - Script tag embedding guide
-  - iframe API and postMessage protocol
-  - Integration patterns for different platforms
+1. **New Users**: Start with [Getting Started](./GETTING-STARTED.md)
+2. **Developers**: Check out the [API Reference](./API/README.md)
+3. **Contributors**: Review [Architecture](./ARCHITECTURE/README.md)
+4. **Deployment**: Follow [Deployment Guides](./DEPLOYMENT/README.md)
 
-### 🔮 Future Plans
-- **[FUTURE/](./FUTURE/)** - Roadmap and planned features
-  - Stripe payment integration
-  - Multi-language support
-  - Enterprise features
+## 🔄 Recent Updates
 
-### 📦 Archive
-- **[ARCHIVE/](./ARCHIVE/)** - Historical documentation
-  - Deprecated features
-  - Migration guides
-  - Legacy documentation
+- **2025-01-11**: Major documentation update and restructuring
+- **2025-01-07**: Added marketing pages (blog, features, pricing, contact)
+- **2025-01-07**: Major refactoring of widget components
+- **2025-01-06**: Switched to iframe-only embedding
+- **2025-01-05**: Added ESLint and Prettier configuration
 
-## 🚀 Quick Start Guides
+## 📝 Contributing to Docs
 
-### For Developers
-1. **Setup**: [Getting Started](./GETTING-STARTED.md)
-2. **Architecture**: [System Overview](./ARCHITECTURE/OVERVIEW.md)
-3. **Components**: [UI Component Library](./UI/README.md)
-4. **API**: [API Documentation](./API/README.md)
-5. **Testing**: [Testing Guide](./TESTING/README.md)
-
-### For Integrators
-1. **Embed Widget**: [Embedding Guide](./EMBEDDING/README.md)
-2. **Customize**: [Theme Configuration](./UI/THEMING.md)
-3. **Automate**: [Automation API](./API/automation.md)
-4. **Monitor**: [Analytics Integration](./EMBEDDING/README.md#analytics-integration)
-
-### For DevOps
-1. **Deploy**: [Deployment Guide](./DEPLOYMENT/README.md)
-2. **Configure**: [Environment Setup](./DEPLOYMENT/ENVIRONMENT.md)
-3. **Secure**: [Security Guide](./DEPLOYMENT/SECURITY.md)
-4. **Monitor**: [Monitoring Setup](./DEPLOYMENT/MONITORING.md)
-
-## 📋 Documentation Updates
-
-### Recent Consolidation (2025-01-07)
-- Merged root README.md and CLAUDE.md → CLAUDE.md is now the main documentation entry point
-- Removed .claude/API-REFERENCE.md → Use modular API docs in .claude/API/
-- Consolidated .claude/QUICK-START/ → Content merged into GETTING-STARTED.md
-- Moved ARCHITECTURE_VALIDATION_REPORT.md → .claude/ARCHIVE/
-- Updated widget-specific technical details → .claude/ARCHITECTURE/WIDGET-EMBED.md
-
-### Documentation Maintenance
-- Total markdown files: ~58 (reduced from 65)
-- Eliminated ~1,000+ lines of duplicate content
-- Clearer hierarchy: README.md → CLAUDE.md → .claude/ docs
-- All documentation centralized in .claude/ directory
-
-## 📋 Key Documentation
-
-### Essential Reads
-- 🏗️ [Architecture Overview](./ARCHITECTURE/OVERVIEW.md) - Understand the system
-- 🔌 [API Reference](./API/README.md) - Integration endpoints
-- 🎨 [Component Catalog](./UI/COMPONENTS.md) - UI components
-- 🧪 [Testing Strategy](./TESTING/README.md) - Quality assurance
-- 🚀 [Deployment Guide](./DEPLOYMENT/README.md) - Go to production
-
-### Feature Deep Dives
-- 🤖 [RAG Pipeline](./ARCHITECTURE/RAG-PIPELINE.md) - AI implementation
-- 🔍 [Vector Search](./ARCHITECTURE/DATABASE.md#vector-search-implementation) - Semantic search
-- 💬 [Message Persistence](./FEATURES/MESSAGE-PERSISTENCE.md) - Chat storage
-- 🕷️ [Web Crawler](./FEATURES/WEBSITE-CRAWLER.md) - Content extraction
-- 🎯 [Widget Embedding](./ARCHITECTURE/WIDGET-EMBED.md) - Integration details
-
-## 🔄 Documentation Standards
-
-### Structure
-- **Clear hierarchy** with README.md index files
-- **Focused documents** on specific topics
-- **Cross-references** between related docs
-- **Code examples** with syntax highlighting
-- **Visual diagrams** where helpful
-
-### Maintenance
-When making changes:
-1. ✅ Update relevant documentation immediately
-2. ✅ Add changelog entries for significant changes
-3. ✅ Update API docs for endpoint changes
-4. ✅ Test all code examples
-5. ✅ Remove outdated information
-6. ✅ Update cross-references
-
-### Conventions
-- Use **Markdown** for all documentation
-- Include **table of contents** for long documents
-- Add **code examples** with language hints
-- Show **request/response** for API examples
-- Use **relative links** for cross-references
-
-## 🎯 Finding Information
-
-### By Topic
-- **Frontend Development**: [UI/](./UI/), [ARCHITECTURE/FRONTEND.md](./ARCHITECTURE/FRONTEND.md)
-- **Backend Development**: [API/](./API/), [ARCHITECTURE/BACKEND.md](./ARCHITECTURE/BACKEND.md)
-- **Database & Search**: [ARCHITECTURE/DATABASE.md](./ARCHITECTURE/DATABASE.md), [ARCHITECTURE/RAG-PIPELINE.md](./ARCHITECTURE/RAG-PIPELINE.md)
-- **Testing**: [TESTING/](./TESTING/)
-- **Deployment**: [DEPLOYMENT/](./DEPLOYMENT/)
-
-### By Role
-- **Frontend Dev**: Components, Theming, Embedding
-- **Backend Dev**: API, Services, Database
-- **DevOps**: Deployment, Monitoring, Security
-- **Product**: Features, Roadmap, Integration
-
-## 🤝 Contributing
-
-See [CLAUDE.md](./CLAUDE.md) for:
-- Development workflow
-- Coding standards
-- Testing requirements
-- Documentation guidelines
-
-## 📊 Project Status
-
-- **Current Version**: Production Ready
-- **Documentation**: Comprehensive and up-to-date
-- **Test Coverage**: 100% for critical paths
-- **API Stability**: v1 stable, v2 in planning
+Found an issue or want to improve the documentation? Please submit a PR or open an issue on GitHub.
 
 ---
 
-Last updated: 2025-01-06
-
-For questions or improvements, please refer to the development guidelines in [CLAUDE.md](./CLAUDE.md).
+Last updated: January 11, 2025

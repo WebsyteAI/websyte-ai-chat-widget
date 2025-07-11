@@ -60,18 +60,20 @@ pnpm deploy           # Deploy to Cloudflare
 ## 🌟 Key Features
 
 ### For End Users
-- **AI Chat Assistant**: Powered by your content
-- **Easy Embedding**: One-line script tag
-- **Knowledge Base**: Upload docs, crawl websites
-- **Smart Search**: Vector-based semantic search
+- **AI Chat Assistant**: Powered by your content with GPT-4o-mini
+- **Easy Embedding**: Simple iframe integration
+- **Knowledge Base**: Upload docs, crawl websites with Apify
+- **Smart Search**: Vector-based semantic search with pgvector
 - **Custom Branding**: Logo, colors, prompts
+- **Marketing Pages**: Blog, features, pricing, contact
 
 ### For Developers
 - **RESTful API**: Full programmatic access
-- **Bearer Auth**: Secure automation
-- **Webhooks**: Real-time events (planned)
+- **Bearer Auth**: Secure automation (10/min anon, 30/min auth)
+- **Modular Architecture**: 12 ChatWidget modules, 6 widget services
 - **TypeScript**: Full type safety
-- **100% Test Coverage**: Reliable codebase
+- **Code Quality**: ESLint + Prettier configured
+- **100% Test Coverage**: 235+ tests
 
 ## 🔧 Development Workflow
 
@@ -124,6 +126,37 @@ wrangler tail  # Live logs
 
 For detailed documentation, see [.claude/README.md](.claude/README.md)
 
+## 🆕 Recent Updates (January 2025)
+
+### Major Refactoring (Jan 7)
+- **ChatWidget**: Modularized into 12 components with custom hooks
+- **WidgetForm**: Split into 12 focused components  
+- **Widget Service**: Reorganized into 6 specialized services
+- **Code Quality**: Added ESLint and Prettier configuration
+
+### New Features
+- **Marketing Site**: Added blog (6 posts), features, pricing, contact pages
+- **iframe Embedding**: Switched from script tag to iframe-only
+- **Mobile Responsiveness**: Improved widget editor for mobile
+- **Analytics**: Integrated Umami analytics tracking
+- **Blog Content**: 
+  - Launch announcement
+  - How to reduce support tickets by 40%
+  - RAG explained
+  - Vector search with pgvector
+  - Shadow DOM widgets (future)
+  - Customer success story
+
+### API Updates
+- Standardized crawl API to use 'url' parameter only
+- Added widget link extraction feature
+- Improved crawl status management
+
 ## 🧠 Deployment Memory
 
-- Will track the 5 most recent changes/deployments to the project
+Recent deployments:
+1. **2025-01-11**: Major documentation update with .claude/ structure
+2. **2025-01-07**: Refactored widget components and services
+3. **2025-01-06**: Added marketing pages and blog
+4. **2025-01-05**: Switched to iframe embedding
+5. **2025-01-05**: Added ESLint and Prettier

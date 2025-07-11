@@ -1,192 +1,193 @@
-# API Documentation
+# API Reference
 
-## Overview
+Websyte AI provides a comprehensive REST API for programmatic control of widgets, content, and chat interactions.
 
-The Websyte AI Chat Widget API provides comprehensive endpoints for widget management, chat functionality, and content processing. The API supports multiple authentication methods and is designed for both web applications and programmatic access.
+## 🔑 Base URL
 
-## Base URL
-
-- Development: `http://localhost:5173`
-- Production: `https://your-domain.workers.dev`
-
-## Authentication Methods
-
-### 1. Session-based Authentication (Better Auth)
-
-Used for web application access. Requires user login through the authentication flow.
-
-- **Usage**: Web dashboard, user-facing features
-- **Implementation**: Cookie-based sessions with CSRF protection
-- **Rate Limits**: 30 requests per minute for authenticated users
-
-### 2. Bearer Token Authentication
-
-Used for programmatic access and automation tools.
-
-- **Usage**: CI/CD, automation scripts, API integrations
-- **Implementation**: Static bearer token in Authorization header
-- **Rate Limits**: No rate limiting (use responsibly)
-
-#### Setup
-
-1. Generate a secure token:
-   ```bash
-   openssl rand -hex 32
-   ```
-
-2. Add to environment variables:
-   ```env
-   API_BEARER_TOKEN=your-generated-token
-   ```
-
-3. Use in requests:
-   ```bash
-   curl -H "Authorization: Bearer your-token" \
-        https://your-domain.com/api/automation/widgets
-   ```
-
-### 3. Public Access
-
-Select endpoints allow anonymous access for embedded widgets.
-
-## API Documentation Files
-
-### Core APIs
-- **[Widgets API](./WIDGETS.md)** - Widget CRUD operations
-- **[Widget Links API](./widgets-links.md)** - Important links extraction
-- **[Widget Crawl API](./widget-crawl.md)** - Website crawling endpoints
-- **[Chat API](./CHAT.md)** - Chat conversation endpoints
-- **[Documents API](./DOCUMENTS.md)** - File upload and management
-
-### Service APIs
-- **[Search API](./SEARCH.md)** - Vector search functionality
-- **[Services API](./SERVICES.md)** - General service endpoints
-
-### Access Control APIs
-- **[Automation API](./AUTOMATION.md)** - Bearer token authenticated endpoints
-- **[Public API](./PUBLIC.md)** - Public widget access
-- **[Admin API](./admin.md)** - System administration
-
-## API Categories
-
-### Core APIs
-
-- **[Widget Management](./WIDGETS.md)** - Create, update, delete widgets
-- **[Chat API](./CHAT.md)** - RAG-powered chat with streaming
-- **[Document Management](./DOCUMENTS.md)** - File uploads, OCR, content management
-- **[Public Access](./PUBLIC.md)** - Anonymous widget access
-- **[Automation API](./AUTOMATION.md)** - Programmatic widget control
-
-### Service APIs
-
-- **Content Analysis** - Selector analysis, summarization
-- **Search** - Vector search within widget content
-- **Recommendations** - AI-generated content suggestions
-
-## Response Format
-
-### Success Response
-
-```json
-{
-  "data": {
-    // Response data
-  },
-  "success": true
-}
+```
+https://your-domain.com/api
 ```
 
-### Error Response
+## 📋 API Overview
 
+### Authentication
+All API requests require authentication. See [Authentication Guide](./AUTHENTICATION.md) for details.
+
+### Available APIs
+
+1. **[Widgets API](./WIDGETS.md)** - Create, update, and manage widgets
+2. **[Automation API](./AUTOMATION.md)** - Bearer token authentication for programmatic access
+3. **[Chat API](./CHAT.md)** - Chat endpoints and message streaming
+4. **[Services API](./SERVICES.md)** - Advanced AI services (recommendations, summaries)
+
+### Rate Limiting
+
+- **Anonymous users**: 10 requests/minute
+- **Authenticated users**: 30 requests/minute
+- **Enterprise**: Custom limits available
+
+Rate limit headers are included in all responses:
+```
+X-RateLimit-Limit: 30
+X-RateLimit-Remaining: 28
+X-RateLimit-Reset: 1704067200
+```
+
+### Response Format
+
+All API responses follow this format:
+
+**Success Response**
 ```json
 {
-  "error": "Error message",
-  "code": "ERROR_CODE",
-  "details": {
-    // Additional error context
+  "success": true,
+  "data": {
+    // Response data
   }
 }
 ```
 
-## Rate Limiting
-
-| Authentication Type | Rate Limit | Window |
-|-------------------|------------|---------|
-| Anonymous | 10 requests | 1 minute |
-| Authenticated User | 30 requests | 1 minute |
-| Bearer Token | Unlimited | - |
-| Admin Role | Unlimited | - |
-
-Rate limit headers:
-- `X-RateLimit-Limit`: Request limit
-- `X-RateLimit-Remaining`: Remaining requests
-- `X-RateLimit-Reset`: Reset timestamp
-
-## Common Headers
-
-### Request Headers
-
-```http
-Content-Type: application/json
-Authorization: Bearer <token>  # For automation API
-Cookie: <session>             # For web app
+**Error Response**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request data",
+    "details": {
+      // Additional error details
+    }
+  }
+}
 ```
 
-### Response Headers
+### Common Status Codes
 
-```http
-Content-Type: application/json
-X-Request-ID: <uuid>
-X-RateLimit-*: <rate-limit-info>
-```
+- `200 OK` - Request successful
+- `201 Created` - Resource created
+- `400 Bad Request` - Invalid request data
+- `401 Unauthorized` - Missing or invalid authentication
+- `403 Forbidden` - Insufficient permissions
+- `404 Not Found` - Resource not found
+- `429 Too Many Requests` - Rate limit exceeded
+- `500 Internal Server Error` - Server error
 
-## Error Codes
+## 🚀 Quick Start
 
-See [Error Codes Reference](./ERROR-CODES.md) for detailed error handling.
-
-## Quick Start Examples
-
-### Create a Widget
+### 1. Get Your API Token
 
 ```bash
-curl -X POST https://your-domain.com/api/automation/widgets \
-  -H "Authorization: Bearer $API_TOKEN" \
+# Login to your dashboard
+# Navigate to Settings > API Tokens
+# Generate a new token
+```
+
+### 2. Make Your First Request
+
+```bash
+curl -X GET \
+  https://your-domain.com/api/automation/widgets \
+  -H "Authorization: Bearer YOUR_API_TOKEN"
+```
+
+### 3. Create a Widget
+
+```bash
+curl -X POST \
+  https://your-domain.com/api/automation/widgets \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Support Bot",
+    "name": "My Support Bot",
     "greeting": "How can I help you today?",
-    "systemPrompt": "You are a helpful support assistant."
+    "primaryColor": "#0066cc"
   }'
 ```
 
-### Chat with Widget
+## 📚 API Sections
 
-```bash
-curl -X POST https://your-domain.com/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{
-    "message": "What services do you offer?",
-    "widgetId": "widget-uuid",
-    "sessionId": "session-uuid"
-  }'
+### Widget Management
+- Create, read, update, delete widgets
+- Manage widget settings and appearance
+- Control access and permissions
+
+### Content Management
+- Upload documents
+- Crawl websites
+- Manage knowledge base
+- Refresh embeddings
+
+### Chat Operations
+- Send messages
+- Stream responses
+- Export chat history
+- Manage sessions
+
+### Advanced Services
+- Generate recommendations
+- Create summaries
+- Extract important links
+- Analyze content
+
+## 🔧 SDKs and Libraries
+
+### JavaScript/TypeScript
+```typescript
+import { WebsyteClient } from '@websyte/sdk';
+
+const client = new WebsyteClient({
+  apiKey: 'YOUR_API_TOKEN',
+  baseUrl: 'https://your-domain.com'
+});
+
+// List widgets
+const widgets = await client.widgets.list();
+
+// Create a widget
+const widget = await client.widgets.create({
+  name: 'Support Bot',
+  greeting: 'How can I help?'
+});
 ```
 
-### Upload Document
+### Python
+```python
+from websyte import WebsyteClient
 
-```bash
-curl -X POST https://your-domain.com/api/widgets/{widgetId}/documents \
-  -H "Authorization: Bearer $API_TOKEN" \
-  -F "file=@document.pdf"
+client = WebsyteClient(
+    api_key='YOUR_API_TOKEN',
+    base_url='https://your-domain.com'
+)
+
+# List widgets
+widgets = client.widgets.list()
+
+# Create a widget
+widget = client.widgets.create(
+    name='Support Bot',
+    greeting='How can I help?'
+)
 ```
 
-## SDK and Tools
+*Note: Official SDKs are coming soon. For now, use standard HTTP libraries.*
 
-- JavaScript SDK: Coming soon
-- Python SDK: Coming soon
-- CLI Tool: Coming soon
+## 🛡️ Security Best Practices
 
-## Support
+1. **Never expose API tokens in client-side code**
+2. **Use environment variables for tokens**
+3. **Rotate tokens regularly**
+4. **Use least-privilege principle**
+5. **Monitor API usage for anomalies**
 
-- GitHub Issues: [Report bugs and feature requests](https://github.com/your-repo/issues)
-- Documentation: This API reference
-- Email: support@your-domain.com
+## 📖 Next Steps
+
+- [Set up authentication](./AUTHENTICATION.md)
+- [Explore the Widgets API](./WIDGETS.md)
+- [Learn about automation](./AUTOMATION.md)
+- [Integrate chat functionality](./CHAT.md)
+
+## 🆘 Need Help?
+
+- Email: support@websyte.ai
+- Twitter: [@websyte_ai](https://twitter.com/websyte_ai)
+- GitHub: [Open an issue](https://github.com/websyte/websyte-ai-chat-widget/issues)
